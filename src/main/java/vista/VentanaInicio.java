@@ -3,7 +3,7 @@ package vista;
 import javax.swing.*;
 import java.awt.*;
 
-public class VentanaPrincipal {
+public class VentanaInicio {
 
     private JFrame frame;
     private JPanel mainPanel;
@@ -14,7 +14,7 @@ public class VentanaPrincipal {
                 // Configuración de look and feel de FlatLaf
                 UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarculaLaf());
 
-                VentanaPrincipal window = new VentanaPrincipal();
+                VentanaInicio window = new VentanaInicio();
                 window.frame.setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -22,7 +22,7 @@ public class VentanaPrincipal {
         });
     }
 
-    public VentanaPrincipal() {
+    public VentanaInicio() {
         initialize();
     }
 
@@ -38,10 +38,11 @@ public class VentanaPrincipal {
         frame.getContentPane().add(mainPanel);
 
         // Añadir VentanaLogin al iniciar
+        
         VentanaLogin loginPanel = new VentanaLogin();
-        loginPanel.setMainFrame(this);  // Pasar referencia de VentanaPrincipal a VentanaLogin
+        loginPanel.setMainFrame(this);  // Pasar referencia de VentanaInicio a VentanaLogin
         mainPanel.add(loginPanel, BorderLayout.CENTER);
-
+		        		
         frame.setVisible(true);
     }
 
@@ -62,4 +63,27 @@ public class VentanaPrincipal {
         mainPanel.revalidate();
         mainPanel.repaint();
     }
+    
+    
+	public void showMainWindow() {
+		mainPanel.removeAll();
+		VentanaPrincipal mainWindow = new VentanaPrincipal();
+		
+		
+        ContactoItem contacto1 = new ContactoItem("Contacto 1", "avatar.png", "Último mensaje de contacto 1");
+        ContactoItem contacto2 = new ContactoItem("Contacto 2", "avatar.png", "Último mensaje de contacto 2");
+        ContactoItem contacto3 = new ContactoItem("Contacto 3", "avatar.png", "Último mensaje de contacto 3");
+        
+        // Agregar los contactos a la lista
+        mainWindow.agregarContacto(contacto1);
+        mainWindow.agregarContacto(contacto2);
+        mainWindow.agregarContacto(contacto3);
+		
+		mainWindow.setMainFrame(this);
+		mainPanel.add(mainWindow, BorderLayout.CENTER);
+		mainPanel.revalidate();
+		mainPanel.repaint();
+	}
+    
+    
 }

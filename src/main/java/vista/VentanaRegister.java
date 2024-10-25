@@ -20,7 +20,7 @@ public class VentanaRegister extends JPanel {
     private JButton selectImageButton;
     private JLabel imagePreview;
     private boolean isPasswordVisible = false;
-    private VentanaPrincipal mainFrame; // Referencia a VentanaPrincipal
+    private VentanaInicio mainFrame; // Referencia a VentanaPrincipal
 
     public VentanaRegister() {
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -266,7 +266,7 @@ public class VentanaRegister extends JPanel {
         }
     }
 
-    public void setMainFrame(VentanaPrincipal mainFrame) {
+    public void setMainFrame(VentanaInicio mainFrame) {
         this.mainFrame = mainFrame;
     }
 }

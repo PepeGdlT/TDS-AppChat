@@ -13,7 +13,7 @@ public class VentanaLogin extends JPanel {
     private JButton showPasswordButton;
     private boolean isPasswordVisible = false;
 
-    private VentanaPrincipal mainFrame; // Referencia a VentanaPrincipal
+    private VentanaInicio mainFrame; // Referencia a VentanaPrincipal
 
     public VentanaLogin() {
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -24,6 +24,7 @@ public class VentanaLogin extends JPanel {
 
         // Configurar el título de login
         JLabel loginTitle = new JLabel("Login", SwingConstants.CENTER);
+        loginTitle.setBackground(Color.RED);
         loginTitle.setVerticalAlignment(SwingConstants.BOTTOM);
         loginTitle.setForeground(ElegantPalette.PRIMARY_TEXT);
         loginTitle.setFont(new Font("Arial", Font.BOLD, 20));
@@ -55,7 +56,7 @@ public class VentanaLogin extends JPanel {
 
         // Botón de visibilidad de contraseña
 
-        showPasswordButton = new JButton(IconsResource.getIconHide());
+        showPasswordButton = new JButton(IconsResource.getIconShow());
         showPasswordButton.setForeground(new Color(255, 255, 255));
         showPasswordButton.setPreferredSize(new Dimension(32, 32));
         showPasswordButton.setBackground(new Color(255, 255, 255));
@@ -81,6 +82,20 @@ public class VentanaLogin extends JPanel {
 
         // Configurar el botón de login
         JButton loginButton = new JButton("Login");
+        loginButton.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		if (mainFrame != null) {
+        			
+        			if(usernameField.getText().equals("admin") && passwordField.getText().equals("admin")) {
+        				mainFrame.showMainWindow();
+        				}else {
+        					JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+        				}
+        		}
+        			
+        	}
+        });
         loginButton.setFont(new Font("Tahoma", Font.BOLD, 11));
         loginButton.setBackground(ElegantPalette.ACTION_BUTTON);
         loginButton.setForeground(ElegantPalette.BUTTON_TEXT);
@@ -153,7 +168,7 @@ public class VentanaLogin extends JPanel {
         });
     }
 
-    public void setMainFrame(VentanaPrincipal mainFrame) {
+    public void setMainFrame(VentanaInicio mainFrame) {
         this.mainFrame = mainFrame;
     }
 
