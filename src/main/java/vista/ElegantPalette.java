@@ -38,6 +38,10 @@ public class ElegantPalette {
     // Texto de enlaces o acciones secundarias (Verde claro para destacarse)
     public static final Color LINK_TEXT = new Color(0, 255, 128); // #00FF80
 
+ // Fondo en hover (Gris más claro)
+    public static final Color HOVER_BACKGROUND = new Color(60, 60, 60); // #3C3C3C
+
+
     // Constructor privado para prevenir instanciación
     private ElegantPalette() {
         // Esta clase solo contiene colores estáticos, no es necesario instanciarla.

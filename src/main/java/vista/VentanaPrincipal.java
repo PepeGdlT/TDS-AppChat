@@ -14,28 +14,28 @@ public class VentanaPrincipal extends JPanel {
     	setLayout(new BorderLayout(0, 0));
     	
     	// Panel superior (barra de botones)
-    	JPanel panel = new JPanel();
-    	add(panel, BorderLayout.NORTH);
+    	JPanel panelOpciones = new JPanel();
+    	add(panelOpciones, BorderLayout.NORTH);
     	
     	JLabel lblNewLabel = new JLabel("contacto o telefono");
-    	panel.add(lblNewLabel);
+    	panelOpciones.add(lblNewLabel);
     	
     	JButton btnNewButton = new JButton("buscar");
-    	panel.add(btnNewButton);
+    	panelOpciones.add(btnNewButton);
     	
     	JButton btnNewButton_1 = new JButton("contactos");
-    	panel.add(btnNewButton_1);
+    	panelOpciones.add(btnNewButton_1);
     	
     	JButton btnNewButton_2 = new JButton("premium");
-    	panel.add(btnNewButton_2);
+    	panelOpciones.add(btnNewButton_2);
     	
     	JLabel lblNewLabel_1 = new JLabel("$usuario_actual");
-    	panel.add(lblNewLabel_1);
+    	panelOpciones.add(lblNewLabel_1);
     	
     	// Panel izquierdo (lista de contactos)
-    	JPanel panel_1 = new JPanel();
-    	add(panel_1, BorderLayout.WEST);
-    	panel_1.setLayout(new BorderLayout()); // Cambiar layout para mejor organización
+    	JPanel panelListaContactos = new JPanel();
+    	add(panelListaContactos, BorderLayout.WEST);
+    	panelListaContactos.setLayout(new BorderLayout()); // Cambiar layout para mejor organización
     	
     	// Modelo para la lista de contactos
     	modeloContactos = new DefaultListModel<>();
@@ -46,15 +46,15 @@ public class VentanaPrincipal extends JPanel {
     	
     	// Agregar la lista de contactos a un JScrollPane para que sea scrollable
     	JScrollPane scrollPane = new JScrollPane(listaContactos);
-    	panel_1.add(scrollPane, BorderLayout.CENTER); // Asegúrate que ocupa todo el panel
+    	panelListaContactos.add(scrollPane, BorderLayout.CENTER); // Asegúrate que ocupa todo el panel
     	
     	// Panel derecho (conversación, para más adelante)
-    	JPanel panel_2 = new JPanel();
-    	add(panel_2, BorderLayout.CENTER); // Usar BorderLayout.CENTER para más espacio
-    	panel_2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+    	JPanel panelMensajes = new JPanel();
+    	add(panelMensajes, BorderLayout.CENTER); // Usar BorderLayout.CENTER para más espacio
+    	panelMensajes.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
     	
     	JLabel lblNewLabel_2 = new JLabel("mensajes....");
-    	panel_2.add(lblNewLabel_2);
+    	panelMensajes.add(lblNewLabel_2);
 
     }
 

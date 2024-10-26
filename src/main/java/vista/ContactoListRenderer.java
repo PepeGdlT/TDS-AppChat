@@ -16,10 +16,11 @@ public class ContactoListRenderer extends DefaultListCellRenderer {
         if (value != null && value instanceof ContactoItem) {
             ContactoItem cont = (ContactoItem) value;
             if (isSelected) {
-                cont.setBackground(Color.PINK);
+                cont.setBackground(ElegantPalette.PANEL_BACKGROUND);
             } else {
-                cont.setBackground(list.getBackground());
+                cont.setBackground(ElegantPalette.BACKGROUND);
             }
+          
             return cont;
         } else {
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
