@@ -102,7 +102,11 @@
         <version>3.5.2</version> <!-- Usa la última versión disponible en el repositorio central de Maven -->
     </dependency>
     
-    
+    <dependency>
+	    <groupId>com.formdev</groupId>
+	    <artifactId>flatlaf-intellij-themes</artifactId>
+	    <version>3.5.2</version> <!-- Cambia a la última versión disponible -->
+	</dependency>
     
     
   </dependencies>

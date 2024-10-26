@@ -24,6 +24,7 @@ public class VentanaLogin extends JPanel {
 
         // Configurar el título de login
         JLabel loginTitle = new JLabel("Login", SwingConstants.CENTER);
+
         loginTitle.setBackground(Color.RED);
         loginTitle.setVerticalAlignment(SwingConstants.BOTTOM);
         loginTitle.setForeground(ElegantPalette.PRIMARY_TEXT);

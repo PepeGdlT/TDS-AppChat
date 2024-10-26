@@ -24,7 +24,7 @@ public class ContactoItem extends JPanel {
         // Establecer tamaño y color de fondo del panel
         setSize(new Dimension(300, 60));
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        fixSize(this, 300, 60);
+        fixSize(this, 250, 70);
         this.setBorder(new EmptyBorder(5, 10, 5, 10)); // Margen interno alrededor del panel
 
 

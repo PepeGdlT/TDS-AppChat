@@ -1,6 +1,10 @@
 package vista;
 
 import javax.swing.*;
+
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.intellijthemes.*;
+
 import java.awt.*;
 
 public class VentanaInicio {
@@ -12,7 +16,7 @@ public class VentanaInicio {
         EventQueue.invokeLater(() -> {
             try {
                 // Configuración de look and feel de FlatLaf
-                UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarculaLaf());
+            	 UIManager.setLookAndFeel(new FlatXcodeDarkIJTheme());
 
                 VentanaInicio window = new VentanaInicio();
                 window.frame.setVisible(true);
@@ -37,13 +41,7 @@ public class VentanaInicio {
         mainPanel.setBackground(Color.BLACK);
         frame.getContentPane().add(mainPanel);
 
-        // Añadir VentanaLogin al iniciar
-        
-        //VentanaLogin loginPanel = new VentanaLogin();
-        //loginPanel.setMainFrame(this);  // Pasar referencia de VentanaInicio a VentanaLogin
-        //mainPanel.add(loginPanel, BorderLayout.CENTER);
-		  
-        showMainWindow();
+        showLoginPanel();
         
         frame.setVisible(true);
     }
@@ -77,7 +75,8 @@ public class VentanaInicio {
         ContactoItem contacto3 = new ContactoItem("Contacto 3", "avatar.png", "Último mensaje de contacto 3");
         ContactoItem edumeva9 = new ContactoItem("Edu", "avatar.png", "Echate un lol va");
         ContactoItem jimmid = new ContactoItem("jimmid", "avatar.png", "Echate udsadn lol va");
-        ContactoItem jampota = new ContactoItem("jampo", "avatar.png", "Echate udsadsadsadn lol va");
+        ContactoItem jampota = new ContactoItem("jampo", "avatar.png", "Echate udsadsadsdsadsadasdsadsadadn lol va");
+
         
         // Agregar los contactos a la lista
         mainWindow.agregarContacto(contacto1);
@@ -86,6 +85,8 @@ public class VentanaInicio {
         mainWindow.agregarContacto(edumeva9);
         mainWindow.agregarContacto(jimmid);
         mainWindow.agregarContacto(jampota);
+		
+		
 		
 		mainWindow.setMainFrame(this);
 		mainPanel.add(mainWindow, BorderLayout.CENTER);

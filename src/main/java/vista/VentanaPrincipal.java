@@ -3,6 +3,8 @@ package vista;
 
 import java.awt.*;
 import javax.swing.*;
+import tds.BubbleText;
+import javax.swing.border.LineBorder;
 
 public class VentanaPrincipal extends JPanel {
 	
@@ -49,12 +51,42 @@ public class VentanaPrincipal extends JPanel {
     	panelListaContactos.add(scrollPane, BorderLayout.CENTER); // Asegúrate que ocupa todo el panel
     	
     	// Panel derecho (conversación, para más adelante)
-    	JPanel panelMensajes = new JPanel();
-    	add(panelMensajes, BorderLayout.CENTER); // Usar BorderLayout.CENTER para más espacio
-    	panelMensajes.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+    	JPanel chat = new JPanel();
+    	add(chat, BorderLayout.CENTER); // Usar BorderLayout.CENTER para más espacio
+    	chat.setLayout(new BoxLayout(chat,BoxLayout.Y_AXIS));
+    	chat.setBackground(ElegantPalette.BACKGROUND);
+    	chat.setSize(500,500); 
+    	chat.setMinimumSize(new Dimension(400,700)); 
+    	chat.setMaximumSize(new Dimension(400,700)); 
+    	chat.setPreferredSize(new Dimension(400,700)); 
     	
-    	JLabel lblNewLabel_2 = new JLabel("mensajes....");
-    	panelMensajes.add(lblNewLabel_2);
+
+    	JScrollPane chatScrollPane = new JScrollPane(chat);
+        chatScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        chatScrollPane.setPreferredSize(new Dimension(400, 700)); 
+        add(chatScrollPane, BorderLayout.CENTER); 
+        
+        
+        BubbleText burbuja; 
+        burbuja=new BubbleText(chat,"Hola grupo!!", Color.GREEN, "J.Ramón", BubbleText.SENT); 
+        chat.add(burbuja); 
+        
+        BubbleText burbuja1; 
+        burbuja1=new BubbleText(chat,"Hola grupo!!", Color.GREEN, "J.Ramón", BubbleText.SENT); 
+        chat.add(burbuja1); 
+        
+        BubbleText burbuja2; 
+        burbuja2=new BubbleText(chat,"Hola grupo!!", Color.GREEN, "J.Ramón", 1); 
+        chat.add(burbuja2); 
+        
+        BubbleText burbuja3; 
+        burbuja3=new BubbleText(chat,"Hola grupo!!", Color.GRAY, "J.Ramón", 1); 
+        chat.add(burbuja3); 
+    	
+
+        BubbleText burbujae=new BubbleText(chat, 20, Color.GREEN, "J.Ramón", BubbleText.SENT,18); 
+        chat.add(burbujae);
+        
 
     }
 
