@@ -1,61 +1,88 @@
 package modelo;
 
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 
 import com.toedter.calendar.JCalendar;
 
-public class Mensaje {
-
+public class Mensaje implements Comparable<Mensaje> {
+	private int codigo;
     private String texto;
-    private JCalendar fecha;
-    private String hora;
-    private String emisor;
-    private String receptor;
+    private int emoticono;
+    private LocalDateTime hora;
+    private Usuario emisor;
+    private Contacto receptor;
+    
 
-    public Mensaje(String texto, JCalendar fecha, String hora, String emisor, String receptor) {
-        this.texto  = texto;
-        this.fecha = fecha;
-        this.hora = hora;
-        this.emisor = emisor;
-        this.receptor = receptor;
-    }
-    public Mensaje(String texto, JCalendar fecha, String hora, String emisor, LinkedList<String> receptores) {
-        this.texto = texto;
-        this.fecha = fecha;
-        this.hora = hora;
-        this.emisor = emisor;
-    }
+	public Mensaje(String texto, LocalDateTime hora, Usuario emisor, Contacto receptor) {
+		this.texto = texto;
+		this.hora = hora;
+		this.setEmisor(emisor);
+		this.setReceptor(receptor);
+	}
 
-    public String getTexto() {
-        return texto;
-    }
+	public Mensaje(int emoticono, LocalDateTime hora, Usuario emisor, Contacto receptor) {
+		this.texto = "";
+		this.hora = hora;
+		this.emoticono = emoticono;
+		this.setEmisor(emisor);
+		this.setReceptor(receptor);
+	}
+	public Mensaje(String texto, int emoticono, LocalDateTime hora) {
+		this.texto = texto;
+		this.emoticono = emoticono;
+		this.hora = hora;
+	}
 
-    public JCalendar getFecha() {
-        return fecha;
-    }
+	// GETTERS
+		public String getTexto() {
+			return texto;
+		}
 
-    public String getHora() {
-        return hora;
-    }
+		public LocalDateTime getHora() {
+			return hora;
+		}
 
-    public String getEmisor() {
-        return emisor;
-    }
+		public int getEmoticono() {
+			return emoticono;
+		}
 
-    public String getReceptor() {
-        return receptor;
-    }
+		public Usuario getEmisor() {
+			return emisor;
+		}
 
-    @Override
-    public String toString() {
-        return "Mensaje{" +
-                "contenido='" + texto + '\'' +
-                ", fecha='" + fecha + '\'' +
-                ", hora='" + hora + '\'' +
-                ", emisor='" + emisor + '\'' +
-                ", receptor='" + receptor + '\'' +
-                '}';
-    }
+		public Contacto getReceptor() {
+			return receptor;
+		}
 
+		public int getCodigo() {
+			return codigo;
+		}
 
-}
+		
+		//SETTERS
+		
+		public void setCodigo(int codigo) {
+			this.codigo = codigo;
+		}
+
+		public void setReceptor(Contacto receptor) {
+			this.receptor = receptor;
+		}
+
+		public void setTexto(String texto) {
+			this.texto = texto;
+		}
+
+		public void setEmisor(Usuario emisor) {
+			this.emisor = emisor;
+		}
+
+		//COMPARATOR
+		
+		@Override
+		public int compareTo(Mensaje o) {
+			return hora.compareTo(o.hora);
+		}
+
+	}
