@@ -16,9 +16,9 @@ import java.awt.event.*;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 
-public class ContactoItem extends JPanel {
+public class ContactoVisor extends JPanel {
     
-    public ContactoItem(String nombre, String fotorurl, String ultimoMensaje) {
+    public ContactoVisor(String nombre, String fotorurl, String ultimoMensaje) {
 
     	
         // Establecer tamaño y color de fondo del panel

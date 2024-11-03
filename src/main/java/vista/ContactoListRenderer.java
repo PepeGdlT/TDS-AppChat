@@ -13,8 +13,8 @@ public class ContactoListRenderer extends DefaultListCellRenderer {
     public Component getListCellRendererComponent(JList<?> list, 
                     Object value, int index, boolean isSelected, 
                     boolean cellHasFocus) {
-        if (value != null && value instanceof ContactoItem) {
-            ContactoItem cont = (ContactoItem) value;
+        if (value != null && value instanceof ContactoVisor) {
+            ContactoVisor cont = (ContactoVisor) value;
             if (isSelected) {
                 cont.setBackground(ElegantPalette.PANEL_BACKGROUND);
             } else {

@@ -68,31 +68,21 @@ public class VentanaInicio {
 	public void showMainWindow() {
 		mainPanel.removeAll();
 		VentanaPrincipal mainWindow = new VentanaPrincipal();
-		
-		
-        ContactoItem contacto1 = new ContactoItem("Contacto 1", "avatar.png", "Último mensaje de contacto 1");
-        ContactoItem contacto2 = new ContactoItem("Contacto 2", "avatar.png", "Último mensaje de contacto 2");
-        ContactoItem contacto3 = new ContactoItem("Contacto 3", "avatar.png", "Último mensaje de contacto 3");
-        ContactoItem edumeva9 = new ContactoItem("Edu", "avatar.png", "Echate un lol va");
-        ContactoItem jimmid = new ContactoItem("jimmid", "avatar.png", "Echate udsadn lol va");
-        ContactoItem jampota = new ContactoItem("jampo", "avatar.png", "Echate udsadsadsdsadsadasdsadsadadn lol va");
-
-        
-        // Agregar los contactos a la lista
-        mainWindow.agregarContacto(contacto1);
-        mainWindow.agregarContacto(contacto2);
-        mainWindow.agregarContacto(contacto3);
-        mainWindow.agregarContacto(edumeva9);
-        mainWindow.agregarContacto(jimmid);
-        mainWindow.agregarContacto(jampota);
-		
-		
-		
 		mainWindow.setMainFrame(this);
 		mainPanel.add(mainWindow, BorderLayout.CENTER);
 		mainPanel.revalidate();
 		mainPanel.repaint();
 	}
-    
-    
+	
+	public void showContactPanel() {
+        mainPanel.removeAll();
+        VentanaContactos contactPanel = new VentanaContactos();
+        contactPanel.setMainFrame(this);
+        mainPanel.add(contactPanel, BorderLayout.CENTER);
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
 }
+    
+    
+

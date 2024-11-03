@@ -3,6 +3,8 @@ package vista;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -84,19 +86,11 @@ public class VentanaLogin extends JPanel {
 
         // Configurar el botón de login
         JButton loginButton = new JButton("Login");
-        loginButton.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-        		if (mainFrame != null) {
-        			
-        			if(usernameField.getText().equals("admin") && passwordField.getText().equals("admin")) {
-        				mainFrame.showMainWindow();
-        				}else {
-        					JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
-        				}
-        		}
-        			
-        	}
+        loginButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                iniciarSesion();
+            }
         });
         loginButton.setFont(new Font("Tahoma", Font.BOLD, 11));
         loginButton.setBackground(ElegantPalette.ACTION_BUTTON);
@@ -185,4 +179,22 @@ public class VentanaLogin extends JPanel {
             isPasswordVisible = true;
         }
     }
+    
+    private void iniciarSesion() {
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword());
+        
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Por favor, complete ambos campos", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if ((username.equals("admin") && password.equals("admin")) || 
+            (username.equals("Telefono") && password.equals("Enter your password"))) {
+            mainFrame.showMainWindow();
+        } else {
+            JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 }

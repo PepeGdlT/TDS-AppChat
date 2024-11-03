@@ -1,115 +1,96 @@
 package vista;
 
-
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.*;
-import tds.BubbleText;
-import javax.swing.border.LineBorder;
 
 public class VentanaPrincipal extends JPanel {
 	
-    private VentanaInicio mainFrame; // Referencia a VentanaInicio
-    private JList<ContactoItem> listaContactos; // Lista de contactos
-    private DefaultListModel<ContactoItem> modeloContactos; // Modelo de la lista
-    
+    private VentanaInicio mainFrame; // Reference to VentanaInicio
+    private JList<ContactoVisor> listaContactos; // List of contacts
+    private DefaultListModel<ContactoVisor> modeloContactos; // List model
+
     public VentanaPrincipal() {
-    	setLayout(new BorderLayout(0, 0));
-    	
-    	// Panel superior (barra de botones)
-    	JPanel panelOpciones = new JPanel();
-    	add(panelOpciones, BorderLayout.NORTH);
-    	
-    	JLabel lblNewLabel = new JLabel("contacto o telefono");
-    	panelOpciones.add(lblNewLabel);
-    	
-    	JButton btnNewButton = new JButton("buscar");
-    	panelOpciones.add(btnNewButton);
-    	
-    	JButton btnNewButton_1 = new JButton("contactos");
-    	panelOpciones.add(btnNewButton_1);
-    	
-    	JButton btnNewButton_2 = new JButton("premium");
-    	panelOpciones.add(btnNewButton_2);
-    	
-    	JLabel lblNewLabel_1 = new JLabel("$usuario_actual");
-    	panelOpciones.add(lblNewLabel_1);
-    	
-    	// Panel izquierdo (lista de contactos)
-    	JPanel panelListaContactos = new JPanel();
-    	add(panelListaContactos, BorderLayout.WEST);
-    	panelListaContactos.setLayout(new BorderLayout()); // Cambiar layout para mejor organización
-    	
-    	// Modelo para la lista de contactos
-    	modeloContactos = new DefaultListModel<>();
-    	
-    	// Crear la lista de contactos y aplicar el renderer personalizado
-    	listaContactos = new JList<>(modeloContactos);
-    	listaContactos.setCellRenderer(new ContactoListRenderer());
-    	
-    	// Agregar la lista de contactos a un JScrollPane para que sea scrollable
-    	JScrollPane scrollPane = new JScrollPane(listaContactos);
-    	panelListaContactos.add(scrollPane, BorderLayout.CENTER); // Asegúrate que ocupa todo el panel
-    	
-    	// Panel derecho (conversación, para más adelante)
-    	JPanel chat = new JPanel();
-    	add(chat, BorderLayout.CENTER); // Usar BorderLayout.CENTER para más espacio
-    	chat.setLayout(new BoxLayout(chat,BoxLayout.Y_AXIS));
-    	chat.setBackground(ElegantPalette.BACKGROUND);
-    	chat.setSize(500,500); 
-    	chat.setMinimumSize(new Dimension(400,700)); 
-    	chat.setMaximumSize(new Dimension(400,700)); 
-    	chat.setPreferredSize(new Dimension(400,700)); 
-    	
+        setLayout(new BorderLayout(0, 0));
+        
+        // Initialize panels
+        JPanel panelOpciones = createTopPanel();
+        JPanel panelListaContactos = createLeftPanel();
+        JScrollPane chatScrollPane = createChatPanel();
+        
+        // Add panels to the main panel
+        add(panelOpciones, BorderLayout.NORTH);
+        add(panelListaContactos, BorderLayout.WEST);
+        add(chatScrollPane, BorderLayout.CENTER);
+    }
 
-    	JScrollPane chatScrollPane = new JScrollPane(chat);
+    private JPanel createTopPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout());
+
+        JLabel lblSearch = new JLabel("Contacto o Teléfono:");
+        panel.add(lblSearch);
+
+        JButton searchButton = new JButton("Buscar");
+        // Add action listener for search button (functionality to be implemented)
+        searchButton.addActionListener(e -> performSearch());
+        panel.add(searchButton);
+
+        JButton contactsButton = new JButton("Contactos");
+        contactsButton.addActionListener(e -> mainFrame.showContactPanel());
+        panel.add(contactsButton);
+
+        JButton premiumButton = new JButton("Premium");
+        // Add action listener for premium button (functionality to be implemented)
+        premiumButton.addActionListener(e -> handlePremiumAction());
+        panel.add(premiumButton);
+
+        JLabel lblUser = new JLabel("Usuario: $usuario_actual");
+        panel.add(lblUser);
+
+        return panel;
+    }
+
+    private JPanel createLeftPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        modeloContactos = new DefaultListModel<>();
+        listaContactos = new JList<>(modeloContactos);
+        listaContactos.setCellRenderer(new ContactoListRenderer());
+
+        // Add the list of contacts to a JScrollPane to make it scrollable
+        JScrollPane scrollPane = new JScrollPane(listaContactos);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JScrollPane createChatPanel() {
+        JPanel chatPanel = new JPanel();
+        chatPanel.setLayout(new BoxLayout(chatPanel, BoxLayout.Y_AXIS));
+        chatPanel.setBackground(ElegantPalette.BACKGROUND);
+        
+        // Configure chat panel sizes
+        chatPanel.setPreferredSize(new Dimension(400, 700));
+
+        JScrollPane chatScrollPane = new JScrollPane(chatPanel);
         chatScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        chatScrollPane.setPreferredSize(new Dimension(400, 700)); 
-        add(chatScrollPane, BorderLayout.CENTER); 
         
-        
-        BubbleText burbuja; 
-        burbuja=new BubbleText(chat,"Hola grupo!!", Color.GREEN, "J.Ramón", BubbleText.SENT); 
-        chat.add(burbuja); 
-        
-        BubbleText burbuja1; 
-        burbuja1=new BubbleText(chat,"Hola grupo!!", Color.GREEN, "J.Ramón", BubbleText.SENT); 
-        chat.add(burbuja1); 
-        
-        BubbleText burbuja2; 
-        burbuja2=new BubbleText(chat,"Hola grupo!!", Color.GREEN, "J.Ramón", 1); 
-        chat.add(burbuja2); 
-        
-        BubbleText burbuja3; 
-        burbuja3=new BubbleText(chat,"Hola grupo!!", Color.GRAY, "J.Ramón", 1); 
-        chat.add(burbuja3); 
-    	
-
-        BubbleText burbujae=new BubbleText(chat, 20, Color.GREEN, "J.Ramón", BubbleText.SENT,18); 
-        chat.add(burbujae);
-        
-
+        return chatScrollPane;
     }
 
-    
-    
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// 	      			ESTO FALTA AL CONTROLADOR 													//
-//////////////////////////////////////////////////////////////////////////////////////////////////    
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    
-    
-    //TODO:  Controlador
-    
-    
-    // Método para agregar un contacto a la lista
-    public void agregarContacto(ContactoItem contacto) {
-    	modeloContactos.addElement(contacto);
+    private void performSearch() {
+        // Implement search logic here
+        System.out.println("Search button clicked!");
     }
-	
+
+    private void handlePremiumAction() {
+        // Implement premium feature logic here
+        System.out.println("Premium button clicked!");
+    }
+
     public void setMainFrame(VentanaInicio mainFrame) {
         this.mainFrame = mainFrame;
     }
