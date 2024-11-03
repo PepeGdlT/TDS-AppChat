@@ -163,10 +163,11 @@ public class Usuario {
 		gruposAdmin.add(g);
 	}
 
-
-
-
-
+	public void setCodigo(int id) {
+		this.codigo = id;
+    }
+		
+	
 
 
 
