@@ -102,13 +102,13 @@ public class VentanaRegister extends JPanel {
         setupPasswordField(confirmPasswordField);
 
         // Show Password Button
-        showPasswordButton = new JButton(IconsResource.getIconHide());
+        showPasswordButton = new JButton(IconsResource.EYE_SHOW);
         showPasswordButton.setPreferredSize(new Dimension(32, 32));
         showPasswordButton.setBackground(Color.WHITE);
         showPasswordButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                togglePasswordVisibility(IconsResource.getIconHide(), IconsResource.getIconShow());
+                togglePasswordVisibility(IconsResource.EYE_HIDE, IconsResource.EYE_SHOW);
             }
         });
 

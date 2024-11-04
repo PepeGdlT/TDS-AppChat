@@ -4,22 +4,11 @@ import javax.swing.*;
 
 public class IconsResource {
 
-    private static final ImageIcon iconShow = new ImageIcon(IconsResource.class.getResource("/eye_open.png"));
-    private static final ImageIcon iconHide = new ImageIcon(IconsResource.class.getResource("/eye_closed.png"));
-    private static final ImageIcon avatar = new ImageIcon(IconsResource.class.getResource("/avatar.png"));
-
-    public static ImageIcon getIconShow() {
-        return iconShow;
-    }
-
-    public static ImageIcon getIconHide() {
-        return iconHide;
-    }
-    
-    public static ImageIcon getAvatar() {
-        return avatar;
-    }
-    
+    public static final ImageIcon EYE_SHOW = new ImageIcon(IconsResource.class.getResource("/eye_open.png"));
+    public static final ImageIcon EYE_HIDE = new ImageIcon(IconsResource.class.getResource("/eye_closed.png"));
+    public static final ImageIcon AVATAR = new ImageIcon(IconsResource.class.getResource("/avatar.png"));
+    public static final ImageIcon ICON_SEND = new ImageIcon(IconsResource.class.getResource("/send.png"));
+    public static final ImageIcon GROUP_ICON = new ImageIcon(IconsResource.class.getResource("/grupo.png"));
     
 
     

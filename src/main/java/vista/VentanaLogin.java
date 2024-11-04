@@ -59,7 +59,7 @@ public class VentanaLogin extends JPanel {
 
         // Botón de visibilidad de contraseña
 
-        showPasswordButton = new JButton(IconsResource.getIconShow());
+        showPasswordButton = new JButton(IconsResource.EYE_SHOW);
         showPasswordButton.setBorderPainted(false);
         showPasswordButton.setForeground(new Color(255, 255, 255));
         showPasswordButton.setPreferredSize(new Dimension(32, 32));
@@ -67,7 +67,7 @@ public class VentanaLogin extends JPanel {
         showPasswordButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                togglePasswordVisibility(IconsResource.getIconHide(), IconsResource.getIconShow());
+                togglePasswordVisibility(IconsResource.EYE_HIDE, IconsResource.EYE_SHOW);
             }
         });
 

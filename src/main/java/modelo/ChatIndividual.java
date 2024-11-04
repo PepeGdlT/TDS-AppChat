@@ -8,26 +8,25 @@ import java.util.Optional;
 import javax.swing.ImageIcon;
 
 public class ChatIndividual extends Contacto {
-	// Properties.
-	private int movil;
+	private int numeroTelefono;
 	private Usuario usuario;
 
 	// Constructor.
-	public ChatIndividual(String nombre, int movil, Usuario usuario) {
+	public ChatIndividual(String nombre, int numeroTelefono, Usuario usuario) {
 		super(nombre);
-		this.movil = movil;
+		this.numeroTelefono = numeroTelefono;
 		this.usuario = usuario;
 	}
 
-	public ChatIndividual(String nombre, LinkedList<Mensaje> mensajes, int movil, Usuario usuario) {
+	public ChatIndividual(String nombre, int numeroTelefono, LinkedList<Mensaje> mensajes, Usuario usuario) {
 		super(nombre, mensajes);
-		this.movil = movil;
+		this.numeroTelefono = numeroTelefono;
 		this.usuario = usuario;
 	}
 
 	// Getters.
-	public int getMovil() {
-		return movil;
+	public int getNumeroTelefono() {
+		return numeroTelefono;
 	}
 
 	public Usuario getUsuario() {
@@ -89,7 +88,7 @@ public class ChatIndividual extends Contacto {
 	public int hashCode() {
 		final int prime = 31; // cambiar
 		int result = 1;
-		result = prime * result + movil;
+		result = prime * result + numeroTelefono;
 		return result;
 	}
 
@@ -102,7 +101,7 @@ public class ChatIndividual extends Contacto {
 		if (getClass() != obj.getClass())
 			return false;
 		ChatIndividual other = (ChatIndividual) obj;
-		if (movil != other.movil)
+		if (numeroTelefono != other.numeroTelefono)
 			return false;
 		return true;
 	}

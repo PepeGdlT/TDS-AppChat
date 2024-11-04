@@ -1,16 +1,21 @@
 package persistencia;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.persistence.Entity;
+
+import org.h2.engine.User;
 
 import com.toedter.calendar.JCalendar;
 
 import beans.Entidad;
 import beans.Propiedad;
+import modelo.ChatIndividual;
 import modelo.Contacto;
 import modelo.Grupo;
 import modelo.Usuario;
@@ -18,7 +23,6 @@ import tds.driver.FactoriaServicioPersistencia;
 import tds.driver.ServicioPersistencia;
 
 
-	// METER POOLDAO	
 
 public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 	
@@ -51,6 +55,12 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 		}
 		if (existe) return;
 		
+		
+		//se registra si no existe grupo o contacto
+		//TODO: registrarSiNoExisteContacto
+		//TODO: registrarSiNoExisteGrupo
+		
+		
 		eUsuario = new Entidad();
 		eUsuario.setNombre("usuario");
 		eUsuario.setPropiedades(new ArrayList<Propiedad>(
@@ -62,10 +72,11 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
                         new Propiedad("saludo", usuario.getSaludo()),
                         new Propiedad("fotoPerfilURL", usuario.getFotoPerfilURL()),
                         new Propiedad("fechaNacimiento", usuario.getFechaNacimiento().toString()),
-                        new Propiedad("contactos", usuario.getContactos(),toString()),
-                        new Propiedad("gruposAdmin", usuario.getGruposAdmin().toString()),
-                        new Propiedad("Premium", usuario.isPremium().toString()))		
-				));
+                        new Propiedad("contactos", obtenerCodigosChatIndividual(usuario.getContactos())),
+                        new Propiedad("gruposAdmin", obtenerCodigosGruposAdmin(usuario.getGruposAdmin())),
+                        new Propiedad("Premium", String.valueOf(usuario.isPremium())),
+                        new Propiedad("grupos", obtenerCodigosGrupo(usuario.getContactos()))
+					    )));
 		
 		PoolDAO.getUnicaInstancia().addObjeto(usuario.getCodigo(), usuario);
 
@@ -78,19 +89,75 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 	}
 
 	public void borrarUsuario(Usuario usuario) {
+		
 		Entidad eUsuario = servPersistencia.recuperarEntidad(usuario.getCodigo());
+		
+		
+		AdaptadorChatIndividualTDS adaptadorChatIndividual = AdaptadorChatIndividualTDS.getUnicaInstancia();
+		AdaptadorGrupoTDS adaptadorGrupo = AdaptadorGrupoTDS.getUnicaInstancia();
+	
+		for (Contacto contacto : usuario.getContactos()) {
+			if (contacto instanceof ChatIndividual) {
+				adaptadorChatIndividual.borrarContacto((ChatIndividual) contacto);
+			}
+			else {
+				adaptadorGrupo.borrarGrupo((Grupo) contacto);
+			}
+		}
+		
+		for (Grupo grupoAdmin : usuario.getGruposAdmin()) {
+			adaptadorGrupo.borrarGrupo(grupoAdmin);
+		}
+		
+		
 		servPersistencia.borrarEntidad(eUsuario);
+		
+		// Si esta en el Pool tambien se borra del pool
+		if (PoolDAO.getUnicaInstancia().contiene(usuario.getCodigo())) {
+			PoolDAO.getUnicaInstancia().removeObjeto(usuario.getCodigo());
+		}
+		
 	}
 
 	public void modificarUsuario(Usuario usuario) {
 		Entidad eUsuario = servPersistencia.recuperarEntidad(usuario.getCodigo());
 		
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "nombreCompleto");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "nombreCompleto",
+				usuario.getNombreCompleto());
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "numeroTelefono");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "numeroTelefono",
+				String.valueOf(usuario.getNumeroTelefono()));
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "email");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "email",
+				usuario.getEmail());
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "contrasena");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "contrasena", 
+				usuario.getContrasena());
 		servPersistencia.eliminarPropiedadEntidad(eUsuario, "saludo");
-        servPersistencia.anadirPropiedadEntidad(eUsuario, "saludo", usuario.getSaludo());
-        servPersistencia.eliminarPropiedadEntidad(eUsuario, "premium");
-        servPersistencia.anadirPropiedadEntidad(eUsuario, "premium", String.valueOf(usuario.isPremium()));
-        servPersistencia.eliminarPropiedadEntidad(eUsuario, "fotoPerfilURL");
-        servPersistencia.anadirPropiedadEntidad(eUsuario, "fotoPerfilURL", usuario.getFotoPerfilURL());
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "saludo",
+				usuario.getSaludo());
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "fotoPerfilURL");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "fotoPerfilURL",
+				usuario.getFotoPerfilURL());
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "fechaNacimiento");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "fechaNacimiento",
+				usuario.getFechaNacimiento().toString());
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "contactos");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "contactos", 
+				obtenerCodigosChatIndividual(usuario.getContactos()));
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "gruposAdmin");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "gruposAdmin",
+				obtenerCodigosGruposAdmin(usuario.getGruposAdmin()));
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "Premium");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "Premium",
+				String.valueOf(usuario.isPremium()));
+		servPersistencia.eliminarPropiedadEntidad(eUsuario, "grupos");
+		servPersistencia.anadirPropiedadEntidad(eUsuario, "grupos",
+				obtenerCodigosGrupo(usuario.getContactos()));
+		
+		
+		
 	}
 
 	public Usuario recuperarUsuario(int codigo) {
@@ -99,7 +166,7 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 			return (Usuario) PoolDAO.getUnicaInstancia().getObjeto(codigo);
 		}
 		
-		
+
 		
 		Entidad eUsuario;
 		String nombreCompleto;
@@ -108,29 +175,38 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 		String contrasena;
 		String saludo;
 		String fotoPerfilURL;
-		JCalendar fechaNacimiento;
-		LinkedList<Contacto> contactos;
-		LinkedList<Grupo> gruposAdmin;
+		LocalDate fechaNacimiento;
+		List<ChatIndividual> contactos;
+		List<Grupo> gruposAdmin;
 		boolean Premium;
 		
 		eUsuario = servPersistencia.recuperarEntidad(codigo);
+		
+		
 		nombreCompleto = servPersistencia.recuperarPropiedadEntidad(eUsuario, "nombreCompleto");
 		numeroTelefono = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eUsuario, "numeroTelefono"));
 		email = servPersistencia.recuperarPropiedadEntidad(eUsuario, "email");
 		contrasena = servPersistencia.recuperarPropiedadEntidad(eUsuario, "contrasena");
 		saludo = servPersistencia.recuperarPropiedadEntidad(eUsuario, "saludo");
 		fotoPerfilURL = servPersistencia.recuperarPropiedadEntidad(eUsuario, "fotoPerfilURL");
-		fechaNacimiento = JCalendar.parse(servPersistencia.recuperarPropiedadEntidad(eUsuario, "fechaNacimiento"));
-		contactos = servPersistencia.recuperarPropiedadEntidad(eUsuario, "contactos");
-		gruposAdmin = servPersistencia.recuperarPropiedadEntidad(eUsuario, "gruposAdmin");
+		fechaNacimiento = LocalDate.parse(servPersistencia.recuperarPropiedadEntidad(eUsuario, "fechaNacimiento"));
 		Premium = Boolean.parseBoolean(servPersistencia.recuperarPropiedadEntidad(eUsuario, "Premium"));
 		
-		Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimiento);
-		usuario.setContactos(contactos);
-		usuario.setGruposAdmin(gruposAdmin);
-		usuario.setPremium(Premium);
 		
+		
+		Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimiento);
+		usuario.setPremium(Premium);
 		usuario.setCodigo(codigo);
+		
+		
+		PoolDAO.getUnicaInstancia().addObjeto(codigo, usuario);
+
+		gruposAdmin = obtenerGruposDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eUsuario, "gruposadmin"));
+		for (Grupo g : gruposAdmin) usuario.addGrupoAdmin(g);
+		
+		contactos = obtenerContactosDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eUsuario, "contactos"));
+		for (ChatIndividual c : contactos) usuario.addContacto(c);
+		
 		return usuario;
 		
 	}
@@ -143,5 +219,59 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
         }
         return usuarios;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	private List<Grupo> obtenerGruposDesdeCodigos(String codigos) {
+		List<Grupo> grupos = new LinkedList<>();
+		StringTokenizer strTok = new StringTokenizer(codigos, " ");
+		AdaptadorGrupoTDS adaptadorG = AdaptadorGrupoTDS.getInstancia();
+		while (strTok.hasMoreTokens()) {
+			grupos.add(adaptadorG.recuperarGrupo(Integer.valueOf((String) strTok.nextElement())));
+		}
+		return grupos;
+	}
+
+	private List<ChatIndividual> obtenerContactosDesdeCodigos(String codigos) {
+		List<ChatIndividual> contactos = new LinkedList<>();
+		StringTokenizer strTok = new StringTokenizer(codigos, " ");
+		AdaptadorChatIndividualTDS adaptadorC = AdaptadorChatIndividualTDS.getInstancia();
+		while (strTok.hasMoreTokens()) {
+			contactos.add(adaptadorC.recuperarContacto(Integer.valueOf((String) strTok.nextElement())));
+		}
+		return contactos;
+	}
+	
+	// -----------------------------------------------------------------------------------------
+	// OBTENCION DE CODIGOS DE CONTACTOS Y GRUPOS
+	// -----------------------------------------------------------------------------------------
+	
+	
+	private String obtenerCodigosGrupo(List<Contacto> grupos) {
+		return grupos.stream().filter(c -> c instanceof Grupo) 											
+				.map(c -> String.valueOf(c.getCodigo())).reduce("", (l, c) -> l + c + " ")																		
+				.trim();
+	}
+	
+	
+	private String obtenerCodigosGruposAdmin(List<Grupo> gruposAdmin) {
+		String grupos = "";
+		for (Grupo grupo : gruposAdmin) {
+			grupos += grupo.getCodigo() + " ";
+		}
+		return grupos.trim();
+	}
+	
+	private String obtenerCodigosChatIndividual(List<Contacto> contactos) {
+		return contactos.stream().filter(c -> c instanceof ChatIndividual) 
+				.map(c -> String.valueOf(c.getCodigo())).reduce("", (l, c) -> l + c + " ") 																		
+				.trim();
+	}
+	
 	
 }

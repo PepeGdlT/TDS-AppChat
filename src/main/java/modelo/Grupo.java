@@ -1,55 +1,94 @@
 package modelo;
 
+
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class Grupo {
+import javax.swing.ImageIcon;
 
-    public String nombreGrupo;
-    public String descripcion;
-    public String fotoGrupoURL;
+import vista.IconsResource;
+
+public class Grupo extends Contacto {
+
+	private Usuario administrador;
     public List<ChatIndividual> listaMiembros;
 
-    public Grupo(String nombreGrupo, String descripcion, String fotoGrupoURL) {
-        this.nombreGrupo = nombreGrupo;
-        this.descripcion = descripcion;
-        this.fotoGrupoURL = fotoGrupoURL;
+    // ----------------------------------------------------------------------------
+    // Constructor
+    // ----------------------------------------------------------------------------
+    
+    public Grupo(String nombreGrupo, String descripcion, Usuario administrador) {
+    	super(nombreGrupo);
+    	this.administrador = administrador;
         this.listaMiembros = new LinkedList<ChatIndividual>();
     }
 
+	public Grupo(String nombreGrupo, List<Mensaje> mensajes, List<ChatIndividual> listaMiembros, Usuario administrador) {
+		super(nombreGrupo, mensajes);
+		this.administrador = administrador;
+		this.listaMiembros = new LinkedList<ChatIndividual>();
+	}
 
     
+	// ----------------------------------------------------------------------------
+	// Getters
+	// ----------------------------------------------------------------------------
 
-    public void cambiarFotoGrupo(String fotoGrupoURL){
-        this.fotoGrupoURL = fotoGrupoURL;
-    }
 
-    public void cambiarDescripcion(String descripcion){
-        this.descripcion = descripcion;
-    }
+	public List<ChatIndividual> getListaMiembros() {
+		return listaMiembros;
+	}
 
-    public String getNombreGrupo() {
-        return nombreGrupo;
+	public String getnombreGrupo() {
+        return super.getNombre();
     }
+	
+	public void setListaMiembros(List<ChatIndividual> listaMiembros) {
+		this.listaMiembros = listaMiembros;
+	}
 
-    public String getDescripcion() {
-        return descripcion;
-    }
-    public List<ChatIndividual> getListaMiembros() {
-        return listaMiembros;
-    }
-	public void setListaMiembros(List<ChatIndividual> contactos) {
-		this.listaMiembros = contactos;
+	public void setAdministrador(Usuario administrador) {
+		this.administrador = administrador;
 	}
 	
+	public Usuario getAdministrador() {
+		return administrador;
+	}
 	
+
+	@Override
+	public List<Mensaje> getMensajesRecibidos(Optional<Usuario> emptyOpt) {
+		return this.listaMiembros.stream().flatMap(c -> c.getUsuario().getContactos().stream())
+				.filter(c -> c instanceof Grupo).map(c -> (Grupo) c).filter(g -> this.equals(g))
+				.flatMap(g -> g.getMensajesEnviados().stream()).collect(Collectors.toList());
+	}
+
+	public List<Mensaje> removeMensajesRecibidos() {
+		List<Mensaje> recibidos = getMensajesRecibidos(Optional.empty());
+		List<Mensaje> copia = new LinkedList<Mensaje>(recibidos);
+		recibidos.clear();
+		return copia;
+	}
+
+	@Override
+	public String getFoto() {
+		ImageIcon imagen =  IconsResource.GROUP_ICON;
+		imagen.setDescription((IconsResource.GROUP_ICON).toString()); ;
+		return imagen.getDescription();
+	}
+	
+	// ----------------------------------------------------------------------------
 	// HashCode e Equals
+	// ----------------------------------------------------------------------------
+
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
+		final int prime = 73;
 		int result = 1;
-		result = prime * result + ((getNombreGrupo() == null) ? 0 : getNombreGrupo().hashCode());
+		result = prime * result + ((getnombreGrupo() == null) ? 0 : getnombreGrupo().hashCode());
 		return result;
 	}
 
@@ -61,12 +100,16 @@ public class Grupo {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Grupo other = (Grupo) obj;
-		if (getNombreGrupo() == null) {
-			if (other.getNombreGrupo() != null)
+		Grupo otro = (Grupo) obj;
+		if (getnombreGrupo() == null) {
+			if (otro.getnombreGrupo() != null)
 				return false;
-		} else if (!getNombreGrupo().equals(other.getNombreGrupo()))
+		} else if (!getnombreGrupo().equals(otro.getnombreGrupo()))
 			return false;
 		return true;
 	}
+
+
+
+
 }

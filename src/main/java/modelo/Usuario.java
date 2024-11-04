@@ -1,10 +1,11 @@
 package modelo;
 
-import com.toedter.calendar.JCalendar;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
+
+
 
 
 public class Usuario {
@@ -18,12 +19,12 @@ public class Usuario {
     public String contrasena;
     public String saludo;
     public String fotoPerfilURL;
-    public JCalendar fechaNacimiento;
+    public LocalDate fechaNacimiento;
     public List<Contacto> contactos;
     private List<Grupo> gruposAdmin;
     public boolean Premium;
 
-    public Usuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String saludo, String fotoPerfilURL, JCalendar fechaNacimiento) {
+    public Usuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String saludo, String fotoPerfilURL, LocalDate fechaNacimiento) {
         this.nombreCompleto = nombreCompleto;
         this.numeroTelefono = numeroTelefono;
         this.email = email;
@@ -34,6 +35,19 @@ public class Usuario {
         this.contactos = new LinkedList<Contacto>();
         this.Premium = false; 
     }
+    
+    public Usuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String fotoPerfilURL, LocalDate fechaNacimiento) {
+        this.nombreCompleto = nombreCompleto;
+        this.numeroTelefono = numeroTelefono;
+        this.email = email;
+        this.contrasena = contrasena;
+        this.saludo = SALUDO;
+        this.fotoPerfilURL = fotoPerfilURL;
+        this.fechaNacimiento = fechaNacimiento;
+        this.contactos = new LinkedList<Contacto>();
+        this.Premium = false; 
+    }
+    
 
 	public int getCodigo() {
 		return codigo;
@@ -111,13 +125,13 @@ public class Usuario {
 
 
 
-	public JCalendar getFechaNacimiento() {
+	public LocalDate getFechaNacimiento() {
 		return fechaNacimiento;
 	}
 
 
 
-	public void setFechaNacimiento(JCalendar fechaNacimiento) {
+	public void setFechaNacimiento(LocalDate fechaNacimiento) {
 		this.fechaNacimiento = fechaNacimiento;
 	}
 
@@ -162,6 +176,15 @@ public class Usuario {
 	public void addGrupoAdmin(Grupo g) {
 		gruposAdmin.add(g);
 	}
+	
+	public void removeGrupoAdmin(Grupo g) {
+		gruposAdmin.remove(g);
+	}
+	
+	public void addContacto(ChatIndividual c) {
+		contactos.add(c);
+	}
+
 
 	public void setCodigo(int id) {
 		this.codigo = id;
