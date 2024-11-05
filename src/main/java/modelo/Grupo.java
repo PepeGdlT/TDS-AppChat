@@ -13,22 +13,22 @@ import vista.IconsResource;
 public class Grupo extends Contacto {
 
 	private Usuario administrador;
-    public List<ChatIndividual> listaMiembros;
+    public List<ChatIndividual> miembros;
 
     // ----------------------------------------------------------------------------
     // Constructor
     // ----------------------------------------------------------------------------
     
-    public Grupo(String nombreGrupo, String descripcion, Usuario administrador) {
+    public Grupo(String nombreGrupo, Usuario administrador) {
     	super(nombreGrupo);
     	this.administrador = administrador;
-        this.listaMiembros = new LinkedList<ChatIndividual>();
+        this.miembros = new LinkedList<ChatIndividual>();
     }
 
 	public Grupo(String nombreGrupo, List<Mensaje> mensajes, List<ChatIndividual> listaMiembros, Usuario administrador) {
 		super(nombreGrupo, mensajes);
 		this.administrador = administrador;
-		this.listaMiembros = new LinkedList<ChatIndividual>();
+		this.miembros = new LinkedList<ChatIndividual>();
 	}
 
     
@@ -38,7 +38,7 @@ public class Grupo extends Contacto {
 
 
 	public List<ChatIndividual> getListaMiembros() {
-		return listaMiembros;
+		return miembros;
 	}
 
 	public String getnombreGrupo() {
@@ -46,7 +46,7 @@ public class Grupo extends Contacto {
     }
 	
 	public void setListaMiembros(List<ChatIndividual> listaMiembros) {
-		this.listaMiembros = listaMiembros;
+		this.miembros = listaMiembros;
 	}
 
 	public void setAdministrador(Usuario administrador) {
@@ -60,7 +60,7 @@ public class Grupo extends Contacto {
 
 	@Override
 	public List<Mensaje> getMensajesRecibidos(Optional<Usuario> emptyOpt) {
-		return this.listaMiembros.stream().flatMap(c -> c.getUsuario().getContactos().stream())
+		return this.miembros.stream().flatMap(c -> c.getUsuario().getContactos().stream())
 				.filter(c -> c instanceof Grupo).map(c -> (Grupo) c).filter(g -> this.equals(g))
 				.flatMap(g -> g.getMensajesEnviados().stream()).collect(Collectors.toList());
 	}
@@ -78,6 +78,13 @@ public class Grupo extends Contacto {
 		imagen.setDescription((IconsResource.GROUP_ICON).toString()); ;
 		return imagen.getDescription();
 	}
+	
+	
+	public void addMiembro(ChatIndividual chat) {
+		miembros.add(chat);
+	}
+
+	
 	
 	// ----------------------------------------------------------------------------
 	// HashCode e Equals

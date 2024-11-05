@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import beans.Entidad;
 import beans.Propiedad;
@@ -12,8 +13,6 @@ import modelo.Mensaje;
 import modelo.Usuario;
 import tds.driver.FactoriaServicioPersistencia;
 import tds.driver.ServicioPersistencia;
-import umu.tds.apps.AppChat.Message;
-import umu.tds.apps.AppChat.User;
 
 public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
 
@@ -22,7 +21,7 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
 	private static AdaptadorChatIndividualTDS unicaInstancia = null;
 	private static ServicioPersistencia servPersistencia;
 	
-	
+	// Singleton
 	public static AdaptadorChatIndividualTDS getUnicaInstancia() {
 		if (unicaInstancia == null) {
 			unicaInstancia = new AdaptadorChatIndividualTDS();
@@ -34,6 +33,11 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
 		servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
 	}
 	
+	// -----------------------------------------------------------------------------------------
+	// METODOS DE PERSISTENCIA
+	// -----------------------------------------------------------------------------------------
+	
+	
 	@Override
 	public void registrarChatIndividual(ChatIndividual chat) {
 		Entidad eChat = null;
@@ -44,6 +48,11 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
 			existe = false;
 		}
 		if (existe) return;
+		
+		
+		noMensajes(chat.getMensajesEnviados());
+		noUser(chat.getUsuario());
+		
 		
 		eChat = new Entidad();
 		eChat.setNombre("chat");
@@ -70,7 +79,7 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
 		
 		Entidad eChat = servPersistencia.recuperarEntidad(chat.getCodigo());
 		
-		AdaptadorMensajeTDS adaptadorMensaje = AdaptadorMensajeTDS.getInstancia();
+		AdaptadorMensajeTDS adaptadorMensaje = AdaptadorMensajeTDS.getUnicaInstancia();
 		for (Mensaje mensaje : chat.getMensajesEnviados()) {
 			adaptadorMensaje.borrarMensaje(mensaje);
 		}
@@ -125,7 +134,7 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
 		
 		PoolDAO.getUnicaInstancia().addObjeto(codigo, chat);
 		
-		LinkedList<Mensaje> mensajes = obtenerMensajesDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eChat, "mensajesEnviados"));
+		List<Mensaje> mensajes = obtenerMensajesDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eChat, "mensajesEnviados"));
 		for (Mensaje m : mensajes) chat.enviarMensaje(m);
 		
 		chat.setUsuario(obtenerUsuarioDesdeCodigo(servPersistencia.recuperarPropiedadEntidad(eChat, "usuario")));
@@ -146,33 +155,55 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
 		return chats;
 	}
 	
-	private void registrarSiNoExisteUser(Usuario usuario) {
-		//TODO
+	//-----------------------------------------------------------------------------------------
+	// METODOS AUXILIARES
+	//-----------------------------------------------------------------------------------------
+	
+	private void noMensajes(List<Mensaje> messages) {
+		AdaptadorMensajeTDS adaptadorMensajes = AdaptadorMensajeTDS.getUnicaInstancia();
+		messages.stream().forEach(m -> adaptadorMensajes.registrarMensaje(m));
 	}
 
-	private void registrarSiNoExistenMensajes(List<Mensaje> mensaje) {
-		// TODO
+	private void noUser(Usuario admin) {
+		AdaptadorUsuarioTDS adaptadorUsuarios = AdaptadorUsuarioTDS.getUnicaInstancia();
+		adaptadorUsuarios.registrarUsuario(admin);
 	}
 	
+	// -----------------------------------------------------------------------------------------
+	// OBTENCION DE CONTACTOS Y GRUPOS -> CODIGOS
+	// -----------------------------------------------------------------------------------------
 	
-	
-	private Usuario obtenerUsuarioDesdeCodigo(String recuperarPropiedadEntidad) {
-		// TODO Auto-generated method stub
-		return null;
+	private Usuario obtenerUsuarioDesdeCodigo(String codigo) {
+		AdaptadorUsuarioTDS adaptadorUsuario = AdaptadorUsuarioTDS.getUnicaInstancia();
+		return adaptadorUsuario.recuperarUsuario(Integer.parseInt(codigo));
 	}
 
 	
-	private LinkedList<Mensaje> obtenerMensajesDesdeCodigos(String recuperarPropiedadEntidad) {
-		// TODO Auto-generated method stub
-		return null;
+	private List<Mensaje> obtenerMensajesDesdeCodigos(String codigos) {
+		List<Mensaje> mensajes = new LinkedList<Mensaje>();
+		StringTokenizer strTok = new StringTokenizer(codigos, " ");
+		AdaptadorMensajeTDS adaptadorMensaje = AdaptadorMensajeTDS.getUnicaInstancia();
+		while (strTok.hasMoreTokens()) {
+			mensajes.add(adaptadorMensaje.recuperarMensaje((Integer.valueOf((String) strTok.nextElement()))));
+
+		}
+		return mensajes;
 	}
 	
+	
+	
+	
+	// -----------------------------------------------------------------------------------------
+	// OBTENCION DE CODIGOS -> CONTACTOS Y GRUPOS
+	// -----------------------------------------------------------------------------------------
 	
 	private String obtenerCodigosMensajesEnviados(List<Mensaje> mensajesEnviados) {
-        
-		return "";
-		
+		return mensajesEnviados.stream()
+				.map(m -> String.valueOf(m.getCodigo()))
+				.reduce("", (l, m) -> l + m + " ")
+				.trim();
 	}
-	
+
+
 	
 }

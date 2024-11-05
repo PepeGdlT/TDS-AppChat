@@ -68,7 +68,9 @@ public class CatalogoUsuarios {
         }
     }
 	
-	
+	public boolean contains(Usuario usuario) {
+		return usuarios.containsValue(usuario);
+	}
 	
 	
 	

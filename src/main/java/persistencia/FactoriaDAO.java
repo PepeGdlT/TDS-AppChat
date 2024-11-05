@@ -23,5 +23,9 @@ public abstract class FactoriaDAO {
 	protected FactoriaDAO() {}
 	
 	public abstract IAdaptadorUsuarioDAO getUsuarioDAO();
+	public abstract IAdaptadorMensajeDAO getMensajeDAO();
+	public abstract IAdaptadorChatIndividualDAO getChatIndividualDAO();
+	public abstract IAdaptadorGrupoDAO getGrupoDAO();
+	
 	
 }

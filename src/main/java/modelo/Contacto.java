@@ -68,7 +68,7 @@ public abstract class Contacto {
 	
 
 	// Methods
-	public void sendMessage(Mensaje message) {
+	public void enviarMensaje(Mensaje message) {
 		mensajes.add(message);
 	}
 

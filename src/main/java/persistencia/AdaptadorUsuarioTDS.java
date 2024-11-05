@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import javax.persistence.Entity;
@@ -21,6 +22,7 @@ import modelo.Grupo;
 import modelo.Usuario;
 import tds.driver.FactoriaServicioPersistencia;
 import tds.driver.ServicioPersistencia;
+
 
 
 
@@ -56,9 +58,8 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 		if (existe) return;
 		
 		
-		//se registra si no existe grupo o contacto
-		//TODO: registrarSiNoExisteContacto
-		//TODO: registrarSiNoExisteGrupo
+		noContactos(usuario.getContactos());
+		noGrupos(usuario.getGruposAdmin());
 		
 		
 		eUsuario = new Entidad();
@@ -98,7 +99,7 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 	
 		for (Contacto contacto : usuario.getContactos()) {
 			if (contacto instanceof ChatIndividual) {
-				adaptadorChatIndividual.borrarContacto((ChatIndividual) contacto);
+				adaptadorChatIndividual.borrarChatIndividual((ChatIndividual) contacto);
 			}
 			else {
 				adaptadorGrupo.borrarGrupo((Grupo) contacto);
@@ -220,17 +221,38 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
         return usuarios;
 	}
 	
+	//-----------------------------------------------------------------------------------------
+	// FUNCIONES AUXILIARES
+	//-----------------------------------------------------------------------------------------
 	
+
+	private void noGrupos(List<Grupo> grupos) {
+		AdaptadorGrupoTDS adaptadorGA = AdaptadorGrupoTDS.getUnicaInstancia();
+		grupos.stream().forEach(g -> adaptadorGA.registrarGrupo(g));
+	}
+
+	private void noContactos(List<Contacto> contactos) {
+		AdaptadorChatIndividualTDS adaptadorChatIndividual = AdaptadorChatIndividualTDS.getUnicaInstancia();
+		AdaptadorGrupoTDS adaptadorGrupos = AdaptadorGrupoTDS.getUnicaInstancia();
+		contactos.stream().forEach(c -> {
+			if (c instanceof ChatIndividual) {
+				adaptadorChatIndividual.registrarChatIndividual((ChatIndividual) c);
+			} else {
+				adaptadorGrupos.registrarGrupo((Grupo) c);
+			}
+		});
+	}
 	
-	
-	
+	// -----------------------------------------------------------------------------------------
+	// OBTENCION DE CONTACTOS Y GRUPOS DESDE CODIGOS
+	// -----------------------------------------------------------------------------------------
 	
 	
 	
 	private List<Grupo> obtenerGruposDesdeCodigos(String codigos) {
 		List<Grupo> grupos = new LinkedList<>();
 		StringTokenizer strTok = new StringTokenizer(codigos, " ");
-		AdaptadorGrupoTDS adaptadorG = AdaptadorGrupoTDS.getInstancia();
+		AdaptadorGrupoTDS adaptadorG = AdaptadorGrupoTDS.getUnicaInstancia();
 		while (strTok.hasMoreTokens()) {
 			grupos.add(adaptadorG.recuperarGrupo(Integer.valueOf((String) strTok.nextElement())));
 		}
@@ -240,9 +262,9 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 	private List<ChatIndividual> obtenerContactosDesdeCodigos(String codigos) {
 		List<ChatIndividual> contactos = new LinkedList<>();
 		StringTokenizer strTok = new StringTokenizer(codigos, " ");
-		AdaptadorChatIndividualTDS adaptadorC = AdaptadorChatIndividualTDS.getInstancia();
+		AdaptadorChatIndividualTDS adaptadorC = AdaptadorChatIndividualTDS.getUnicaInstancia();
 		while (strTok.hasMoreTokens()) {
-			contactos.add(adaptadorC.recuperarContacto(Integer.valueOf((String) strTok.nextElement())));
+			contactos.add(adaptadorC.recuperarChatIndividual((Integer.valueOf((String) strTok.nextElement()))));
 		}
 		return contactos;
 	}
@@ -254,7 +276,8 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 	
 	private String obtenerCodigosGrupo(List<Contacto> grupos) {
 		return grupos.stream().filter(c -> c instanceof Grupo) 											
-				.map(c -> String.valueOf(c.getCodigo())).reduce("", (l, c) -> l + c + " ")																		
+				.map(c -> String.valueOf(c.getCodigo()))
+				.reduce("", (l, c) -> l + c + " ")																		
 				.trim();
 	}
 	
