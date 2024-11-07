@@ -3,10 +3,15 @@ package vista;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import com.toedter.calendar.JDateChooser;
+
+import controlador.ControladorAppChat;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 public class VentanaRegister extends JPanel {
 
@@ -16,38 +21,52 @@ public class VentanaRegister extends JPanel {
     private JTextField phoneField;
     private JPasswordField passwordField;
     private JPasswordField confirmPasswordField;
-    private JTextArea greetingMessageField;
+    private JTextField greetingMessageField; // Saludo opcional
     private JButton showPasswordButton;
     private JButton selectImageButton;
     private JLabel imagePreview;
     private boolean isPasswordVisible = false;
+    private JButton backToLoginButton;
+    private JButton registerButton;
+
+    
     private VentanaInicio mainFrame;
+
+    // Error labels
+    private JLabel fullNameErrorLabel;
+    private JLabel emailErrorLabel;
+    private JLabel phoneErrorLabel;
+    private JLabel dateErrorLabel;
+    private JLabel passwordErrorLabel;
+
+    // Image File
+    private File selectedImageFile;
 
     public VentanaRegister() {
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWeights = new double[]{1.0, 1.0};
         gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-        gridBagLayout.columnWidths = new int[]{190, 190}; // Two columns with equal width
+        gridBagLayout.columnWidths = new int[]{190, 190};
         setLayout(gridBagLayout);
         setPreferredSize(new Dimension(800, 600));
         setBackground(ElegantPalette.PANEL_BACKGROUND);
 
-        // Title
+        // Título
         JLabel registerTitle = new JLabel("Register", SwingConstants.CENTER);
         registerTitle.setVerticalAlignment(SwingConstants.BOTTOM);
         registerTitle.setForeground(ElegantPalette.PRIMARY_TEXT);
         registerTitle.setFont(new Font("Arial", Font.BOLD, 20));
-        
+
         GridBagConstraints gbcTitle = new GridBagConstraints();
-        gbcTitle.gridwidth = 2; // Span across both columns
+        gbcTitle.gridwidth = 2;
         gbcTitle.fill = GridBagConstraints.HORIZONTAL;
         gbcTitle.gridx = 0;
         gbcTitle.gridy = 0;
-        gbcTitle.insets = new Insets(10, 20, 10, 20); // Left and right padding added
+        gbcTitle.insets = new Insets(10, 20, 10, 20);
         gbcTitle.anchor = GridBagConstraints.CENTER;
         add(registerTitle, gbcTitle);
 
-        // Full Name Field
+        // Nombre completo
         fullNameField = new JTextField("Enter your full name");
         setupTextField(fullNameField);
 
@@ -55,56 +74,99 @@ public class VentanaRegister extends JPanel {
         gbcFullName.fill = GridBagConstraints.HORIZONTAL;
         gbcFullName.gridx = 0;
         gbcFullName.gridy = 1;
-        gbcFullName.insets = new Insets(10, 20, 10, 20); // Left and right padding added
+        gbcFullName.insets = new Insets(10, 20, 10, 20);
         add(fullNameField, gbcFullName);
 
-        // Email Field
+        // Error de nombre completo
+        fullNameErrorLabel = new JLabel("");
+        fullNameErrorLabel.setForeground(Color.RED);
+        GridBagConstraints gbcFullNameError = new GridBagConstraints();
+        gbcFullNameError.fill = GridBagConstraints.HORIZONTAL;
+        gbcFullNameError.gridx = 0;
+        gbcFullNameError.gridy = 2;
+        gbcFullNameError.insets = new Insets(0, 20, 10, 20);
+        add(fullNameErrorLabel, gbcFullNameError);
+
+        // Email
         emailField = new JTextField("Enter your email");
         setupTextField(emailField);
 
         GridBagConstraints gbcEmail = new GridBagConstraints();
         gbcEmail.fill = GridBagConstraints.HORIZONTAL;
-        gbcEmail.gridx = 1; // Second column
+        gbcEmail.gridx = 1;
         gbcEmail.gridy = 1;
-        gbcEmail.insets = new Insets(10, 20, 10, 20); // Left and right padding added
+        gbcEmail.insets = new Insets(10, 20, 10, 20);
         add(emailField, gbcEmail);
 
-        // Phone Number Field
+        // Error de email
+        emailErrorLabel = new JLabel("");
+        emailErrorLabel.setForeground(Color.RED);
+        GridBagConstraints gbcEmailError = new GridBagConstraints();
+        gbcEmailError.fill = GridBagConstraints.HORIZONTAL;
+        gbcEmailError.gridx = 1;
+        gbcEmailError.gridy = 2;
+        gbcEmailError.insets = new Insets(0, 20, 10, 20);
+        add(emailErrorLabel, gbcEmailError);
+
+        // Teléfono
         phoneField = new JTextField("Enter your phone number");
         setupTextField(phoneField);
 
         GridBagConstraints gbcPhone = new GridBagConstraints();
         gbcPhone.fill = GridBagConstraints.HORIZONTAL;
         gbcPhone.gridx = 0;
-        gbcPhone.gridy = 2;
-        gbcPhone.insets = new Insets(10, 20, 10, 20); // Left and right padding added
+        gbcPhone.gridy = 3;
+        gbcPhone.insets = new Insets(10, 20, 10, 20);
         add(phoneField, gbcPhone);
 
-        // Date of Birth Selector
+        // Error de teléfono
+        phoneErrorLabel = new JLabel("");
+        phoneErrorLabel.setForeground(Color.RED);
+        GridBagConstraints gbcPhoneError = new GridBagConstraints();
+        gbcPhoneError.fill = GridBagConstraints.HORIZONTAL;
+        gbcPhoneError.gridx = 0;
+        gbcPhoneError.gridy = 4;
+        gbcPhoneError.insets = new Insets(0, 20, 10, 20);
+        add(phoneErrorLabel, gbcPhoneError);
+
+        // Fecha de nacimiento
         dateChooser = new JDateChooser();
-        dateChooser.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
+        dateChooser.setOpaque(false);
+        dateChooser.setBackground(new Color(255, 255, 255));
         dateChooser.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
         dateChooser.setDateFormatString("dd-MM-yyyy");
 
         GridBagConstraints gbcDateChooser = new GridBagConstraints();
         gbcDateChooser.fill = GridBagConstraints.HORIZONTAL;
-        gbcDateChooser.gridx = 1; // Second column
-        gbcDateChooser.gridy = 2;
-        gbcDateChooser.insets = new Insets(10, 20, 10, 20); // Left and right padding added
+        gbcDateChooser.gridx = 1;
+        gbcDateChooser.gridy = 3;
+        gbcDateChooser.insets = new Insets(10, 20, 10, 20);
         add(dateChooser, gbcDateChooser);
 
-        // Password Field
+        // Error de fecha
+        dateErrorLabel = new JLabel("");
+        dateErrorLabel.setForeground(Color.RED);
+        GridBagConstraints gbcDateError = new GridBagConstraints();
+        gbcDateError.fill = GridBagConstraints.HORIZONTAL;
+        gbcDateError.gridx = 1;
+        gbcDateError.gridy = 4;
+        gbcDateError.insets = new Insets(0, 20, 10, 20);
+        add(dateErrorLabel, gbcDateError);
+
+        // Contraseña
         passwordField = new JPasswordField("Enter your password");
         setupPasswordField(passwordField);
 
-        // Confirm Password Field
+        // Confirmar contraseña
         confirmPasswordField = new JPasswordField("Confirm your password");
         setupPasswordField(confirmPasswordField);
 
-        // Show Password Button
+        // Botón para mostrar/ocultar la contraseña
         showPasswordButton = new JButton(IconsResource.EYE_SHOW);
+        showPasswordButton.setBorderPainted(false);
+        showPasswordButton.setForeground(new Color(255, 255, 255));
         showPasswordButton.setPreferredSize(new Dimension(32, 32));
-        showPasswordButton.setBackground(Color.WHITE);
+        showPasswordButton.setBackground(new Color(43, 43, 43));
         showPasswordButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -112,194 +174,318 @@ public class VentanaRegister extends JPanel {
             }
         });
 
-        // Password Panel
-        JPanel passwordPanel = new JPanel(new BorderLayout());
-        passwordPanel.setBackground(ElegantPalette.PANEL_BACKGROUND);
-        passwordPanel.add(passwordField, BorderLayout.CENTER);
-        passwordPanel.add(showPasswordButton, BorderLayout.EAST);
+        GridBagConstraints gbcShowPassword = new GridBagConstraints();
+        gbcShowPassword.gridx = 2; // Placing it next to the password field
+        gbcShowPassword.gridy = 5;
+        gbcShowPassword.insets = new Insets(0, -5, 0, 15); // Adjust insets if needed
+        add(showPasswordButton, gbcShowPassword);
 
-        // Adding Password Panel to layout
+        
         GridBagConstraints gbcPassword = new GridBagConstraints();
         gbcPassword.fill = GridBagConstraints.HORIZONTAL;
         gbcPassword.gridx = 0;
-        gbcPassword.gridy = 3;
-        gbcPassword.insets = new Insets(10, 20, 0, 20); // Left and right padding added
-        add(passwordPanel, gbcPassword);
+        gbcPassword.gridy = 5;
+        gbcPassword.insets = new Insets(10, 20, 0, 20);
+        add(passwordField, gbcPassword);
 
-        // Confirm Password Panel
-        JPanel confirmPasswordPanel = new JPanel(new BorderLayout());
-        confirmPasswordPanel.setBackground(ElegantPalette.PANEL_BACKGROUND);
-        confirmPasswordPanel.add(confirmPasswordField, BorderLayout.CENTER);
-
-        // Adding Confirm Password Panel to layout
         GridBagConstraints gbcConfirmPassword = new GridBagConstraints();
         gbcConfirmPassword.fill = GridBagConstraints.HORIZONTAL;
-        gbcConfirmPassword.gridx = 1; // Second column
-        gbcConfirmPassword.gridy = 3;
-        gbcConfirmPassword.insets = new Insets(10, 20, 0, 20); // Left and right padding added
-        add(confirmPasswordPanel, gbcConfirmPassword);
+        gbcConfirmPassword.gridx = 1;
+        gbcConfirmPassword.gridy = 5;
+        gbcConfirmPassword.insets = new Insets(10, 20, 0, 20);
+        add(confirmPasswordField, gbcConfirmPassword);
 
-        // Profile Image Selection Button
-        selectImageButton = new JButton("Select Profile Image");
+        // Password Error Label
+        passwordErrorLabel = new JLabel("");
+        passwordErrorLabel.setForeground(Color.RED);
+        
+        GridBagConstraints gbcPasswordError = new GridBagConstraints();
+        gbcPasswordError.gridwidth = 2;
+        gbcPasswordError.fill = GridBagConstraints.HORIZONTAL;
+        gbcPasswordError.gridy = 6;
+        gbcPasswordError.insets = new Insets(0, 20, 10, 20);
+        add(passwordErrorLabel, gbcPasswordError);
+        
+        // Botón para seleccionar imagen
+        selectImageButton = new JButton("Select Image");
+        selectImageButton.setPreferredSize(new Dimension(150, 40));
         selectImageButton.setBackground(ElegantPalette.ACTION_BUTTON);
         selectImageButton.setForeground(ElegantPalette.BUTTON_TEXT);
-        selectImageButton.addActionListener(e -> selectProfileImage());
+        selectImageButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                selectImage();
+            }
+        });
 
-        GridBagConstraints gbcSelectImage = new GridBagConstraints();
-        gbcSelectImage.gridwidth = 2; // Span across both columns
-        gbcSelectImage.gridy = 4;
-        gbcSelectImage.insets = new Insets(10, 20, 10, 20); // Left and right padding added
-        gbcSelectImage.anchor = GridBagConstraints.CENTER;
-        add(selectImageButton, gbcSelectImage);
+        GridBagConstraints gbcSelectImageButton = new GridBagConstraints();
+        gbcSelectImageButton.gridwidth = 2; // Make it span across the entire width
+        gbcSelectImageButton.gridx = 0;
+        gbcSelectImageButton.gridy = 6; // Placing it below the password fields
+        gbcSelectImageButton.insets = new Insets(10, 20, 10, 20); // Adjust insets if needed
+        add(selectImageButton, gbcSelectImageButton);
 
-        // Image Preview
-        imagePreview = new JLabel();
+        
+        // Vista previa de la imagen
+        imagePreview = new JLabel("No image selected", SwingConstants.CENTER);
         imagePreview.setPreferredSize(new Dimension(100, 100));
         imagePreview.setOpaque(true);
         imagePreview.setBackground(ElegantPalette.PANEL_BACKGROUND);
         imagePreview.setBorder(BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR));
-
         GridBagConstraints gbcImagePreview = new GridBagConstraints();
-        gbcImagePreview.gridwidth = 2; // Span across both columns
-        gbcImagePreview.gridy = 5;
-        gbcImagePreview.insets = new Insets(10, 20, 10, 20); // Left and right padding added
-        gbcImagePreview.anchor = GridBagConstraints.CENTER;
+        gbcImagePreview.gridwidth = 2;
+        gbcImagePreview.gridx = 0;
+        gbcImagePreview.gridy = 7;
+        gbcImagePreview.insets = new Insets(10, 20, 10, 20);
         add(imagePreview, gbcImagePreview);
 
-        // Greeting Message Field
-        greetingMessageField = new JTextArea("Enter a greeting message (optional)");
-        greetingMessageField.setRows(4);
-        greetingMessageField.setLineWrap(true);
-        greetingMessageField.setWrapStyleWord(true);
+        // Campo de saludo opcional
+        greetingMessageField = new JTextField("Write a greeting message (optional)");
+        greetingMessageField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
         greetingMessageField.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
-        greetingMessageField.setForeground(ElegantPalette.TEXT_FIELD_TEXT_PREV);
         greetingMessageField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR),
                 new EmptyBorder(5, 5, 5, 5)
         ));
-        greetingMessageField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (greetingMessageField.getForeground() == ElegantPalette.TEXT_FIELD_TEXT_PREV) {
-                    greetingMessageField.setText("");
-                    greetingMessageField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
-                }
-            }
-        });
 
-        GridBagConstraints gbcGreeting = new GridBagConstraints();
-        gbcGreeting.gridwidth = 2; // Span across both columns
-        gbcGreeting.fill = GridBagConstraints.HORIZONTAL;
-        gbcGreeting.gridy = 6;
-        gbcGreeting.insets = new Insets(10, 20, 10, 20); // Left and right padding added
-        add(greetingMessageField, gbcGreeting);
+        GridBagConstraints gbcGreetingMessage = new GridBagConstraints();
+        gbcGreetingMessage.gridwidth = 2;
+        gbcGreetingMessage.fill = GridBagConstraints.HORIZONTAL;
+        gbcGreetingMessage.gridx = 0;
+        gbcGreetingMessage.gridy = 8;
+        gbcGreetingMessage.insets = new Insets(10, 20, 20, 20);
+        add(greetingMessageField, gbcGreetingMessage);
+        
+
+        
+        // Back to Login Button
+        backToLoginButton = new JButton("Back to Login");
+        backToLoginButton.setPreferredSize(new Dimension(150, 40));
+        backToLoginButton.setForeground(ElegantPalette.LINK_TEXT);
+        backToLoginButton.addActionListener(e -> handleBackToLogin()); // Method to go back to login
+
+        GridBagConstraints gbcBackToLoginButton = new GridBagConstraints();
+        gbcBackToLoginButton.gridwidth = 2;
+        gbcBackToLoginButton.gridx = 0;
+        gbcBackToLoginButton.gridy = 10; // After the greeting message
+        gbcBackToLoginButton.insets = new Insets(10, 20, 10, 20);
+        add(backToLoginButton, gbcBackToLoginButton);
 
         // Register Button
-        JButton registerButton = new JButton("Register");
-        registerButton.setFont(new Font("Tahoma", Font.BOLD, 11));
+        registerButton = new JButton("Registrar nuevo usuario");
+        registerButton.setPreferredSize(new Dimension(150, 40));
         registerButton.setBackground(ElegantPalette.ACTION_BUTTON);
         registerButton.setForeground(ElegantPalette.BUTTON_TEXT);
+        registerButton.addActionListener(e -> handleRegister()); // Method to handle registration
 
         GridBagConstraints gbcRegisterButton = new GridBagConstraints();
-        gbcRegisterButton.gridwidth = 2; // Span across both columns
-        gbcRegisterButton.gridy = 7;
-        gbcRegisterButton.insets = new Insets(10, 20, 10, 20); // Left and right padding added
-        gbcRegisterButton.anchor = GridBagConstraints.CENTER;
+        gbcRegisterButton.gridwidth = 2;
+        gbcRegisterButton.gridx = 0;
+        gbcRegisterButton.gridy = 9; // After the back button
+        gbcRegisterButton.insets = new Insets(10, 20, 20, 20);
         add(registerButton, gbcRegisterButton);
 
-        // Back to Login Link
-        JLabel loginLabel = new JLabel("Back to Login", SwingConstants.CENTER);
-        loginLabel.setForeground(ElegantPalette.LINK_TEXT);
-        loginLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        loginLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (mainFrame != null) {
-                    mainFrame.showLoginPanel();
-                }
-            }
-        });
+        
+        
+        setupTextFieldWithPlaceholder(fullNameField, "Enter your full name");
+        setupTextFieldWithPlaceholder(emailField, "Enter your email");
+        setupTextFieldWithPlaceholder(phoneField, "Enter your phone number");
+        setupTextFieldWithPlaceholder(passwordField, "Enter your password");
+        setupTextFieldWithPlaceholder(confirmPasswordField, "Confirm your password");
+        setupTextFieldWithPlaceholder(greetingMessageField, "Write a greeting message (optional)");
+        
 
-        GridBagConstraints gbcLoginLabel = new GridBagConstraints();
-        gbcLoginLabel.gridwidth = 2; // Span across both columns
-        gbcLoginLabel.fill = GridBagConstraints.HORIZONTAL;
-        gbcLoginLabel.gridy = 8;
-        gbcLoginLabel.insets = new Insets(10, 20, 10, 20); // Left and right padding added
-        add(loginLabel, gbcLoginLabel);
     }
+    
 
-    private void setupTextField(JTextField textField) {
-        textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT_PREV);
+
+
+	private void setupTextField(JTextField textField) {
         textField.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
+        textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
         textField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR),
                 new EmptyBorder(5, 5, 5, 5)
         ));
-        textField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (textField.getForeground() == ElegantPalette.TEXT_FIELD_TEXT_PREV) {
-                    textField.setText("");
-                    textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
-                }
-            }
-        });
     }
 
     private void setupPasswordField(JPasswordField passwordField) {
-        passwordField.setForeground(ElegantPalette.TEXT_FIELD_TEXT_PREV);
         passwordField.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
+        passwordField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
         passwordField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR),
                 new EmptyBorder(5, 5, 5, 5)
         ));
-        passwordField.setEchoChar('•');
-        passwordField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (passwordField.getForeground() == ElegantPalette.TEXT_FIELD_TEXT_PREV) {
-                    passwordField.setText("");
-                    passwordField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
-                }
-            }
-        });
     }
 
-    private void togglePasswordVisibility(ImageIcon iconShow, ImageIcon iconHide) {
+    private void togglePasswordVisibility(Icon showIcon, Icon hideIcon) {
         if (isPasswordVisible) {
-            passwordField.setEchoChar('•');
-            confirmPasswordField.setEchoChar('•');
-            showPasswordButton.setIcon(iconHide);
-            isPasswordVisible = false;
+            passwordField.setEchoChar('●');
+            confirmPasswordField.setEchoChar('●');
+            showPasswordButton.setIcon(showIcon);
         } else {
             passwordField.setEchoChar((char) 0);
             confirmPasswordField.setEchoChar((char) 0);
-            showPasswordButton.setIcon(iconShow);
-            isPasswordVisible = true;
+            showPasswordButton.setIcon(hideIcon);
         }
+        isPasswordVisible = !isPasswordVisible;
     }
 
-    private void selectProfileImage() {
+    private void selectImage() {
         JFileChooser fileChooser = new JFileChooser();
-        int returnValue = fileChooser.showOpenDialog(this);
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            // Load the image
-            ImageIcon profileImage = new ImageIcon(selectedFile.getAbsolutePath());
+        fileChooser.setDialogTitle("Select Profile Image");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JPEG Image", "jpg", "jpeg"));
+        int result = fileChooser.showOpenDialog(this);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            selectedImageFile = fileChooser.getSelectedFile();
             
-            // Check if the image was loaded correctly
-            if (profileImage.getIconWidth() > 0 && profileImage.getIconHeight() > 0) {
-                // Resize image
-                Image img = profileImage.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
-                imagePreview.setIcon(new ImageIcon(img));
-            } else {
-                JOptionPane.showMessageDialog(this, "Selected file is not a valid image.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            // Redimensionar la imagen seleccionada
+            ImageIcon originalIcon = new ImageIcon(selectedImageFile.getAbsolutePath());
+            Image originalImage = originalIcon.getImage();
+            
+            // Define un tamaño máximo (por ejemplo, 100x100 píxeles)
+            int maxWidth = 100;
+            int maxHeight = 100;
+            
+            // Escalar la imagen para que se ajuste dentro del tamaño máximo
+            Image scaledImage = originalImage.getScaledInstance(maxWidth, maxHeight, Image.SCALE_SMOOTH);
+            
+            // Establecer la imagen escalada en el JLabel
+            imagePreview.setIcon(new ImageIcon(scaledImage));
+            imagePreview.setText("");  // Eliminar el texto
         }
     }
 
+    
+    
 
+    private void handleBackToLogin() {
+    	this.mainFrame.showLoginPanel();
+	}
+
+
+
+	private void handleRegister() {
+		boolean OK = false;
+		OK = validateForm();
+		if (OK) {
+			boolean registrado = false;
+			registrado = ControladorAppChat.getUnicaInstancia().registrarUsuario(
+					fullNameField.getText(),
+					Integer.parseInt(phoneField.getText()),
+					emailField.getText(),
+					new String(passwordField.getPassword()),
+					greetingMessageField.getText(),
+					//selectedImageFile.getPath(),
+					dateChooser.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+					);
+
+			
+			
+			if (registrado) {
+				JOptionPane.showMessageDialog(VentanaRegister.this, "Usuario registrado correctamente.", "Registro",
+						JOptionPane.INFORMATION_MESSAGE);
+				mainFrame.showLoginPanel();
+			} else {
+				JOptionPane.showMessageDialog(VentanaRegister.this, "No se ha podido llevar a cabo el registro.\n",
+						"Registro", JOptionPane.ERROR_MESSAGE);
+				
+			}
+		}
+		
+
+		
+	}
+
+
+	
+	private boolean validateForm() {
+        boolean isValid = true;
+
+        // Reset all error labels
+        fullNameErrorLabel.setText("");
+        emailErrorLabel.setText("");
+        phoneErrorLabel.setText("");
+        dateErrorLabel.setText("");
+        passwordErrorLabel.setText("");
+
+        // Validar nombre completo
+        if (fullNameField.getText().trim().isEmpty() || fullNameField.getText().equals("Enter your full name")) {
+            fullNameErrorLabel.setText("Full name is required.");
+            isValid = false;
+        }
+
+        // Validar email
+        String emailPattern = "^[\\w\\.-]+@[\\w\\.-]+\\.\\w{2,}$";
+        if (emailField.getText().trim().isEmpty() || emailField.getText().equals("Enter your email") || !emailField.getText().matches(emailPattern)) {
+            emailErrorLabel.setText("Please enter a valid email.");
+            isValid = false;
+        }
+
+        // Validar número de teléfono
+        if (phoneField.getText().trim().isEmpty() || phoneField.getText().equals("Enter your phone number")) {
+            phoneErrorLabel.setText("Phone number is required.");
+            isValid = false;
+        }
+
+        // Validar fecha de nacimiento
+        if (dateChooser.getDate() == null || dateChooser.getDate().after(java.sql.Date.valueOf(LocalDate.now()))) {
+            dateErrorLabel.setText("Please select a valid birth date.");
+            isValid = false;
+        }
+
+        // Validar contraseñas
+        String password = new String(passwordField.getPassword());
+        String confirmPassword = new String(confirmPasswordField.getPassword());
+
+        if (password.trim().isEmpty() || password.equals("Enter your password")) {
+            passwordErrorLabel.setText("Password is required.");
+            isValid = false;
+        } else if (!password.equals(confirmPassword)) {
+            passwordErrorLabel.setText("Passwords do not match.");
+            isValid = false;
+        }
+
+        // Si el formulario es válido, mostrar un mensaje de éxito (o realizar una acción adicional como enviar los datos)
+        if (isValid) {
+            JOptionPane.showMessageDialog(this, "Registration successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            return isValid;
+
+        } else {
+            JOptionPane.showMessageDialog(this, "Please fix the errors and try again.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+        }
+        return isValid;
+    }
+	
+	private void setupTextFieldWithPlaceholder(JTextField textField, String placeholder) {
+	    textField.setText(placeholder);
+	    textField.setForeground(Color.GRAY);
+
+	    textField.addFocusListener(new java.awt.event.FocusListener() {
+	        @Override
+	        public void focusGained(java.awt.event.FocusEvent e) {
+	            if (textField.getText().equals(placeholder)) {
+	                textField.setText("");
+	                textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
+	            }
+	        }
+
+	        @Override
+	        public void focusLost(java.awt.event.FocusEvent e) {
+	            if (textField.getText().isEmpty()) {
+	                textField.setText(placeholder);
+	                textField.setForeground(Color.GRAY);
+	            }
+	        }
+	    });
+	}
+
+	
     public void setMainFrame(VentanaInicio mainFrame) {
         this.mainFrame = mainFrame;
     }
+
 }

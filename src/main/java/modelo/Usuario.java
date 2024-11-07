@@ -36,17 +36,18 @@ public class Usuario {
         this.Premium = false; 
     }
     
-    public Usuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String fotoPerfilURL, LocalDate fechaNacimiento) {
+    public Usuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String saludo, LocalDate fechaNacimiento) {
         this.nombreCompleto = nombreCompleto;
         this.numeroTelefono = numeroTelefono;
         this.email = email;
         this.contrasena = contrasena;
-        this.saludo = SALUDO;
-        this.fotoPerfilURL = fotoPerfilURL;
+        this.saludo = saludo;
+        //this.fotoPerfilURL = fotoPerfilURL;
         this.fechaNacimiento = fechaNacimiento;
         this.contactos = new LinkedList<Contacto>();
         this.Premium = false; 
     }
+    
     
 
 	public int getCodigo() {

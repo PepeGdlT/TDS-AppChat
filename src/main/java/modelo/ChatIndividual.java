@@ -1,6 +1,5 @@
 package modelo;
 
-import java.io.ObjectInputFilter.Status;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;

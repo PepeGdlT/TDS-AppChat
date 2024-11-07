@@ -71,7 +71,7 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
                         new Propiedad("email", usuario.getEmail()),
                         new Propiedad("contrasena", usuario.getContrasena()),
                         new Propiedad("saludo", usuario.getSaludo()),
-                        new Propiedad("fotoPerfilURL", usuario.getFotoPerfilURL()),
+                        //new Propiedad("fotoPerfilURL", usuario.getFotoPerfilURL()),
                         new Propiedad("fechaNacimiento", usuario.getFechaNacimiento().toString()),
                         new Propiedad("contactos", obtenerCodigosChatIndividual(usuario.getContactos())),
                         new Propiedad("gruposAdmin", obtenerCodigosGruposAdmin(usuario.getGruposAdmin())),
@@ -138,9 +138,9 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 		servPersistencia.eliminarPropiedadEntidad(eUsuario, "saludo");
 		servPersistencia.anadirPropiedadEntidad(eUsuario, "saludo",
 				usuario.getSaludo());
-		servPersistencia.eliminarPropiedadEntidad(eUsuario, "fotoPerfilURL");
-		servPersistencia.anadirPropiedadEntidad(eUsuario, "fotoPerfilURL",
-				usuario.getFotoPerfilURL());
+		//servPersistencia.eliminarPropiedadEntidad(eUsuario, "fotoPerfilURL");
+		//servPersistencia.anadirPropiedadEntidad(eUsuario, "fotoPerfilURL",
+		//		usuario.getFotoPerfilURL());
 		servPersistencia.eliminarPropiedadEntidad(eUsuario, "fechaNacimiento");
 		servPersistencia.anadirPropiedadEntidad(eUsuario, "fechaNacimiento",
 				usuario.getFechaNacimiento().toString());
@@ -189,13 +189,13 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 		email = servPersistencia.recuperarPropiedadEntidad(eUsuario, "email");
 		contrasena = servPersistencia.recuperarPropiedadEntidad(eUsuario, "contrasena");
 		saludo = servPersistencia.recuperarPropiedadEntidad(eUsuario, "saludo");
-		fotoPerfilURL = servPersistencia.recuperarPropiedadEntidad(eUsuario, "fotoPerfilURL");
+		//fotoPerfilURL = servPersistencia.recuperarPropiedadEntidad(eUsuario, "fotoPerfilURL");
 		fechaNacimiento = LocalDate.parse(servPersistencia.recuperarPropiedadEntidad(eUsuario, "fechaNacimiento"));
 		Premium = Boolean.parseBoolean(servPersistencia.recuperarPropiedadEntidad(eUsuario, "Premium"));
 		
 		
 		
-		Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimiento);
+		Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fechaNacimiento);
 		usuario.setPremium(Premium);
 		usuario.setCodigo(codigo);
 		

@@ -74,9 +74,11 @@ public class Grupo extends Contacto {
 
 	@Override
 	public String getFoto() {
-		ImageIcon imagen =  IconsResource.GROUP_ICON;
-		imagen.setDescription((IconsResource.GROUP_ICON).toString()); ;
-		return imagen.getDescription();
+		//ImageIcon imagen =  IconsResource.GROUP_ICON;
+		//imagen.setDescription((IconsResource.GROUP_ICON).toString()); ;
+		//return imagen.getDescription();
+		//TODO: Cambiar por la imagen de grupo
+		return null;
 	}
 	
 	

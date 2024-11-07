@@ -2,6 +2,9 @@ package vista;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import controlador.ControladorAppChat;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,7 +13,7 @@ import java.awt.event.MouseEvent;
 
 public class VentanaLogin extends JPanel {
 
-    private JTextField usernameField;
+    private JTextField phoneField;
     private JPasswordField passwordField;
     private JButton showPasswordButton;
     private boolean isPasswordVisible = false;
@@ -41,16 +44,16 @@ public class VentanaLogin extends JPanel {
         add(loginTitle, gbcTitle);
 
         // Configurar el campo de usuario
-        usernameField = new JTextField("Telefono");
-        usernameField.setColumns(40);
-        setupTextField(usernameField);
+        phoneField = new JTextField("Telefono");
+        phoneField.setColumns(40);
+        setupTextField(phoneField);
 
-        GridBagConstraints gbcUsername = new GridBagConstraints();
-        gbcUsername.fill = GridBagConstraints.HORIZONTAL;
-        gbcUsername.gridx = 0;
-        gbcUsername.gridy = 1;
-        gbcUsername.insets = new Insets(10, 0, 10, 0);
-        add(usernameField, gbcUsername);
+        GridBagConstraints gbcPhone = new GridBagConstraints();
+        gbcPhone.fill = GridBagConstraints.HORIZONTAL;
+        gbcPhone.gridx = 0;
+        gbcPhone.gridy = 1;
+        gbcPhone.insets = new Insets(10, 0, 10, 0);
+        add(phoneField, gbcPhone);
 
         // Configurar el campo de contraseña
         passwordField = new JPasswordField("Enter your password");
@@ -86,6 +89,22 @@ public class VentanaLogin extends JPanel {
 
         // Configurar el botón de login
         JButton loginButton = new JButton("Login");
+        loginButton.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		boolean login = ControladorAppChat.getUnicaInstancia().iniciarSesion(
+        				 Integer.parseInt(phoneField.getText()),
+        				 new String(passwordField.getPassword())
+        				);
+        		
+        		if (login) {
+					mainFrame.showMainWindow();
+				} else {
+					JOptionPane.showMessageDialog(null, "Nombre de usuario o contraseña no valido", "Error",
+							JOptionPane.ERROR_MESSAGE);
+        		}
+        	}
+        });
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -181,7 +200,7 @@ public class VentanaLogin extends JPanel {
     }
     
     private void iniciarSesion() {
-        String username = usernameField.getText();
+        String username = phoneField.getText();
         String password = new String(passwordField.getPassword());
         
         if (username.isEmpty() || password.isEmpty()) {

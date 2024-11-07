@@ -2,6 +2,7 @@ package controlador;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +22,7 @@ import persistencia.IAdaptadorChatIndividualDAO;
 import persistencia.IAdaptadorGrupoDAO;
 import persistencia.IAdaptadorMensajeDAO;
 import persistencia.IAdaptadorUsuarioDAO;
-import umu.tds.apps.AppChat.Contact;
+
 
 
 
@@ -80,20 +81,23 @@ public class ControladorAppChat {
 	//-----------------------------------------------------
  	
 	
-	public void registrarUsuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String saludo, String fotoPerfilURL, LocalDate fechaNacimiento) {
-		Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimiento);
+	public boolean registrarUsuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String saludo,  LocalDate fechaNacimiento) {
+		Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fechaNacimiento);
 		
 		//TODO : Comprobar si el usuario ya existe
 		
 		adaptadorUsuario.registrarUsuario(usuario);
 		catalogoUsuarios.addUsuario(usuario);
+		return true;
 	}
 
-	public void iniciarSesion(int numeroTelefono, String contrasena) {
+	public boolean iniciarSesion(int numeroTelefono, String contrasena) {
 		Usuario usuario = catalogoUsuarios.getUsuarioTelefono(numeroTelefono);
 		if (usuario != null && usuario.getContrasena().equals(contrasena)) {
 			usuarioActual = usuario;
+			return true;
 		}
+		return false;
 	}
 	
 	public void cerrarSesion() {
@@ -105,7 +109,10 @@ public class ControladorAppChat {
 	}
 	
 	
-	
+	public void hacerPremium(Boolean premium) {
+		usuarioActual.setPremium(premium);
+		adaptadorUsuario.modificarUsuario(usuarioActual);
+	}
 	
 	
 	//-----------------------------------------------------
@@ -158,6 +165,15 @@ public class ControladorAppChat {
 		//TODO: enviar mensaje emoji
 	}
 
+	public void setChatActual(Contacto contacto) {
+		//TODO: setear chat actual
+	}
+	
+	public boolean isAdmin(Grupo grupo) {
+		return false;
+		//TODO: comprobar si el usuario actual es admin del grupo
+	}
+	
 	
 	//-----------------------------------------------------
 	// Funciones de creacion de objetos
@@ -186,10 +202,7 @@ public class ControladorAppChat {
 	    //TODO: modificar grupo
 	}
 	
-	public void hacerPremium() {
-		usuarioActual.setPremium(true);
-		adaptadorUsuario.modificarUsuario(usuarioActual);
-	}
+
 	
 	
 	//-----------------------------------------------------
@@ -206,7 +219,15 @@ public class ControladorAppChat {
 		//TODO: obtener nombre de contacto
 	}
 
+	public Optional<Contacto> getContacto(String nombre) {
+	    return Optional.empty();
+	    //TODO: obtener contacto
+	}
 
+	
+	private Optional<Usuario> getUser(String name) {
+        return Optional.empty();
+	}
 	
 	
 	public List<Mensaje> buscarMensajes(String emisor, LocalDateTime fechaInicio, LocalDateTime fechaFin, String text) {
@@ -218,8 +239,16 @@ public class ControladorAppChat {
 	// Funciones de eliminacion de objetos
 	//-----------------------------------------------------
 	
-	public void deleteContacto(ChatIndividual chat) {
+	public void deleteContacto(Contacto contacto) {
 		//TODO: eliminar contacto
 	}
+	
+	
+	public void deleteChatIndividual(ChatIndividual chat) {
+		//TODO: eliminar contacto
+	}
+
+
+
 	
 }
