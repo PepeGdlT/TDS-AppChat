@@ -17,6 +17,7 @@ import modelo.Contacto;
 import modelo.Grupo;
 import modelo.Mensaje;
 import modelo.Usuario;
+import persistencia.AdaptadorUsuarioTDS;
 import persistencia.FactoriaDAO;
 import persistencia.IAdaptadorChatIndividualDAO;
 import persistencia.IAdaptadorGrupoDAO;
@@ -24,7 +25,7 @@ import persistencia.IAdaptadorMensajeDAO;
 import persistencia.IAdaptadorUsuarioDAO;
 
 
-
+ // CAMBIAR ESTO A ENUM, Y TRATAR PATRON EXPERTO
 
 // CAMBIAR DE TELEFONO A CODIGO
 
@@ -81,25 +82,43 @@ public class ControladorAppChat {
 	//-----------------------------------------------------
  	
 	
-	public boolean registrarUsuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String saludo,  LocalDate fechaNacimiento) {
-		Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fechaNacimiento);
+	public boolean registrarUsuario(String nombreCompleto, String numeroTelefono, String email, String contrasena, String saludo, String fotoPerfilURL, String fechaNacimiento) {
 		
-		//TODO : Comprobar si el usuario ya existe
+		if (existeUsuario(numeroTelefono)) return false;
 		
+		Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimiento);
+
 		adaptadorUsuario.registrarUsuario(usuario);
 		catalogoUsuarios.addUsuario(usuario);
 		return true;
 	}
 
-	public boolean iniciarSesion(int numeroTelefono, String contrasena) {
-		Usuario usuario = catalogoUsuarios.getUsuarioTelefono(numeroTelefono);
+
+	public boolean existeUsuario(String numeroTelefono) {
+		return CatalogoUsuarios.getUnicaInstancia().encontrarUsuario(numeroTelefono) != null;
+	}
+	
+
+
+	public boolean iniciarSesion(String phone, String contrasena) {
+
+		Usuario usuario = catalogoUsuarios.encontrarUsuario(phone);
 		if (usuario != null && usuario.getContrasena().equals(contrasena)) {
-			usuarioActual = usuario;
+			this.usuarioActual = usuario;
 			return true;
 		}
 		return false;
 	}
 	
+	public boolean borrarUsuario(Usuario usuario) {
+		if(existeUsuario(usuario.getNumeroTelefono())) return false;
+		
+		adaptadorUsuario.borrarUsuario(usuario);
+		catalogoUsuarios.removeUsuario(usuario);
+		return true;
+	}
+
+
 	public void cerrarSesion() {
 		usuarioActual = null;
 	}
@@ -119,19 +138,23 @@ public class ControladorAppChat {
 	// Funciones de control de contactos
 	//-----------------------------------------------------
 	
-	public List<Contacto> getContactos() {
+	public List<ChatIndividual> getChatIndividuals() {
 		if (usuarioActual == null) {
-			return new LinkedList<Contacto>();
+			return new LinkedList<ChatIndividual>();
 		}
-		Usuario usuario = adaptadorUsuario.recuperarUsuario(usuarioActual.getCodigo());
-		return usuarioActual.getContactos();
+		return usuarioActual.getChatIndividuales();
 	}
+	
+	public List<Grupo> getGrupos() {
+		if (usuarioActual == null) {
+			return new LinkedList<Grupo>();
+		}
+		return usuarioActual.getGrupos();
+	}
+	
+	
 	
 
-	public boolean existeUsuario(int numeroTelefono) {
-		return CatalogoUsuarios.getUnicaInstancia().getUsuarioTelefono(numeroTelefono) != null;
-	}
-	
 	
 	//-----------------------------------------------------
 	// Funciones de control de chats
@@ -208,11 +231,7 @@ public class ControladorAppChat {
 	//-----------------------------------------------------
 	// Funciones de get de objetos
 	//-----------------------------------------------------
-	
-	public List<Grupo> getGruposAdminUsuarioActual() {
-		return usuarioActual.getGruposAdmin();
-	}
-	
+
 	
 	public String getNombreContacto(Usuario usuario) {
 		return null;
@@ -226,12 +245,14 @@ public class ControladorAppChat {
 
 	
 	private Optional<Usuario> getUser(String name) {
-        return Optional.empty();
+        //TODO: obtener usuario
+		return null;
 	}
 	
 	
 	public List<Mensaje> buscarMensajes(String emisor, LocalDateTime fechaInicio, LocalDateTime fechaFin, String text) {
-	    return null;
+	    //TODO: buscar mensajes
+		return null;
 	}
 	
 	

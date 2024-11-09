@@ -20,6 +20,14 @@ import tds.driver.ServicioPersistencia;
 
 public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
 
+	private static final String MENSAJE = "mensaje";
+	private static final String TEXTO = "texto";
+	private static final String EMISOR = "emisor";
+	private static final String RECEPTOR = "receptor";
+	private static final String HORA = "hora";
+	private static final String EMOTICONO = "emoticono";
+	
+	
 	private static ServicioPersistencia servPersistencia;
 	private static AdaptadorMensajeTDS unicaInstancia = null;
 	
@@ -53,14 +61,14 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
 		
 		
 		eMensaje = new Entidad();
-		eMensaje.setNombre("mensaje");
+		eMensaje.setNombre(MENSAJE);
 		eMensaje.setPropiedades(new ArrayList<Propiedad>(
 				Arrays.asList(
-						new Propiedad("texto", mensaje.getTexto()),
-						new Propiedad("emisor", String.valueOf(mensaje.getEmisor().getCodigo())),
-						new Propiedad("receptor", String.valueOf(mensaje.getReceptor().getCodigo())),
-						new Propiedad("hora", mensaje.getHora().toString()),
-						new Propiedad("emoticono", String.valueOf(mensaje.getEmoticono()
+						new Propiedad(TEXTO, mensaje.getTexto()),
+						new Propiedad(EMISOR, String.valueOf(mensaje.getEmisor().getCodigo())),
+						new Propiedad(RECEPTOR, String.valueOf(mensaje.getReceptor().getCodigo())),
+						new Propiedad(HORA, mensaje.getHora().toString()),
+						new Propiedad(EMOTICONO, String.valueOf(mensaje.getEmoticono()
 				)))));
 		
 		PoolDAO.getUnicaInstancia().addObjeto(mensaje.getCodigo(), eMensaje);
@@ -86,20 +94,20 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
 		
 		Entidad eMensaje = servPersistencia.recuperarEntidad(mensaje.getCodigo());
 		
-		servPersistencia.eliminarPropiedadEntidad(eMensaje, "texto");
-		servPersistencia.anadirPropiedadEntidad(eMensaje, "texto",
+		servPersistencia.eliminarPropiedadEntidad(eMensaje, TEXTO);
+		servPersistencia.anadirPropiedadEntidad(eMensaje, TEXTO,
 				mensaje.getTexto());
-		servPersistencia.eliminarPropiedadEntidad(eMensaje, "emisor");
-		servPersistencia.anadirPropiedadEntidad(eMensaje, "emisor",
+		servPersistencia.eliminarPropiedadEntidad(eMensaje, EMISOR);
+		servPersistencia.anadirPropiedadEntidad(eMensaje, EMISOR,
 				String.valueOf(mensaje.getEmisor().getCodigo()));
-		servPersistencia.eliminarPropiedadEntidad(eMensaje, "receptor");
-		servPersistencia.anadirPropiedadEntidad(eMensaje, "receptor",
+		servPersistencia.eliminarPropiedadEntidad(eMensaje, RECEPTOR);
+		servPersistencia.anadirPropiedadEntidad(eMensaje, RECEPTOR,
 				String.valueOf(mensaje.getReceptor().getCodigo()));
-		servPersistencia.eliminarPropiedadEntidad(eMensaje, "hora");
-		servPersistencia.anadirPropiedadEntidad(eMensaje, "hora",
+		servPersistencia.eliminarPropiedadEntidad(eMensaje, HORA);
+		servPersistencia.anadirPropiedadEntidad(eMensaje, HORA,
 				mensaje.getHora().toString());
-		servPersistencia.eliminarPropiedadEntidad(eMensaje, "emoticono");
-		servPersistencia.anadirPropiedadEntidad(eMensaje, "emoticono", 
+		servPersistencia.eliminarPropiedadEntidad(eMensaje, EMOTICONO);
+		servPersistencia.anadirPropiedadEntidad(eMensaje, EMOTICONO, 
 				String.valueOf(mensaje.getEmoticono()));
 	}
 
@@ -118,9 +126,9 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
 		
 		eMensaje = servPersistencia.recuperarEntidad(codigo);
 		
-		texto = servPersistencia.recuperarPropiedadEntidad(eMensaje, "texto");
-		hora = LocalDateTime.parse(servPersistencia.recuperarPropiedadEntidad(eMensaje, "hora"));
-		emoticono = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, "emoticono"));
+		texto = servPersistencia.recuperarPropiedadEntidad(eMensaje, TEXTO);
+		hora = LocalDateTime.parse(servPersistencia.recuperarPropiedadEntidad(eMensaje, HORA));
+		emoticono = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, EMOTICONO));
 		
 		Mensaje mensaje = new Mensaje(texto, emoticono, hora);
 		mensaje.setCodigo(codigo);
@@ -128,11 +136,11 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
 		PoolDAO.getUnicaInstancia().addObjeto(codigo, mensaje);
 		
 		AdaptadorUsuarioTDS adaptadorUsuario = AdaptadorUsuarioTDS.getUnicaInstancia();
-		emisor = adaptadorUsuario.recuperarUsuario(Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, "emisor")));
+		emisor = adaptadorUsuario.recuperarUsuario(Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, EMISOR)));
 		mensaje.setEmisor(emisor);
 		
 		AdaptadorChatIndividualTDS adaptadorChatIndividual = AdaptadorChatIndividualTDS.getUnicaInstancia();
-		receptor = adaptadorChatIndividual.recuperarChatIndividual(Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, "receptor")));
+		receptor = adaptadorChatIndividual.recuperarChatIndividual(Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, RECEPTOR)));
 		mensaje.setReceptor(receptor);
 		
 		return mensaje;
@@ -141,7 +149,7 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
 	@Override
 	public List<Mensaje> recuperarTodosMensajes() {
 		List<Mensaje> mensajes = new ArrayList<Mensaje>();
-		List<Entidad> entidades = servPersistencia.recuperarEntidades("mensaje");
+		List<Entidad> entidades = servPersistencia.recuperarEntidades(MENSAJE);
 
 		for (Entidad eMensaje : entidades) {
 			mensajes.add(recuperarMensaje(eMensaje.getId()));

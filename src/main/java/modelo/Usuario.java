@@ -2,6 +2,7 @@ package modelo;
 
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,17 +15,17 @@ public class Usuario {
 	
 	private int codigo;
     public String nombreCompleto;
-    public int numeroTelefono;
+    public String numeroTelefono;
     public String email;
     public String contrasena;
     public String saludo;
     public String fotoPerfilURL;
-    public LocalDate fechaNacimiento;
-    public List<Contacto> contactos;
-    private List<Grupo> gruposAdmin;
+    public String fechaNacimiento;
+    public List<ChatIndividual> chatIndividuales;
+    public List<Grupo> grupos;
     public boolean Premium;
 
-    public Usuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String saludo, String fotoPerfilURL, LocalDate fechaNacimiento) {
+    public Usuario(String nombreCompleto, String numeroTelefono, String email, String contrasena, String saludo, String fotoPerfilURL, String fechaNacimiento) {
         this.nombreCompleto = nombreCompleto;
         this.numeroTelefono = numeroTelefono;
         this.email = email;
@@ -32,22 +33,11 @@ public class Usuario {
         this.saludo = saludo;
         this.fotoPerfilURL = fotoPerfilURL;
         this.fechaNacimiento = fechaNacimiento;
-        this.contactos = new LinkedList<Contacto>();
+        this.chatIndividuales = new LinkedList<ChatIndividual>();
+        this.grupos = new LinkedList<Grupo>();
         this.Premium = false; 
     }
-    
-    public Usuario(String nombreCompleto, int numeroTelefono, String email, String contrasena, String saludo, LocalDate fechaNacimiento) {
-        this.nombreCompleto = nombreCompleto;
-        this.numeroTelefono = numeroTelefono;
-        this.email = email;
-        this.contrasena = contrasena;
-        this.saludo = saludo;
-        //this.fotoPerfilURL = fotoPerfilURL;
-        this.fechaNacimiento = fechaNacimiento;
-        this.contactos = new LinkedList<Contacto>();
-        this.Premium = false; 
-    }
-    
+
     
 
 	public int getCodigo() {
@@ -66,13 +56,13 @@ public class Usuario {
 
 
 
-	public int getNumeroTelefono() {
+	public String getNumeroTelefono() {
 		return numeroTelefono;
 	}
 
 
 
-	public void setNumeroTelefono(int numeroTelefono) {
+	public void setNumeroTelefono(String numeroTelefono) {
 		this.numeroTelefono = numeroTelefono;
 	}
 
@@ -126,38 +116,38 @@ public class Usuario {
 
 
 
-	public LocalDate getFechaNacimiento() {
+	public String getFechaNacimiento() {
 		return fechaNacimiento;
 	}
 
 
 
-	public void setFechaNacimiento(LocalDate fechaNacimiento) {
+	public void setFechaNacimiento(String fechaNacimiento) {
 		this.fechaNacimiento = fechaNacimiento;
 	}
 
 
 
-	public List<Contacto> getContactos() {
-		return contactos;
+	public List<ChatIndividual> getChatIndividuales() {
+		return chatIndividuales;
 	}
 
 
 
-	public void setContactos(List<Contacto> contactos) {
-		this.contactos = contactos;
+	public void setChatIndividuales(List<ChatIndividual> chatIndividuales) {
+		this.chatIndividuales = chatIndividuales;
 	}
 
 
 
-	public List<Grupo> getGruposAdmin() {
-		return gruposAdmin;
+	public List<Grupo> getGrupos() {
+		return grupos;
 	}
 
 
 
-	public void setGruposAdmin(List<Grupo> gruposAdmin) {
-		this.gruposAdmin = gruposAdmin;
+	public void setGrupos(List<Grupo> grupos) {
+		this.grupos = grupos;
 	}
 
 
@@ -174,16 +164,16 @@ public class Usuario {
 
 
 
-	public void addGrupoAdmin(Grupo g) {
-		gruposAdmin.add(g);
+	public void addGrupo(Grupo g) {
+		grupos.add(g);
 	}
 	
-	public void removeGrupoAdmin(Grupo g) {
-		gruposAdmin.remove(g);
+	public void removeGrupo(Grupo g) {
+		grupos.remove(g);
 	}
 	
-	public void addContacto(ChatIndividual c) {
-		contactos.add(c);
+	public void addChat(ChatIndividual c) {
+		chatIndividuales.add(c);
 	}
 
 

@@ -44,16 +44,19 @@ public class ChatIndividual extends Contacto {
 
 	// Methods
 
-	public ChatIndividual getContacto(Usuario usuario) {
-		return this.usuario.getContactos().stream().filter(c -> c instanceof ChatIndividual)
-				.map(c -> (ChatIndividual) c).filter(c -> c.getUsuario().equals(usuario)).findAny().orElse(null);
+	public ChatIndividual getChatIndividual(Usuario usuario) {
+		return this.usuario.getChatIndividuales().stream()
+				.map(c -> (ChatIndividual) c)
+				.filter(c -> c.getUsuario().equals(usuario))
+				.findAny()
+				.orElse(null);
 	}
 
 	@Override
 	public List<Mensaje> getMensajesRecibidos(Optional<Usuario> usuario) {
-		ChatIndividual contacto = getContacto(usuario.orElse(null));
-		if (contacto != null) {
-			return contacto.getMensajesEnviados();
+		ChatIndividual chat = getChatIndividual(usuario.orElse(null));
+		if (chat != null) {
+			return chat.getMensajesEnviados();
 		} else
 			return new LinkedList<>();
 	}
@@ -61,13 +64,13 @@ public class ChatIndividual extends Contacto {
 
 	// Añade al contacto al grupo en cuestion
 	public void addGrupo(Grupo grupo) {
-		usuario.addGrupoAdmin(grupo);
+		usuario.addGrupo(grupo);
 	}
 
 
 
 	public void modificarGrupo(Grupo g) {
-		List<Grupo> grupos = usuario.getGruposAdmin();
+		List<Grupo> grupos = usuario.getGrupos();
 
 		grupos.remove(g);
 		grupos.add(g);
@@ -75,7 +78,7 @@ public class ChatIndividual extends Contacto {
 
 	// Borra los mensajes que le ha mandado este contacto al usuarioActual
 	public List<Mensaje> removeMensajesRecibidos(Usuario usuarioActual) {
-		List<Mensaje> recibidos = getContacto(usuarioActual).getMensajesEnviados();
+		List<Mensaje> recibidos = getChatIndividual(usuarioActual).getMensajesEnviados();
 		List<Mensaje> copia = new LinkedList<>(recibidos);
 		recibidos.clear();
 		return copia;

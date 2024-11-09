@@ -60,7 +60,7 @@ public class Grupo extends Contacto {
 
 	@Override
 	public List<Mensaje> getMensajesRecibidos(Optional<Usuario> emptyOpt) {
-		return this.miembros.stream().flatMap(c -> c.getUsuario().getContactos().stream())
+		return this.miembros.stream().flatMap(c -> c.getUsuario().getGrupos().stream())
 				.filter(c -> c instanceof Grupo).map(c -> (Grupo) c).filter(g -> this.equals(g))
 				.flatMap(g -> g.getMensajesEnviados().stream()).collect(Collectors.toList());
 	}

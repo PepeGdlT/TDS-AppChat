@@ -63,7 +63,9 @@ public class VentanaPrincipal extends JPanel {
         // Add the list of contacts to a JScrollPane to make it scrollable
         JScrollPane scrollPane = new JScrollPane(listaContactos);
         panel.add(scrollPane, BorderLayout.CENTER);
-
+        
+ 
+        
         return panel;
     }
 

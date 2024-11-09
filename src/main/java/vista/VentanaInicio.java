@@ -15,7 +15,6 @@ public class VentanaInicio {
 
     private void initialize() {
         try {
-            // Configuración de look and feel de FlatLaf
             UIManager.setLookAndFeel(new FlatXcodeDarkIJTheme());
         } catch (Exception e) {
             e.printStackTrace();

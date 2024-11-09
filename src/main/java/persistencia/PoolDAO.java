@@ -20,8 +20,7 @@ public class PoolDAO {
 	
 	public Object getObjeto(int id) {
 		return pool.get(id);
-	} // devuelve null si no encuentra el objeto
-
+    }
 	public void addObjeto(int id, Object objeto) {
 		pool.put(id, objeto);
 	}

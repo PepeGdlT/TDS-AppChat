@@ -8,22 +8,20 @@
   <version>0.0.1-SNAPSHOT</version>
 
   <name>TDS-AppChat</name>
-  <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
+    <junit.jupiter.version>5.11.0</junit.jupiter.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
-		
-		
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.11.0</version>
+        <version>${junit.jupiter.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -31,31 +29,30 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- Dependencias JUnit 5 -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- Optionally: parameterized tests support -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
       <scope>test</scope>
     </dependency>
-	    
-	<dependency> 
-		<groupId>umu.tds</groupId> 
-		<artifactId>driverPersistencia</artifactId> 
-		<version>2.0</version> 
-	</dependency>
 
-	<dependency> 
-		<groupId>umu.tds</groupId> 
-		<artifactId>driverPersistencia</artifactId> 
-		<version>2.0</version> 
-	</dependency>
-	
-	
+    <!-- Dependencias adicionales del proyecto -->
+    <dependency> 
+      <groupId>umu.tds</groupId> 
+      <artifactId>driverPersistencia</artifactId> 
+      <version>2.0</version> 
+    </dependency>
+
     <dependency>
       <groupId>com.toedter</groupId>
       <artifactId>jcalendar</artifactId>
@@ -68,25 +65,16 @@
       <version>1.4.200</version>
     </dependency>
 
-
     <dependency>
       <groupId>org.eclipse.persistence</groupId>
       <artifactId>eclipselink</artifactId>
       <version>2.7.7</version>
     </dependency>
 
-
     <dependency>
       <groupId>javax.persistence</groupId>
       <artifactId>javax.persistence-api</artifactId>
       <version>2.2</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>org.knowm.xchart</groupId>
-      <artifactId>xchart</artifactId>
-      <version>3.5.0</version>
     </dependency>
 
     <dependency>
@@ -102,29 +90,26 @@
     </dependency>
     
     <dependency>
-        <groupId>com.formdev</groupId>
-        <artifactId>flatlaf</artifactId>
-        <version>3.5.2</version> <!-- Usa la última versión disponible en el repositorio central de Maven -->
+      <groupId>com.formdev</groupId>
+      <artifactId>flatlaf</artifactId>
+      <version>3.5.2</version>
     </dependency>
     
     <dependency>
-	    <groupId>com.formdev</groupId>
-	    <artifactId>flatlaf-intellij-themes</artifactId>
-	    <version>3.5.2</version> <!-- Cambia a la última versión disponible -->
-	</dependency>
-    
-    
+      <groupId>com.formdev</groupId>
+      <artifactId>flatlaf-intellij-themes</artifactId>
+      <version>3.5.2</version>
+    </dependency>
   </dependencies>
 
   <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+    <pluginManagement>
       <plugins>
-        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+        <!-- Plugins para el ciclo de vida de Maven -->
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.4.0</version>
         </plugin>
-        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.3.1</version>
@@ -135,7 +120,12 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.0.0-M5</version>
+          <configuration>
+            <includes>
+              <include>**/*Test.java</include>
+            </includes>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
@@ -149,7 +139,6 @@
           <artifactId>maven-deploy-plugin</artifactId>
           <version>3.1.2</version>
         </plugin>
-        <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.12.1</version>

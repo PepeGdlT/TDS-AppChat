@@ -4,72 +4,63 @@ import java.util.*;
 
 import persistencia.DAOException;
 import persistencia.FactoriaDAO;
-import persistencia.IAdaptadorUsuarioDAO;
-
 
 public class CatalogoUsuarios {
-	private Map<Integer, Usuario> usuarios;
-	private static CatalogoUsuarios unicaInstancia = new CatalogoUsuarios();
 	
+	private Map<String, Usuario> usuariosTelefono;
+	private Map<Integer, Usuario> usuariosCodigo;
+	
+	private static CatalogoUsuarios unicaInstancia = new CatalogoUsuarios();
 	private FactoriaDAO dao;
-	private IAdaptadorUsuarioDAO adaptadorUsuario;
 	
 	private CatalogoUsuarios() {
+		usuariosTelefono = new HashMap<String, Usuario>();
+		usuariosCodigo = new HashMap<Integer, Usuario>();
 		try {
 			dao = FactoriaDAO.getUnicaInstancia(FactoriaDAO.DAO_TDS);
-			adaptadorUsuario = dao.getUsuarioDAO();
-			usuarios = new HashMap<Integer, Usuario>();
-			this.cargarUsuarios();
+			
+			List<Usuario> listaUsuarios = dao.getUsuarioDAO().recuperarTodosUsuarios();
+			for (Usuario usuario : listaUsuarios) {
+				usuariosTelefono.put(usuario.getNumeroTelefono(), usuario);
+				usuariosCodigo.put(usuario.getCodigo(), usuario);
+			}
 		} catch (DAOException eDAO) {
 			eDAO.printStackTrace();
 		}
 	}
 	
-	
 	public static CatalogoUsuarios getUnicaInstancia() {
 		return unicaInstancia;
 	}
-	
 	public List<Usuario> getUsuarios() {
-		ArrayList<Usuario> lista = new ArrayList<Usuario>();
-		for (Usuario usuario : usuarios.values()) {
-			lista.add(usuario);
-		}
-		return lista;
+		return new LinkedList<Usuario>(usuariosTelefono.values());
+	}
+	
+	public Usuario encontrarUsuario(String login) {
+		return usuariosTelefono.get(login);
+	}
+
+	public Usuario encontrarUsuario(int id) {
+		return usuariosCodigo.get(id);
 	}
 	
 	
-	public Usuario getUsuarioCodigo(int codigo) {
-		for (Usuario usuario : usuarios.values()) {
-			if (usuario.getCodigo() == codigo) {
-				return usuario;
-			}
-		}
-		return null;
-	}
-	
-	public Usuario getUsuarioTelefono(int telefono) {
-		return usuarios.get(telefono);
-	}
-	
+
 	public void addUsuario(Usuario usuario) {
-		usuarios.put(usuario.getNumeroTelefono(), usuario);
+		usuariosCodigo.put(usuario.getCodigo(), usuario);
+		usuariosTelefono.put(usuario.getNumeroTelefono(), usuario);
+
 	}
 	
 	public void removeUsuario(Usuario usuario) {
-		usuarios.remove(usuario.getNumeroTelefono());
+		usuariosTelefono.remove(usuario.getNumeroTelefono());
+		usuariosCodigo.remove(usuario.getCodigo());
     }
 	
 	
-	private void cargarUsuarios() throws DAOException{
-        List<Usuario> listaUsuariosBD = adaptadorUsuario.recuperarTodosUsuarios();
-        for (Usuario usuario : listaUsuariosBD) {
-            usuarios.put(usuario.getNumeroTelefono(), usuario);
-        }
-    }
 	
 	public boolean contains(Usuario usuario) {
-		return usuarios.containsValue(usuario);
+		return usuariosTelefono.containsValue(usuario);
 	}
 	
 	

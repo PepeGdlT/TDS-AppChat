@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
@@ -21,7 +22,7 @@ public class VentanaRegister extends JPanel {
     private JTextField phoneField;
     private JPasswordField passwordField;
     private JPasswordField confirmPasswordField;
-    private JTextField greetingMessageField; // Saludo opcional
+    private JTextField greetingMessageField;
     private JButton showPasswordButton;
     private JButton selectImageButton;
     private JLabel imagePreview;
@@ -32,7 +33,7 @@ public class VentanaRegister extends JPanel {
     
     private VentanaInicio mainFrame;
 
-    // Error labels
+     
     private JLabel fullNameErrorLabel;
     private JLabel emailErrorLabel;
     private JLabel phoneErrorLabel;
@@ -67,7 +68,7 @@ public class VentanaRegister extends JPanel {
         add(registerTitle, gbcTitle);
 
         // Nombre completo
-        fullNameField = new JTextField("Enter your full name");
+        fullNameField = new JTextField("Enter your full name"); 
         setupTextField(fullNameField);
 
         GridBagConstraints gbcFullName = new GridBagConstraints();
@@ -109,7 +110,7 @@ public class VentanaRegister extends JPanel {
         add(emailErrorLabel, gbcEmailError);
 
         // Teléfono
-        phoneField = new JTextField("Enter your phone number");
+        phoneField = new JTextField("Enter your phone number"); 
         setupTextField(phoneField);
 
         GridBagConstraints gbcPhone = new GridBagConstraints();
@@ -175,9 +176,9 @@ public class VentanaRegister extends JPanel {
         });
 
         GridBagConstraints gbcShowPassword = new GridBagConstraints();
-        gbcShowPassword.gridx = 2; // Placing it next to the password field
+        gbcShowPassword.gridx = 2; 
         gbcShowPassword.gridy = 5;
-        gbcShowPassword.insets = new Insets(0, -5, 0, 15); // Adjust insets if needed
+        gbcShowPassword.insets = new Insets(0, -5, 0, 15); 
         add(showPasswordButton, gbcShowPassword);
 
         
@@ -207,7 +208,7 @@ public class VentanaRegister extends JPanel {
         add(passwordErrorLabel, gbcPasswordError);
         
         // Botón para seleccionar imagen
-        selectImageButton = new JButton("Select Image");
+        selectImageButton = new JButton("Select Image"); 
         selectImageButton.setPreferredSize(new Dimension(150, 40));
         selectImageButton.setBackground(ElegantPalette.ACTION_BUTTON);
         selectImageButton.setForeground(ElegantPalette.BUTTON_TEXT);
@@ -219,10 +220,10 @@ public class VentanaRegister extends JPanel {
         });
 
         GridBagConstraints gbcSelectImageButton = new GridBagConstraints();
-        gbcSelectImageButton.gridwidth = 2; // Make it span across the entire width
+        gbcSelectImageButton.gridwidth = 2; 
         gbcSelectImageButton.gridx = 0;
-        gbcSelectImageButton.gridy = 6; // Placing it below the password fields
-        gbcSelectImageButton.insets = new Insets(10, 20, 10, 20); // Adjust insets if needed
+        gbcSelectImageButton.gridy = 6; 
+        gbcSelectImageButton.insets = new Insets(10, 20, 10, 20); 
         add(selectImageButton, gbcSelectImageButton);
 
         
@@ -262,12 +263,13 @@ public class VentanaRegister extends JPanel {
         backToLoginButton = new JButton("Back to Login");
         backToLoginButton.setPreferredSize(new Dimension(150, 40));
         backToLoginButton.setForeground(ElegantPalette.LINK_TEXT);
-        backToLoginButton.addActionListener(e -> handleBackToLogin()); // Method to go back to login
+        backToLoginButton.addActionListener(e -> handleBackToLogin()); 
+        
 
         GridBagConstraints gbcBackToLoginButton = new GridBagConstraints();
         gbcBackToLoginButton.gridwidth = 2;
         gbcBackToLoginButton.gridx = 0;
-        gbcBackToLoginButton.gridy = 10; // After the greeting message
+        gbcBackToLoginButton.gridy = 10;
         gbcBackToLoginButton.insets = new Insets(10, 20, 10, 20);
         add(backToLoginButton, gbcBackToLoginButton);
 
@@ -276,12 +278,12 @@ public class VentanaRegister extends JPanel {
         registerButton.setPreferredSize(new Dimension(150, 40));
         registerButton.setBackground(ElegantPalette.ACTION_BUTTON);
         registerButton.setForeground(ElegantPalette.BUTTON_TEXT);
-        registerButton.addActionListener(e -> handleRegister()); // Method to handle registration
+        registerButton.addActionListener(e -> handleRegister());  
 
         GridBagConstraints gbcRegisterButton = new GridBagConstraints();
         gbcRegisterButton.gridwidth = 2;
         gbcRegisterButton.gridx = 0;
-        gbcRegisterButton.gridy = 9; // After the back button
+        gbcRegisterButton.gridy = 9;
         gbcRegisterButton.insets = new Insets(10, 20, 20, 20);
         add(registerButton, gbcRegisterButton);
 
@@ -355,7 +357,7 @@ public class VentanaRegister extends JPanel {
             
             // Establecer la imagen escalada en el JLabel
             imagePreview.setIcon(new ImageIcon(scaledImage));
-            imagePreview.setText("");  // Eliminar el texto
+            imagePreview.setText("");   
         }
     }
 
@@ -373,14 +375,17 @@ public class VentanaRegister extends JPanel {
 		OK = validateForm();
 		if (OK) {
 			boolean registrado = false;
+			 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		     String formattedDate = dateFormat.format(dateChooser.getDate());
+			
 			registrado = ControladorAppChat.getUnicaInstancia().registrarUsuario(
 					fullNameField.getText(),
-					Integer.parseInt(phoneField.getText()),
+					phoneField.getText(),
 					emailField.getText(),
 					new String(passwordField.getPassword()),
 					greetingMessageField.getText(),
-					//selectedImageFile.getPath(),
-					dateChooser.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+					selectedImageFile.getPath(),
+					formattedDate
 					);
 
 			
@@ -405,7 +410,6 @@ public class VentanaRegister extends JPanel {
 	private boolean validateForm() {
         boolean isValid = true;
 
-        // Reset all error labels
         fullNameErrorLabel.setText("");
         emailErrorLabel.setText("");
         phoneErrorLabel.setText("");

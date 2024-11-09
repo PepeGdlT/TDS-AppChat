@@ -17,6 +17,15 @@ import tds.driver.ServicioPersistencia;
 
 public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 
+	
+	private static final String GRUPO = "grupo";
+	private static final String NOMBRE = "nombre";
+	private static final String MIEMBROS = "miembros";
+	private static final String ADMINISTRADOR = "administrador";
+	private static final String MENSAJES = "mensajes";
+	
+	
+	
 	private ServicioPersistencia servPersistencia;
 	private static AdaptadorGrupoTDS unicaInstancia = null;
 	
@@ -49,14 +58,14 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 		noAdmin(grupo.getAdministrador());
 		
 		eGrupo = new Entidad();
-		eGrupo.setNombre("grupo");
+		eGrupo.setNombre(GRUPO);
 		eGrupo.setPropiedades(new ArrayList<Propiedad>(
 			Arrays.asList(	
-				new Propiedad("nombre", grupo.getNombre()),
-				new Propiedad("administrador", String.valueOf(grupo.getAdministrador().getCodigo())),
+				new Propiedad(NOMBRE, grupo.getNombre()),
+				new Propiedad(ADMINISTRADOR, String.valueOf(grupo.getAdministrador().getCodigo())),
 				new Propiedad("codigo", String.valueOf(grupo.getCodigo())),
-				new Propiedad("miembros", obtenerCodigosMiembros(grupo.getListaMiembros())),
-				new Propiedad("mensajes", obtenerCodigosMensajes(grupo.getMensajesEnviados()))
+				new Propiedad(MIEMBROS, obtenerCodigosMiembros(grupo.getListaMiembros())),
+				new Propiedad(MENSAJES, obtenerCodigosMensajes(grupo.getMensajesEnviados()))
 			)));
 		
 		PoolDAO.getUnicaInstancia().addObjeto(grupo.getCodigo(), eGrupo);
@@ -90,20 +99,20 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 	public void modificarGrupo(Grupo grupo) {
 		Entidad eGrupo = servPersistencia.recuperarEntidad(grupo.getCodigo());
 		
-		servPersistencia.eliminarPropiedadEntidad(eGrupo, "nombre");
-		servPersistencia.anadirPropiedadEntidad(eGrupo, "nombre",
+		servPersistencia.eliminarPropiedadEntidad(eGrupo, NOMBRE);
+		servPersistencia.anadirPropiedadEntidad(eGrupo, NOMBRE,
 				grupo.getNombre());
-		servPersistencia.eliminarPropiedadEntidad(eGrupo, "administrador");
-		servPersistencia.anadirPropiedadEntidad(eGrupo, "administrador",
+		servPersistencia.eliminarPropiedadEntidad(eGrupo, ADMINISTRADOR);
+		servPersistencia.anadirPropiedadEntidad(eGrupo, ADMINISTRADOR,
 				String.valueOf(grupo.getAdministrador().getCodigo()));
 		servPersistencia.eliminarPropiedadEntidad(eGrupo, "codigo");
 		servPersistencia.anadirPropiedadEntidad(eGrupo, "codigo",
 				String.valueOf(grupo.getCodigo()));
-		servPersistencia.eliminarPropiedadEntidad(eGrupo, "miembros");
-		servPersistencia.anadirPropiedadEntidad(eGrupo, "miembros", 
+		servPersistencia.eliminarPropiedadEntidad(eGrupo, MIEMBROS);
+		servPersistencia.anadirPropiedadEntidad(eGrupo, MIEMBROS, 
 				obtenerCodigosMiembros(grupo.getListaMiembros()));
-		servPersistencia.eliminarPropiedadEntidad(eGrupo, "mensajes");
-		servPersistencia.anadirPropiedadEntidad(eGrupo, "mensajes", 
+		servPersistencia.eliminarPropiedadEntidad(eGrupo, MENSAJES);
+		servPersistencia.anadirPropiedadEntidad(eGrupo, MENSAJES, 
 				obtenerCodigosMensajes(grupo.getMensajesEnviados()));
 	}
 
@@ -119,24 +128,24 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
         
 		eGrupo = servPersistencia.recuperarEntidad(codigo);
 		
-		nombre = servPersistencia.recuperarPropiedadEntidad(eGrupo, "nombre");
+		nombre = servPersistencia.recuperarPropiedadEntidad(eGrupo, NOMBRE);
 		
 		Grupo grupo = new Grupo(nombre, new ArrayList<Mensaje>(), new ArrayList<ChatIndividual>(), null);	
 		grupo.setCodigo(codigo);
 		
 		PoolDAO.getUnicaInstancia().addObjeto(codigo, grupo);
 		
-		List<Mensaje> mensajes = obtenerMensajesDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, "mensajes"));
+		List<Mensaje> mensajes = obtenerMensajesDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MENSAJES));
 		for (Mensaje m : mensajes) {
 			grupo.enviarMensaje(m);
 		}
 		
-		List<ChatIndividual> miembros = obtenerMiembrosDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, "miembros"));
+		List<ChatIndividual> miembros = obtenerMiembrosDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MIEMBROS));
 		for (ChatIndividual c : miembros) {
 			grupo.addMiembro(c);
 		}
 		
-		grupo.setAdministrador(obtenerAdministradorDesdeCodigo(servPersistencia.recuperarPropiedadEntidad(eGrupo, "administrador")));
+		grupo.setAdministrador(obtenerAdministradorDesdeCodigo(servPersistencia.recuperarPropiedadEntidad(eGrupo, ADMINISTRADOR)));
 		
 		return grupo;
 		
@@ -148,7 +157,7 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 	public List<Grupo> recuperarTodosGrupos() {
 		List<Grupo> grupos = new ArrayList<Grupo>();
         
-        List<Entidad> entidades = servPersistencia.recuperarEntidades("grupo");
+        List<Entidad> entidades = servPersistencia.recuperarEntidades(GRUPO);
         for (Entidad eGrupo : entidades) {
             grupos.add(recuperarGrupo(eGrupo.getId()));
         }
