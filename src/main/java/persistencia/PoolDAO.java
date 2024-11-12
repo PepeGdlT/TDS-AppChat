@@ -7,7 +7,7 @@ import java.util.Hashtable;
 public class PoolDAO {
 	private static PoolDAO unicaInstancia;
 	private Hashtable<Integer, Object> pool;
-
+	
 	private PoolDAO() {
 		pool = new Hashtable<Integer, Object>();
 	}

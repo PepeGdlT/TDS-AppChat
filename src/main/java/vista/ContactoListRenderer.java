@@ -1,11 +1,7 @@
 package vista;
 
-// ContactoListRenderer.java
-
-import java.awt.Color;
-import java.awt.Component;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
+import javax.swing.*;
+import java.awt.*;
 
 public class ContactoListRenderer extends DefaultListCellRenderer {
 
@@ -13,15 +9,10 @@ public class ContactoListRenderer extends DefaultListCellRenderer {
     public Component getListCellRendererComponent(JList<?> list, 
                     Object value, int index, boolean isSelected, 
                     boolean cellHasFocus) {
-        if (value != null && value instanceof ContactoVisor) {
-            ContactoVisor cont = (ContactoVisor) value;
-            if (isSelected) {
-                cont.setBackground(ElegantPalette.PANEL_BACKGROUND);
-            } else {
-                cont.setBackground(ElegantPalette.BACKGROUND);
-            }
-          
-            return cont;
+        if (value instanceof ContactoVisor) {
+            ContactoVisor contact = (ContactoVisor) value;
+            contact.setBackground(isSelected ? ElegantPalette.PANEL_BACKGROUND : ElegantPalette.BACKGROUND);
+            return contact;
         } else {
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }

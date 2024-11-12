@@ -4,10 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import controlador.ControladorAppChat;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 public class VentanaLogin extends JPanel {
 
@@ -15,15 +12,14 @@ public class VentanaLogin extends JPanel {
     private JPasswordField passwordField;
     private JButton showPasswordButton;
     private boolean isPasswordVisible = false;
+    private VentanaInicio mainFrame; 
 
-    private VentanaInicio mainFrame; // Referencia a VentanaInicio
+    public VentanaLogin(VentanaInicio mainFrame) {
+    	this.mainFrame = mainFrame;
 
-    public VentanaLogin() {
         setupLayout();
         setupComponents();
     }
-
-    // Configuración principal del layout
     private void setupLayout() {
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[]{380};
@@ -37,7 +33,7 @@ public class VentanaLogin extends JPanel {
         addPhoneField();
         addPasswordField();
         addLoginButton();
-        addRegisterLabel();
+        addRegisterButton();
     }
 
     private void addLoginTitle() {
@@ -85,21 +81,15 @@ public class VentanaLogin extends JPanel {
         add(loginButton, gbcLoginButton);
     }
 
-    private void addRegisterLabel() {
-        JLabel registerLabel = new JLabel("Register", SwingConstants.CENTER);
-        registerLabel.setForeground(ElegantPalette.LINK_TEXT);
-        registerLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        registerLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (mainFrame != null) {
-                    mainFrame.showRegisterPanel(); // Cambia a la ventana de registro
-                }
-            }
-        });
-
+    private void addRegisterButton() {
+    	JButton registerButton = new JButton("Register");
+    	registerButton.addActionListener(e -> handleRegister());
+    	registerButton.setFont(new Font("Tahoma", Font.BOLD, 11));
+    	registerButton.setForeground(ElegantPalette.LINK_TEXT);
+    	registerButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    	
         GridBagConstraints gbcRegisterLabel = createGbc(0, 4, 10);
-        add(registerLabel, gbcRegisterLabel);
+        add(registerButton, gbcRegisterLabel);
     }
 
     private GridBagConstraints createGbc(int x, int y, int padding) {
@@ -150,9 +140,6 @@ public class VentanaLogin extends JPanel {
     }
 
     private void iniciarSesion() {
-    	
- 
-    	
         String phone = phoneField.getText();
         String password = new String(passwordField.getPassword());
 
@@ -162,9 +149,7 @@ public class VentanaLogin extends JPanel {
         }
 
         try {
-            boolean login = ControladorAppChat.getUnicaInstancia().iniciarSesion(
-                    phone, password
-            );
+            boolean login = ControladorAppChat.getUnicaInstancia().iniciarSesion(phone, password);
 
             if (login && mainFrame != null) {
                 mainFrame.showMainWindow();
@@ -178,13 +163,14 @@ public class VentanaLogin extends JPanel {
         }
     }
 
-    public void setMainFrame(VentanaInicio mainFrame) {
-        this.mainFrame = mainFrame;
-    }
-
     private void togglePasswordVisibility(ImageIcon iconShow, ImageIcon iconHide) {
         isPasswordVisible = !isPasswordVisible;
         passwordField.setEchoChar(isPasswordVisible ? (char) 0 : '•');
         showPasswordButton.setIcon(isPasswordVisible ? iconShow : iconHide);
     }
+    
+    private void handleRegister() {
+        mainFrame.showRegisterPanel();
+    }
+    
 }

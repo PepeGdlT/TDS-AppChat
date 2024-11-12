@@ -1,9 +1,9 @@
 package persistencia;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import beans.Entidad;
 import beans.Propiedad;
@@ -14,236 +14,168 @@ import modelo.Usuario;
 import tds.driver.FactoriaServicioPersistencia;
 import tds.driver.ServicioPersistencia;
 
-
 public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 
-	
-	private static final String GRUPO = "grupo";
-	private static final String NOMBRE = "nombre";
-	private static final String MIEMBROS = "miembros";
-	private static final String ADMINISTRADOR = "administrador";
-	private static final String MENSAJES = "mensajes";
-	
-	
-	
-	private ServicioPersistencia servPersistencia;
-	private static AdaptadorGrupoTDS unicaInstancia = null;
-	
-	public static AdaptadorGrupoTDS getUnicaInstancia() {
-		if (unicaInstancia == null) {
-			return new AdaptadorGrupoTDS();
-		} else {
-			return unicaInstancia;
-		}
-	}
-	
-	private AdaptadorGrupoTDS() {
-		servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
-	}
-	
-	
-	@Override
-	public void registrarGrupo(Grupo grupo) {
-		Entidad eGrupo = null;
-		boolean existe = true;
-		try {
-			eGrupo = servPersistencia.recuperarEntidad(grupo.getCodigo());
-		} catch (NullPointerException e) {
-			existe = false;
-		}
-		if (existe) return;
-		
-		noMensajes(grupo.getMensajesEnviados());
-		noContactos(grupo.getListaMiembros());
-		noAdmin(grupo.getAdministrador());
-		
-		eGrupo = new Entidad();
-		eGrupo.setNombre(GRUPO);
-		eGrupo.setPropiedades(new ArrayList<Propiedad>(
-			Arrays.asList(	
-				new Propiedad(NOMBRE, grupo.getNombre()),
-				new Propiedad(ADMINISTRADOR, String.valueOf(grupo.getAdministrador().getCodigo())),
-				new Propiedad("codigo", String.valueOf(grupo.getCodigo())),
-				new Propiedad(MIEMBROS, obtenerCodigosMiembros(grupo.getListaMiembros())),
-				new Propiedad(MENSAJES, obtenerCodigosMensajes(grupo.getMensajesEnviados()))
-			)));
-		
-		PoolDAO.getUnicaInstancia().addObjeto(grupo.getCodigo(), eGrupo);
-		
-		eGrupo = servPersistencia.recuperarEntidad(grupo.getCodigo());
-		grupo.setCodigo(eGrupo.getId());
-		
-	}
+    private static final String GRUPO = "grupo";
+    private static final String NOMBRE = "nombre";
+    private static final String MIEMBROS = "miembros";
+    private static final String ADMINISTRADOR = "administrador";
+    private static final String MENSAJES = "mensajes";
 
-	@Override
-	public void borrarGrupo(Grupo grupo) {
+    private static ServicioPersistencia servPersistencia;
+    private static AdaptadorGrupoTDS unicaInstancia = null;
+
+    public static AdaptadorGrupoTDS getUnicaInstancia() {
+        if (unicaInstancia == null) {
+            unicaInstancia = new AdaptadorGrupoTDS();
+        }
+        return unicaInstancia;
+    }
+
+    private AdaptadorGrupoTDS() {
+        servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
+    }
+
+    @Override
+    public void registrarGrupo(Grupo grupo) {
+        if (grupo == null || existeGrupo(grupo.getCodigo())) return;
+
+        Entidad eGrupo = new Entidad();
+        eGrupo.setNombre(GRUPO);
+        eGrupo.setPropiedades(new ArrayList<>(List.of(
+                new Propiedad(NOMBRE, grupo.getNombre()),
+                new Propiedad(ADMINISTRADOR, String.valueOf(grupo.getAdministrador().getCodigo())),
+                new Propiedad(MIEMBROS, obtenerCodigosMiembros(grupo.getListaMiembros())),
+                new Propiedad(MENSAJES, obtenerCodigosMensajes(grupo.getMensajesEnviados()))
+        )));
+
+        eGrupo = servPersistencia.registrarEntidad(eGrupo);
+        grupo.setCodigo(eGrupo.getId());
+
+        PoolDAO.getUnicaInstancia().addObjeto(grupo.getCodigo(), grupo);
+
+        // Registrar miembros y mensajes
+        registrarMiembros(grupo.getListaMiembros());
+        registrarMensajes(grupo.getMensajesEnviados());
+    }
+
+    @Override
+    public void borrarGrupo(Grupo grupo) {
+        if (grupo == null) return;
+
         Entidad eGrupo = servPersistencia.recuperarEntidad(grupo.getCodigo());
+        borrarMensajes(grupo.getMensajesEnviados());
+        servPersistencia.borrarEntidad(eGrupo);
+
+        PoolDAO.getUnicaInstancia().removeObjeto(grupo.getCodigo());
+    }
+
+    @Override
+    public void modificarGrupo(Grupo grupo) {
+        if (grupo == null) return;
+
+        Entidad eGrupo = servPersistencia.recuperarEntidad(grupo.getCodigo());
+        actualizarPropiedadesGrupo(eGrupo, grupo);
+    }
+
+    @Override
+    public Grupo recuperarGrupo(int codigo) {
+        if (PoolDAO.getUnicaInstancia().contiene(codigo)) {
+            return (Grupo) PoolDAO.getUnicaInstancia().getObjeto(codigo);
+        }
+
+        Entidad eGrupo = servPersistencia.recuperarEntidad(codigo);
+        String nombre = servPersistencia.recuperarPropiedadEntidad(eGrupo, NOMBRE);
+
+        Usuario administrador = AdaptadorUsuarioTDS.getUnicaInstancia().recuperarUsuario(
+                Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eGrupo, ADMINISTRADOR)));
         
-        AdaptadorMensajeTDS adaptadorMensaje = AdaptadorMensajeTDS.getUnicaInstancia();
-		for (Mensaje mensaje : grupo.getMensajesEnviados()) {
-			adaptadorMensaje.borrarMensaje(mensaje);
-		}
-		
-		eGrupo = servPersistencia.recuperarEntidad(grupo.getCodigo());
-		servPersistencia.borrarEntidad(eGrupo);
-		
-		if (PoolDAO.getUnicaInstancia().contiene(grupo.getCodigo())) {
-			PoolDAO.getUnicaInstancia().removeObjeto(grupo.getCodigo());
-		}
-		
-		
-	}
+        Grupo grupo = new Grupo(nombre, new ArrayList<>(), new ArrayList<>(), administrador);
+        grupo.setCodigo(codigo);
 
+        grupo.setMensajesEnviados(obtenerMensajesDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MENSAJES)));
+        grupo.setListaMiembros(obtenerMiembrosDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MIEMBROS)));
 
-	@Override
-	public void modificarGrupo(Grupo grupo) {
-		Entidad eGrupo = servPersistencia.recuperarEntidad(grupo.getCodigo());
-		
-		servPersistencia.eliminarPropiedadEntidad(eGrupo, NOMBRE);
-		servPersistencia.anadirPropiedadEntidad(eGrupo, NOMBRE,
-				grupo.getNombre());
-		servPersistencia.eliminarPropiedadEntidad(eGrupo, ADMINISTRADOR);
-		servPersistencia.anadirPropiedadEntidad(eGrupo, ADMINISTRADOR,
-				String.valueOf(grupo.getAdministrador().getCodigo()));
-		servPersistencia.eliminarPropiedadEntidad(eGrupo, "codigo");
-		servPersistencia.anadirPropiedadEntidad(eGrupo, "codigo",
-				String.valueOf(grupo.getCodigo()));
-		servPersistencia.eliminarPropiedadEntidad(eGrupo, MIEMBROS);
-		servPersistencia.anadirPropiedadEntidad(eGrupo, MIEMBROS, 
-				obtenerCodigosMiembros(grupo.getListaMiembros()));
-		servPersistencia.eliminarPropiedadEntidad(eGrupo, MENSAJES);
-		servPersistencia.anadirPropiedadEntidad(eGrupo, MENSAJES, 
-				obtenerCodigosMensajes(grupo.getMensajesEnviados()));
-	}
+        PoolDAO.getUnicaInstancia().addObjeto(codigo, grupo);
+        return grupo;
+    }
 
-	@Override
-	public Grupo recuperarGrupo(int codigo) {
-		if (PoolDAO.getUnicaInstancia().contiene(codigo)) {
-			return (Grupo) PoolDAO.getUnicaInstancia().getObjeto(codigo);
-		}
-		
-		Entidad eGrupo;
-		String nombre;
-		int codigoGrupo;
-        
-		eGrupo = servPersistencia.recuperarEntidad(codigo);
-		
-		nombre = servPersistencia.recuperarPropiedadEntidad(eGrupo, NOMBRE);
-		
-		Grupo grupo = new Grupo(nombre, new ArrayList<Mensaje>(), new ArrayList<ChatIndividual>(), null);	
-		grupo.setCodigo(codigo);
-		
-		PoolDAO.getUnicaInstancia().addObjeto(codigo, grupo);
-		
-		List<Mensaje> mensajes = obtenerMensajesDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MENSAJES));
-		for (Mensaje m : mensajes) {
-			grupo.enviarMensaje(m);
-		}
-		
-		List<ChatIndividual> miembros = obtenerMiembrosDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MIEMBROS));
-		for (ChatIndividual c : miembros) {
-			grupo.addMiembro(c);
-		}
-		
-		grupo.setAdministrador(obtenerAdministradorDesdeCodigo(servPersistencia.recuperarPropiedadEntidad(eGrupo, ADMINISTRADOR)));
-		
-		return grupo;
-		
-	}
-
-
-
-	@Override
-	public List<Grupo> recuperarTodosGrupos() {
-		List<Grupo> grupos = new ArrayList<Grupo>();
-        
+    @Override
+    public List<Grupo> recuperarTodosGrupos() {
+        List<Grupo> grupos = new ArrayList<>();
         List<Entidad> entidades = servPersistencia.recuperarEntidades(GRUPO);
         for (Entidad eGrupo : entidades) {
             grupos.add(recuperarGrupo(eGrupo.getId()));
         }
-        
         return grupos;
-	}
+    }
 
-	
-	
-	//----------------------------------------------------------------
-	// Funciones auxiliares
-	//----------------------------------------------------------------
-	
-	private void noMensajes(List<Mensaje> messages) {
-		AdaptadorMensajeTDS adaptadorMensajes = AdaptadorMensajeTDS.getUnicaInstancia();
-		messages.stream()
-		.forEach(m -> adaptadorMensajes.registrarMensaje(m));
-	}
+    // --------------------------------------------------------------------------------
+    // MÉTODOS AUXILIARES
+    // --------------------------------------------------------------------------------
 
-	private void noContactos(List<ChatIndividual> contacts) {
-		AdaptadorChatIndividualTDS adaptadorContactos = AdaptadorChatIndividualTDS.getUnicaInstancia();
-		contacts.stream()
-			.forEach(c -> adaptadorContactos.registrarChatIndividual(c));
-	}
+    private boolean existeGrupo(int codigo) {
+        return servPersistencia.recuperarEntidad(codigo) != null;
+    }
 
-	private void noAdmin(Usuario admin) {
-		AdaptadorUsuarioTDS adaptadorUsuarios = AdaptadorUsuarioTDS.getUnicaInstancia();
-		adaptadorUsuarios.registrarUsuario(admin);
-	}
-	
-	
-	//----------------------------------------------------------------
-	// Obtener codigos -> miembros y mensajes
-	//----------------------------------------------------------------
-	
-	
-	
-	private String obtenerCodigosMiembros(List<ChatIndividual> list) {
-		return list.stream()
-				.map(c -> String.valueOf(c.getCodigo()))
-				.reduce("", (l, c) -> l + c + " ")
-				.trim();
-	}
+    private void actualizarPropiedadesGrupo(Entidad eGrupo, Grupo grupo) {
+        servPersistencia.eliminarPropiedadEntidad(eGrupo, NOMBRE);
+        servPersistencia.anadirPropiedadEntidad(eGrupo, NOMBRE, grupo.getNombre());
 
+        servPersistencia.eliminarPropiedadEntidad(eGrupo, ADMINISTRADOR);
+        servPersistencia.anadirPropiedadEntidad(eGrupo, ADMINISTRADOR, String.valueOf(grupo.getAdministrador().getCodigo()));
 
-	
-	private String obtenerCodigosMensajes(List<Mensaje> list) {
-		return list.stream()
+        servPersistencia.eliminarPropiedadEntidad(eGrupo, MIEMBROS);
+        servPersistencia.anadirPropiedadEntidad(eGrupo, MIEMBROS, obtenerCodigosMiembros(grupo.getListaMiembros()));
+
+        servPersistencia.eliminarPropiedadEntidad(eGrupo, MENSAJES);
+        servPersistencia.anadirPropiedadEntidad(eGrupo, MENSAJES, obtenerCodigosMensajes(grupo.getMensajesEnviados()));
+    }
+
+    private void registrarMiembros(List<ChatIndividual> miembros) {
+        AdaptadorChatIndividualTDS adaptadorChatIndividual = AdaptadorChatIndividualTDS.getUnicaInstancia();
+        miembros.forEach(adaptadorChatIndividual::registrarChatIndividual);
+    }
+
+    private void registrarMensajes(List<Mensaje> mensajes) {
+        AdaptadorMensajeTDS adaptadorMensaje = AdaptadorMensajeTDS.getUnicaInstancia();
+        mensajes.forEach(adaptadorMensaje::registrarMensaje);
+    }
+
+    private void borrarMensajes(List<Mensaje> mensajes) {
+        AdaptadorMensajeTDS adaptadorMensaje = AdaptadorMensajeTDS.getUnicaInstancia();
+        mensajes.forEach(adaptadorMensaje::borrarMensaje);
+    }
+
+    private List<Mensaje> obtenerMensajesDesdeCodigos(String codigos) {
+        List<Mensaje> mensajes = new ArrayList<>();
+        StringTokenizer strTok = new StringTokenizer(codigos, " ");
+        AdaptadorMensajeTDS adaptadorMensaje = AdaptadorMensajeTDS.getUnicaInstancia();
+        while (strTok.hasMoreTokens()) {
+            mensajes.add(adaptadorMensaje.recuperarMensaje(Integer.parseInt(strTok.nextToken())));
+        }
+        return mensajes;
+    }
+
+    private List<ChatIndividual> obtenerMiembrosDesdeCodigos(String codigos) {
+        List<ChatIndividual> miembros = new ArrayList<>();
+        StringTokenizer strTok = new StringTokenizer(codigos, " ");
+        AdaptadorChatIndividualTDS adaptadorChatIndividual = AdaptadorChatIndividualTDS.getUnicaInstancia();
+        while (strTok.hasMoreTokens()) {
+            miembros.add(adaptadorChatIndividual.recuperarChatIndividual(Integer.parseInt(strTok.nextToken())));
+        }
+        return miembros;
+    }
+
+    private String obtenerCodigosMiembros(List<ChatIndividual> miembros) {
+        return miembros.stream()
                 .map(m -> String.valueOf(m.getCodigo()))
-				.reduce("", (l, m) -> l + m + " ")
-                .trim();
-	}
+                .collect(Collectors.joining(" "));
+    }
 
-
-	//----------------------------------------------------------------
-	// Obtener mensajes y miembros -> codigos
-	//----------------------------------------------------------------
-	
-	
-	private List<Mensaje> obtenerMensajesDesdeCodigos(String recuperarPropiedadEntidad) {
-		List<Mensaje> mensajes = new ArrayList<Mensaje>();
-		StringTokenizer strTok = new StringTokenizer(recuperarPropiedadEntidad, " ");
-		AdaptadorMensajeTDS adaptadorMensajes = AdaptadorMensajeTDS.getUnicaInstancia();
-		while (strTok.hasMoreTokens()) {
-			mensajes.add(adaptadorMensajes.recuperarMensaje(Integer.valueOf((String) strTok.nextElement())));
-		}
-		return mensajes;
-	}
-	
-
-	private List<ChatIndividual> obtenerMiembrosDesdeCodigos(String recuperarPropiedadEntidad) {
-		List<ChatIndividual> miembros = new ArrayList<ChatIndividual>();
-		StringTokenizer strTok = new StringTokenizer(recuperarPropiedadEntidad, " ");
-		AdaptadorChatIndividualTDS adaptadorChatIndividual = AdaptadorChatIndividualTDS.getUnicaInstancia();
-		while (strTok.hasMoreTokens()) {
-			miembros.add(
-					adaptadorChatIndividual.recuperarChatIndividual(Integer.valueOf((String) strTok.nextElement())));
-		}
-		return miembros;
-	}
-	
-
-	private Usuario obtenerAdministradorDesdeCodigo(String recuperarPropiedadEntidad) {
-		AdaptadorUsuarioTDS adaptadorUsuarios = AdaptadorUsuarioTDS.getUnicaInstancia();
-		return adaptadorUsuarios.recuperarUsuario(Integer.valueOf(recuperarPropiedadEntidad));
-	}
-
-	
+    private String obtenerCodigosMensajes(List<Mensaje> mensajes) {
+        return mensajes.stream()
+                .map(m -> String.valueOf(m.getCodigo()))
+                .collect(Collectors.joining(" "));
+    }
 }

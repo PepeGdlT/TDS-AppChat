@@ -1,6 +1,8 @@
 package tds;
 
 import java.awt.EventQueue;
+
+import controlador.ControladorAppChat;
 import vista.VentanaInicio;
 
 public class Lanzador {
@@ -8,7 +10,6 @@ public class Lanzador {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    // Crear instancia de VentanaInicio
                     VentanaInicio ventana = new VentanaInicio();
                 } catch (Exception e) {
                     e.printStackTrace();

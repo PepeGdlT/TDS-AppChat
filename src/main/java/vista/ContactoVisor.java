@@ -31,7 +31,7 @@ public class ContactoVisor extends JPanel {
         
         // Imagen del contacto
         JLabel lblimagen = new JLabel();
-        lblimagen.setIcon(new ImageIcon(IconsResource.class.getResource("/" + fotorurl))); // Cargar imagen
+        lblimagen.setIcon(new ImageIcon(IconsResource.class.getResource("/" + fotorurl)));
         fixSize(lblimagen, 48, 48);
         this.add(lblimagen);
 

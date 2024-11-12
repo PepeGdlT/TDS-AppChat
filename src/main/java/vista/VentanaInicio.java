@@ -2,6 +2,7 @@ package vista;
 
 import javax.swing.*;
 import com.formdev.flatlaf.intellijthemes.*;
+import controlador.ControladorAppChat;
 import java.awt.*;
 
 public class VentanaInicio {
@@ -36,8 +37,7 @@ public class VentanaInicio {
 
     public void showLoginPanel() {
         mainPanel.removeAll();
-        VentanaLogin loginPanel = new VentanaLogin();
-        loginPanel.setMainFrame(this);
+        VentanaLogin loginPanel = new VentanaLogin(this);
         mainPanel.add(loginPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -45,8 +45,7 @@ public class VentanaInicio {
 
     public void showRegisterPanel() {
         mainPanel.removeAll();
-        VentanaRegister registerPanel = new VentanaRegister();
-        registerPanel.setMainFrame(this);
+        VentanaRegister registerPanel = new VentanaRegister(this);
         mainPanel.add(registerPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -54,8 +53,7 @@ public class VentanaInicio {
 
     public void showMainWindow() {
         mainPanel.removeAll();
-        VentanaPrincipal mainWindow = new VentanaPrincipal();
-        mainWindow.setMainFrame(this);
+        VentanaPrincipal mainWindow = new VentanaPrincipal(this);
         mainPanel.add(mainWindow, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -63,10 +61,11 @@ public class VentanaInicio {
 
     public void showContactPanel() {
         mainPanel.removeAll();
-        VentanaContactos contactPanel = new VentanaContactos();
-        contactPanel.setMainFrame(this);
+        VentanaContactos contactPanel = new VentanaContactos(this);
         mainPanel.add(contactPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
     }
+    
+
 }

@@ -1,19 +1,14 @@
 package controlador;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.toedter.calendar.JCalendar;
-
 import modelo.CatalogoUsuarios;
 import modelo.ChatIndividual;
-import modelo.Contacto;
 import modelo.Grupo;
 import modelo.Mensaje;
 import modelo.Usuario;
@@ -24,252 +19,247 @@ import persistencia.IAdaptadorGrupoDAO;
 import persistencia.IAdaptadorMensajeDAO;
 import persistencia.IAdaptadorUsuarioDAO;
 
-
- // CAMBIAR ESTO A ENUM, Y TRATAR PATRON EXPERTO
-
-// CAMBIAR DE TELEFONO A CODIGO
-
 public class ControladorAppChat {
-	
-	private static ControladorAppChat unicaInstancia;
-	
-	private IAdaptadorUsuarioDAO adaptadorUsuario;
-	private IAdaptadorChatIndividualDAO adaptadorChatIndividual;
-	private IAdaptadorMensajeDAO adaptadorMensaje;
-	private IAdaptadorGrupoDAO adaptadorGrupo;
-	
-	private  CatalogoUsuarios catalogoUsuarios;
-	
-	private Usuario usuarioActual;
-	private Contacto contactoActual;
-	
-	private ControladorAppChat() {
-		inicializarAdaptadores();
-		inicializarCatalogos();
-	}
-	
-	
-	public static ControladorAppChat getUnicaInstancia() {
-		if (unicaInstancia == null) {
-			unicaInstancia = new ControladorAppChat();
-		}
-		return unicaInstancia;
-	}
-	
-	private void inicializarAdaptadores() {
-		FactoriaDAO factoria = null;
-		try {
-			factoria = FactoriaDAO.getUnicaInstancia(FactoriaDAO.DAO_TDS);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		adaptadorUsuario = factoria.getUsuarioDAO();
-		adaptadorChatIndividual = factoria.getChatIndividualDAO();
-		adaptadorMensaje = factoria.getMensajeDAO();
-		adaptadorGrupo = factoria.getGrupoDAO();
-		
-	}
-	
-	
-	private void inicializarCatalogos() {
-		catalogoUsuarios = CatalogoUsuarios.getUnicaInstancia();
-	}
-	
-	
-	
-	//-----------------------------------------------------
-	// Funciones de control de usuario actual
-	//-----------------------------------------------------
- 	
-	
-	public boolean registrarUsuario(String nombreCompleto, String numeroTelefono, String email, String contrasena, String saludo, String fotoPerfilURL, String fechaNacimiento) {
-		
-		if (existeUsuario(numeroTelefono)) return false;
-		
-		Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimiento);
+    
+    private static ControladorAppChat unicaInstancia;
+    
+    private IAdaptadorUsuarioDAO adaptadorUsuario;
+    private IAdaptadorChatIndividualDAO adaptadorChatIndividual;
+    private IAdaptadorMensajeDAO adaptadorMensaje;
+    private IAdaptadorGrupoDAO adaptadorGrupo;
+    
+    private CatalogoUsuarios catalogoUsuarios;
+    
+    private Usuario usuarioActual;
+    private ChatIndividual chatActual;
 
-		adaptadorUsuario.registrarUsuario(usuario);
-		catalogoUsuarios.addUsuario(usuario);
-		return true;
-	}
+    public ControladorAppChat() {
+        inicializarAdaptadores();
+        inicializarCatalogos();
+    }
 
+    public static ControladorAppChat getUnicaInstancia() {
+        if (unicaInstancia == null) {
+            unicaInstancia = new ControladorAppChat();
+        }
+        return unicaInstancia;
+    }
+    
+    private void inicializarAdaptadores() {
+        FactoriaDAO factoria = null;
+        try {
+            factoria = FactoriaDAO.getUnicaInstancia(FactoriaDAO.DAO_TDS);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        adaptadorUsuario = factoria.getUsuarioDAO();
+        adaptadorChatIndividual = factoria.getChatIndividualDAO();
+        adaptadorMensaje = factoria.getMensajeDAO();
+        adaptadorGrupo = factoria.getGrupoDAO();
+    }
+    
+    private void inicializarCatalogos() {
+        catalogoUsuarios = CatalogoUsuarios.getUnicaInstancia();
+    }
 
-	public boolean existeUsuario(String numeroTelefono) {
-		return CatalogoUsuarios.getUnicaInstancia().encontrarUsuario(numeroTelefono) != null;
-	}
-	
+    //-----------------------------------------------------
+    // Funciones de control de usuario actual
+    //-----------------------------------------------------
+    
+    public boolean registrarUsuario(String nombreCompleto, String numeroTelefono, String email, String contrasena, String saludo, String fotoPerfilURL, String fechaNacimiento) {
+        if (existeUsuario(numeroTelefono) != null) return false;
 
+        Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimiento);
+        adaptadorUsuario.registrarUsuario(usuario);
+        catalogoUsuarios.addUsuario(usuario);
+        return true;
+    }
 
-	public boolean iniciarSesion(String phone, String contrasena) {
+    public void modificarUsuario(Usuario usuario) {
+        if (usuario != null) {
+            adaptadorUsuario.modificarUsuario(usuario);
+        }
+    }
 
-		Usuario usuario = catalogoUsuarios.encontrarUsuario(phone);
-		if (usuario != null && usuario.getContrasena().equals(contrasena)) {
-			this.usuarioActual = usuario;
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean borrarUsuario(Usuario usuario) {
-		if(existeUsuario(usuario.getNumeroTelefono())) return false;
-		
-		adaptadorUsuario.borrarUsuario(usuario);
-		catalogoUsuarios.removeUsuario(usuario);
-		return true;
-	}
+    public Usuario existeUsuario(String numeroTelefono) {
+        return CatalogoUsuarios.getUnicaInstancia().encontrarUsuario(numeroTelefono);
+    }
 
+    public boolean iniciarSesion(String phone, String contrasena) {
+        Usuario usuario = catalogoUsuarios.encontrarUsuario(phone);
+        if (usuario != null && usuario.getContrasena().equals(contrasena)) {
+            this.usuarioActual = usuario;
+            return true;
+        }
+        return false;
+    }
 
-	public void cerrarSesion() {
-		usuarioActual = null;
-	}
-	
-	public Usuario getUsuarioActual() {
-		return usuarioActual;
-	}
-	
-	
-	public void hacerPremium(Boolean premium) {
-		usuarioActual.setPremium(premium);
-		adaptadorUsuario.modificarUsuario(usuarioActual);
-	}
-	
-	
-	//-----------------------------------------------------
-	// Funciones de control de contactos
-	//-----------------------------------------------------
-	
-	public List<ChatIndividual> getChatIndividuals() {
-		if (usuarioActual == null) {
-			return new LinkedList<ChatIndividual>();
-		}
-		return usuarioActual.getChatIndividuales();
-	}
-	
-	public List<Grupo> getGrupos() {
-		if (usuarioActual == null) {
-			return new LinkedList<Grupo>();
-		}
-		return usuarioActual.getGrupos();
-	}
-	
-	
-	
+    public boolean borrarUsuario(Usuario usuario) {
+        if (existeUsuario(usuario.getNumeroTelefono()) != null) return false;
 
-	
-	//-----------------------------------------------------
-	// Funciones de control de chats
-	//-----------------------------------------------------
-	
-	
-	public List<Mensaje> getMensajes(Contacto contacto) {
-		if (contacto instanceof ChatIndividual && !((ChatIndividual) contacto).isUser(usuarioActual)) {
-			return Stream
-					.concat(contacto.getMensajesEnviados().stream(),
-							contacto.getMensajesRecibidos(Optional.of(usuarioActual)).stream())
-					.sorted().collect(Collectors.toList());
-		} else {
-			return contacto.getMensajesEnviados().stream().sorted().collect(Collectors.toList());
-		}
-	}
-	
-	public Mensaje getUltimoMensaje(Contacto contacto) {
-		List<Mensaje> mensajes = getMensajes(contacto);
-		if (mensajes.isEmpty()) {
-			return null;
-		}
-		return mensajes.get(mensajes.size() - 1);
-	}
-	
-	public void enviarMensaje(Contacto contacto, String mensaje) {
-		//TODO: enviar mensaje texto
-	}
+        adaptadorUsuario.borrarUsuario(usuario);
+        catalogoUsuarios.removeUsuario(usuario);
+        return true;
+    }
 
-	public void enviarMensaje(Contacto contacto, int emoji) {
-		//TODO: enviar mensaje emoji
-	}
+    public void cerrarSesion() {
+        usuarioActual = null;
+    }
 
-	public void setChatActual(Contacto contacto) {
-		//TODO: setear chat actual
-	}
-	
-	public boolean isAdmin(Grupo grupo) {
-		return false;
-		//TODO: comprobar si el usuario actual es admin del grupo
-	}
-	
-	
-	//-----------------------------------------------------
-	// Funciones de creacion de objetos
-	//-----------------------------------------------------
-	
-		
-	public ChatIndividual crearChatIndividual(Usuario usuario) {
-		return null;
-		//TODO: crear chat individual
-	}
-	
-	public Grupo crearGrupo(String nombre, List<ChatIndividual> participantes) {
-		return null;
-		//TODO: crear grupo
-	}
+    public Usuario getUsuarioActual() {
+        return usuarioActual;
+    }
 
-	
-	//-----------------------------------------------------
-	// Funciones de modificacion de objetos
-	//-----------------------------------------------------
-	
-	
-	
-	public Grupo modificarGrupo(Grupo grupo, String nombre, List<ChatIndividual> participantes) {
-	    return null;
-	    //TODO: modificar grupo
-	}
-	
+    public void hacerPremium(Boolean premium) {
+        usuarioActual.setPremium(premium);
+        adaptadorUsuario.modificarUsuario(usuarioActual);
+    }
 
-	
-	
-	//-----------------------------------------------------
-	// Funciones de get de objetos
-	//-----------------------------------------------------
+    //-----------------------------------------------------
+    // Funciones de control de contactos
+    //-----------------------------------------------------
+    
+    public List<ChatIndividual> getChatIndividuals() {
+        if (usuarioActual == null) {
+            return new LinkedList<>();
+        }
+        return usuarioActual.getChatIndividuales();
+    }
+    
+    public List<Grupo> getGrupos() {
+        if (usuarioActual == null) {
+            return new LinkedList<>();
+        }
+        return usuarioActual.getGrupos();
+    }
+    
+    public boolean agregarContacto(String nombre, String telefono) {
+        if (usuarioActual == null) return false;
 
-	
-	public String getNombreContacto(Usuario usuario) {
-		return null;
-		//TODO: obtener nombre de contacto
-	}
+        // Verifica si el contacto ya existe en los chats del usuario actual
+        Optional<ChatIndividual> chatExistente = usuarioActual.getChatIndividuales().stream()
+                .filter(c -> c.getNumeroTelefono().equals(telefono))
+                .findFirst();
 
-	public Optional<Contacto> getContacto(String nombre) {
-	    return Optional.empty();
-	    //TODO: obtener contacto
-	}
+        if (chatExistente.isPresent()) {
+            return false; // Si ya existe, no lo agrega de nuevo
+        }
 
-	
-	private Optional<Usuario> getUser(String name) {
-        //TODO: obtener usuario
-		return null;
-	}
-	
-	
-	public List<Mensaje> buscarMensajes(String emisor, LocalDateTime fechaInicio, LocalDateTime fechaFin, String text) {
-	    //TODO: buscar mensajes
-		return null;
-	}
-	
-	
-	//-----------------------------------------------------
-	// Funciones de eliminacion de objetos
-	//-----------------------------------------------------
-	
-	public void deleteContacto(Contacto contacto) {
-		//TODO: eliminar contacto
-	}
-	
-	
-	public void deleteChatIndividual(ChatIndividual chat) {
-		//TODO: eliminar contacto
-	}
+        // Buscar el usuario para el nuevo contacto
+        Usuario contacto = catalogoUsuarios.encontrarUsuario(telefono);
+        if (contacto == null) {
+            // Si el contacto no existe en el catálogo, no lo agrega
+            return false;
+        }
+
+        // Crear el nuevo chat individual y asociarlo al usuario actual
+        ChatIndividual nuevoContacto = new ChatIndividual(contacto);
+        usuarioActual.addChat(nuevoContacto);
+        
+        // Guarda el usuario actualizado con el nuevo contacto
+        adaptadorUsuario.modificarUsuario(usuarioActual);
+
+        return true;
+    }
 
 
+    //-----------------------------------------------------
+    // Funciones de control de chats
+    //-----------------------------------------------------
+    
+    public List<Mensaje> getMensajes(ChatIndividual chat) {
+        return chat.getMensajesEnviados().stream().sorted().collect(Collectors.toList());
+    }
+    
+    public Mensaje getUltimoMensaje(ChatIndividual chat) {
+        List<Mensaje> mensajes = getMensajes(chat);
+        if (mensajes.isEmpty()) {
+            return null;
+        }
+        return mensajes.get(mensajes.size() - 1);
+    }
+    
+    public void enviarMensaje(ChatIndividual chat, String mensajeTexto) {
+        Mensaje mensaje = new Mensaje(mensajeTexto, LocalDateTime.now(), usuarioActual, chat);
+        chat.enviarMensaje(mensaje);
+        adaptadorMensaje.registrarMensaje(mensaje);
+    }
 
-	
+    public void enviarMensaje(ChatIndividual chat, int emoji) {
+        Mensaje mensaje = new Mensaje(emoji, LocalDateTime.now(), usuarioActual, chat);
+        chat.enviarMensaje(mensaje);
+        adaptadorMensaje.registrarMensaje(mensaje);
+    }
+
+    public void setChatActual(ChatIndividual chat) {
+        this.chatActual = chat;
+    }
+
+    public boolean isAdmin(Grupo grupo) {
+        return grupo.getAdministrador().equals(usuarioActual);
+    }
+
+    //-----------------------------------------------------
+    // Funciones de creación de objetos
+    //-----------------------------------------------------
+    
+    public ChatIndividual crearChatIndividual(Usuario usuario) {
+        ChatIndividual chat = new ChatIndividual(usuario);
+        adaptadorChatIndividual.registrarChatIndividual(chat);
+        usuarioActual.addChat(chat);
+        adaptadorUsuario.modificarUsuario(usuarioActual);
+        return chat;
+    }
+    
+    public Grupo crearGrupo(String nombre, List<ChatIndividual> participantes) {
+        Grupo grupo = new Grupo(nombre, usuarioActual);
+        participantes.forEach(grupo::addMiembro);
+        adaptadorGrupo.registrarGrupo(grupo);
+        usuarioActual.addGrupo(grupo);
+        adaptadorUsuario.modificarUsuario(usuarioActual);
+        return grupo;
+    }
+
+    //-----------------------------------------------------
+    // Funciones de modificación de objetos
+    //-----------------------------------------------------
+    
+    public Grupo modificarGrupo(Grupo grupo, String nombre, List<ChatIndividual> participantes) {
+        grupo.setNombre(nombre);
+        grupo.setListaMiembros(participantes);
+        adaptadorGrupo.modificarGrupo(grupo);
+        return grupo;
+    }
+
+    //-----------------------------------------------------
+    // Funciones de búsqueda de mensajes
+    //-----------------------------------------------------
+    
+    public List<Mensaje> buscarMensajes(String emisor, LocalDateTime fechaInicio, LocalDateTime fechaFin, String text) {
+        return usuarioActual.getChatIndividuales().stream()
+                .flatMap(chat -> chat.getMensajesEnviados().stream())
+                .filter(mensaje -> mensaje.getEmisor().getNombreCompleto().equalsIgnoreCase(emisor) &&
+                                   !mensaje.getHora().isBefore(fechaInicio) &&
+                                   !mensaje.getHora().isAfter(fechaFin) &&
+                                   mensaje.getTexto().contains(text))
+                .collect(Collectors.toList());
+    }
+
+    //-----------------------------------------------------
+    // Funciones de eliminación de objetos
+    //-----------------------------------------------------
+    
+    public void deleteChatIndividual(ChatIndividual chat) {
+        adaptadorChatIndividual.borrarChatIndividual(chat);
+        usuarioActual.getChatIndividuales().remove(chat);
+        adaptadorUsuario.modificarUsuario(usuarioActual);
+    }
+
+    //-----------------------------------------------------
+    // Funciones de registro de entidades
+    //-----------------------------------------------------
+    
+    public void registrarChatIndividual(ChatIndividual chat) {
+        adaptadorChatIndividual.registrarChatIndividual(chat);
+    }
 }

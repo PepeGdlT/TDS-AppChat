@@ -1,88 +1,84 @@
 package modelo;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
-
-import com.toedter.calendar.JCalendar;
 
 public class Mensaje implements Comparable<Mensaje> {
-	private int codigo;
+    private int codigo;
     private String texto;
     private int emoticono;
     private LocalDateTime hora;
     private Usuario emisor;
-    private Contacto receptor;
-    
+    private Object receptor; // Puede ser Grupo o ChatIndividual
 
-	public Mensaje(String texto, LocalDateTime hora, Usuario emisor, Contacto receptor) {
-		this.texto = texto;
-		this.hora = hora;
-		this.setEmisor(emisor);
-		this.setReceptor(receptor);
-	}
+    // Constructor para mensajes de texto
+    public Mensaje(String texto, LocalDateTime hora, Usuario emisor, Object receptor) {
+        this.texto = texto;
+        this.hora = hora;
+        this.emisor = emisor;
+        this.receptor = receptor;
+    }
 
-	public Mensaje(int emoticono, LocalDateTime hora, Usuario emisor, Contacto receptor) {
-		this.texto = "";
-		this.hora = hora;
-		this.emoticono = emoticono;
-		this.setEmisor(emisor);
-		this.setReceptor(receptor);
-	}
-	public Mensaje(String texto, int emoticono, LocalDateTime hora) {
-		this.texto = texto;
-		this.emoticono = emoticono;
-		this.hora = hora;
-	}
+    // Constructor para mensajes de emoticono
+    public Mensaje(int emoticono, LocalDateTime hora, Usuario emisor, Object receptor) {
+        this.texto = "";
+        this.hora = hora;
+        this.emoticono = emoticono;
+        this.emisor = emisor;
+        this.receptor = receptor;
+    }
 
-	// GETTERS
-		public String getTexto() {
-			return texto;
-		}
+    // Constructor para mensajes de texto y emoticono
+    public Mensaje(String texto, int emoticono, LocalDateTime hora) {
+        this.texto = texto;
+        this.emoticono = emoticono;
+        this.hora = hora;
+    }
 
-		public LocalDateTime getHora() {
-			return hora;
-		}
+    // Getters
+    public String getTexto() {
+        return texto;
+    }
 
-		public int getEmoticono() {
-			return emoticono;
-		}
+    public LocalDateTime getHora() {
+        return hora;
+    }
 
-		public Usuario getEmisor() {
-			return emisor;
-		}
+    public int getEmoticono() {
+        return emoticono;
+    }
 
-		public Contacto getReceptor() {
-			return receptor;
-		}
+    public Usuario getEmisor() {
+        return emisor;
+    }
 
-		public int getCodigo() {
-			return codigo;
-		}
+    public Object getReceptor() {
+        return receptor;
+    }
 
-		
-		//SETTERS
-		
-		public void setCodigo(int codigo) {
-			this.codigo = codigo;
-		}
+    public int getCodigo() {
+        return codigo;
+    }
 
-		public void setReceptor(Contacto receptor) {
-			this.receptor = receptor;
-		}
+    // Setters
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
 
-		public void setTexto(String texto) {
-			this.texto = texto;
-		}
+    public void setReceptor(Object receptor) {
+        this.receptor = receptor;
+    }
 
-		public void setEmisor(Usuario emisor) {
-			this.emisor = emisor;
-		}
+    public void setTexto(String texto) {
+        this.texto = texto;
+    }
 
-		//COMPARATOR
-		
-		@Override
-		public int compareTo(Mensaje o) {
-			return hora.compareTo(o.hora);
-		}
+    public void setEmisor(Usuario emisor) {
+        this.emisor = emisor;
+    }
 
-	}
+    // Comparator
+    @Override
+    public int compareTo(Mensaje o) {
+        return hora.compareTo(o.hora);
+    }
+}

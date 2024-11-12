@@ -2,13 +2,13 @@ package vista;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import java.awt.*;
+import java.awt.event.*;
 import com.toedter.calendar.JDateChooser;
 
 import controlador.ControladorAppChat;
 
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -16,34 +16,20 @@ import java.time.ZoneId;
 
 public class VentanaRegister extends JPanel {
 
-    private JTextField fullNameField;
+    private JTextField fullNameField, emailField, phoneField, greetingMessageField;
+    private JPasswordField passwordField, confirmPasswordField;
+    private JLabel fullNameErrorLabel, emailErrorLabel, phoneErrorLabel, dateErrorLabel, passwordErrorLabel, imagePreview;
+    private JButton showPasswordButton, selectImageButton, backToLoginButton, registerButton;
     private JDateChooser dateChooser;
-    private JTextField emailField;
-    private JTextField phoneField;
-    private JPasswordField passwordField;
-    private JPasswordField confirmPasswordField;
-    private JTextField greetingMessageField;
-    private JButton showPasswordButton;
-    private JButton selectImageButton;
-    private JLabel imagePreview;
-    private boolean isPasswordVisible = false;
-    private JButton backToLoginButton;
-    private JButton registerButton;
-
-    
-    private VentanaInicio mainFrame;
-
-     
-    private JLabel fullNameErrorLabel;
-    private JLabel emailErrorLabel;
-    private JLabel phoneErrorLabel;
-    private JLabel dateErrorLabel;
-    private JLabel passwordErrorLabel;
-
-    // Image File
     private File selectedImageFile;
+    private boolean isPasswordVisible = false;
+    private VentanaInicio mainFrame; 
 
-    public VentanaRegister() {
+    public VentanaRegister(VentanaInicio mainFrame) {
+    	this.mainFrame = mainFrame;
+    	
+    	
+        // Layout Configuration
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWeights = new double[]{1.0, 1.0};
         gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -68,9 +54,8 @@ public class VentanaRegister extends JPanel {
         add(registerTitle, gbcTitle);
 
         // Nombre completo
-        fullNameField = new JTextField("Enter your full name"); 
+        fullNameField = new JTextField("Enter your full name");
         setupTextField(fullNameField);
-
         GridBagConstraints gbcFullName = new GridBagConstraints();
         gbcFullName.fill = GridBagConstraints.HORIZONTAL;
         gbcFullName.gridx = 0;
@@ -91,7 +76,6 @@ public class VentanaRegister extends JPanel {
         // Email
         emailField = new JTextField("Enter your email");
         setupTextField(emailField);
-
         GridBagConstraints gbcEmail = new GridBagConstraints();
         gbcEmail.fill = GridBagConstraints.HORIZONTAL;
         gbcEmail.gridx = 1;
@@ -110,9 +94,8 @@ public class VentanaRegister extends JPanel {
         add(emailErrorLabel, gbcEmailError);
 
         // Teléfono
-        phoneField = new JTextField("Enter your phone number"); 
+        phoneField = new JTextField("Enter your phone number");
         setupTextField(phoneField);
-
         GridBagConstraints gbcPhone = new GridBagConstraints();
         gbcPhone.fill = GridBagConstraints.HORIZONTAL;
         gbcPhone.gridx = 0;
@@ -136,7 +119,6 @@ public class VentanaRegister extends JPanel {
         dateChooser.setBackground(new Color(255, 255, 255));
         dateChooser.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
         dateChooser.setDateFormatString("dd-MM-yyyy");
-
         GridBagConstraints gbcDateChooser = new GridBagConstraints();
         gbcDateChooser.fill = GridBagConstraints.HORIZONTAL;
         gbcDateChooser.gridx = 1;
@@ -157,7 +139,6 @@ public class VentanaRegister extends JPanel {
         // Contraseña
         passwordField = new JPasswordField("Enter your password");
         setupPasswordField(passwordField);
-
         // Confirmar contraseña
         confirmPasswordField = new JPasswordField("Confirm your password");
         setupPasswordField(confirmPasswordField);
@@ -165,7 +146,6 @@ public class VentanaRegister extends JPanel {
         // Botón para mostrar/ocultar la contraseña
         showPasswordButton = new JButton(IconsResource.EYE_SHOW);
         showPasswordButton.setBorderPainted(false);
-        showPasswordButton.setForeground(new Color(255, 255, 255));
         showPasswordButton.setPreferredSize(new Dimension(32, 32));
         showPasswordButton.setBackground(new Color(43, 43, 43));
         showPasswordButton.addMouseListener(new MouseAdapter() {
@@ -176,12 +156,11 @@ public class VentanaRegister extends JPanel {
         });
 
         GridBagConstraints gbcShowPassword = new GridBagConstraints();
-        gbcShowPassword.gridx = 2; 
+        gbcShowPassword.gridx = 2;
         gbcShowPassword.gridy = 5;
-        gbcShowPassword.insets = new Insets(0, -5, 0, 15); 
+        gbcShowPassword.insets = new Insets(0, -5, 0, 15);
         add(showPasswordButton, gbcShowPassword);
 
-        
         GridBagConstraints gbcPassword = new GridBagConstraints();
         gbcPassword.fill = GridBagConstraints.HORIZONTAL;
         gbcPassword.gridx = 0;
@@ -199,16 +178,15 @@ public class VentanaRegister extends JPanel {
         // Password Error Label
         passwordErrorLabel = new JLabel("");
         passwordErrorLabel.setForeground(Color.RED);
-        
         GridBagConstraints gbcPasswordError = new GridBagConstraints();
         gbcPasswordError.gridwidth = 2;
         gbcPasswordError.fill = GridBagConstraints.HORIZONTAL;
         gbcPasswordError.gridy = 6;
         gbcPasswordError.insets = new Insets(0, 20, 10, 20);
         add(passwordErrorLabel, gbcPasswordError);
-        
+
         // Botón para seleccionar imagen
-        selectImageButton = new JButton("Select Image"); 
+        selectImageButton = new JButton("Select Image");
         selectImageButton.setPreferredSize(new Dimension(150, 40));
         selectImageButton.setBackground(ElegantPalette.ACTION_BUTTON);
         selectImageButton.setForeground(ElegantPalette.BUTTON_TEXT);
@@ -220,13 +198,12 @@ public class VentanaRegister extends JPanel {
         });
 
         GridBagConstraints gbcSelectImageButton = new GridBagConstraints();
-        gbcSelectImageButton.gridwidth = 2; 
+        gbcSelectImageButton.gridwidth = 2;
         gbcSelectImageButton.gridx = 0;
-        gbcSelectImageButton.gridy = 6; 
-        gbcSelectImageButton.insets = new Insets(10, 20, 10, 20); 
+        gbcSelectImageButton.gridy = 6;
+        gbcSelectImageButton.insets = new Insets(10, 20, 10, 20);
         add(selectImageButton, gbcSelectImageButton);
 
-        
         // Vista previa de la imagen
         imagePreview = new JLabel("No image selected", SwingConstants.CENTER);
         imagePreview.setPreferredSize(new Dimension(100, 100));
@@ -242,13 +219,7 @@ public class VentanaRegister extends JPanel {
 
         // Campo de saludo opcional
         greetingMessageField = new JTextField("Write a greeting message (optional)");
-        greetingMessageField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
-        greetingMessageField.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
-        greetingMessageField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR),
-                new EmptyBorder(5, 5, 5, 5)
-        ));
-
+        setupTextField(greetingMessageField);
         GridBagConstraints gbcGreetingMessage = new GridBagConstraints();
         gbcGreetingMessage.gridwidth = 2;
         gbcGreetingMessage.fill = GridBagConstraints.HORIZONTAL;
@@ -256,15 +227,12 @@ public class VentanaRegister extends JPanel {
         gbcGreetingMessage.gridy = 8;
         gbcGreetingMessage.insets = new Insets(10, 20, 20, 20);
         add(greetingMessageField, gbcGreetingMessage);
-        
 
-        
         // Back to Login Button
         backToLoginButton = new JButton("Back to Login");
         backToLoginButton.setPreferredSize(new Dimension(150, 40));
         backToLoginButton.setForeground(ElegantPalette.LINK_TEXT);
-        backToLoginButton.addActionListener(e -> handleBackToLogin()); 
-        
+        backToLoginButton.addActionListener(e -> handleBackToLogin());
 
         GridBagConstraints gbcBackToLoginButton = new GridBagConstraints();
         gbcBackToLoginButton.gridwidth = 2;
@@ -278,7 +246,7 @@ public class VentanaRegister extends JPanel {
         registerButton.setPreferredSize(new Dimension(150, 40));
         registerButton.setBackground(ElegantPalette.ACTION_BUTTON);
         registerButton.setForeground(ElegantPalette.BUTTON_TEXT);
-        registerButton.addActionListener(e -> handleRegister());  
+        registerButton.addActionListener(e -> handleRegister());
 
         GridBagConstraints gbcRegisterButton = new GridBagConstraints();
         gbcRegisterButton.gridwidth = 2;
@@ -287,22 +255,16 @@ public class VentanaRegister extends JPanel {
         gbcRegisterButton.insets = new Insets(10, 20, 20, 20);
         add(registerButton, gbcRegisterButton);
 
-        
-        
+        // Setup placeholders
         setupTextFieldWithPlaceholder(fullNameField, "Enter your full name");
         setupTextFieldWithPlaceholder(emailField, "Enter your email");
         setupTextFieldWithPlaceholder(phoneField, "Enter your phone number");
         setupTextFieldWithPlaceholder(passwordField, "Enter your password");
         setupTextFieldWithPlaceholder(confirmPasswordField, "Confirm your password");
         setupTextFieldWithPlaceholder(greetingMessageField, "Write a greeting message (optional)");
-        
-
     }
-    
 
-
-
-	private void setupTextField(JTextField textField) {
+    private void setupTextField(JTextField textField) {
         textField.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
         textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
         textField.setBorder(BorderFactory.createCompoundBorder(
@@ -320,57 +282,70 @@ public class VentanaRegister extends JPanel {
         ));
     }
 
-    private void togglePasswordVisibility(Icon showIcon, Icon hideIcon) {
-        if (isPasswordVisible) {
-            passwordField.setEchoChar('●');
-            confirmPasswordField.setEchoChar('●');
-            showPasswordButton.setIcon(showIcon);
-        } else {
-            passwordField.setEchoChar((char) 0);
-            confirmPasswordField.setEchoChar((char) 0);
-            showPasswordButton.setIcon(hideIcon);
-        }
+    private void setupTextFieldWithPlaceholder(JTextField textField, String placeholder) {
+        textField.setText(placeholder);
+        textField.setForeground(Color.GRAY);
+
+        textField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (textField.getText().equals(placeholder)) {
+                    textField.setText("");
+                    textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (textField.getText().isEmpty()) {
+                    textField.setText(placeholder);
+                    textField.setForeground(Color.GRAY);
+                }
+            }
+        });
+    }
+
+    private void togglePasswordVisibility(ImageIcon iconShow, ImageIcon iconHide) {
         isPasswordVisible = !isPasswordVisible;
+        passwordField.setEchoChar(isPasswordVisible ? (char) 0 : '•');
+        showPasswordButton.setIcon(isPasswordVisible ? iconShow : iconHide);
+        confirmPasswordField.setEchoChar(isPasswordVisible ? (char) 0 : '•');
+        showPasswordButton.setIcon(isPasswordVisible ? iconShow : iconHide);
     }
 
     private void selectImage() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Select Profile Image");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setAcceptAllFileFilterUsed(false);
-        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JPEG Image", "jpg", "jpeg"));
-        int result = fileChooser.showOpenDialog(this);
+    	 JFileChooser fileChooser = new JFileChooser();
+         fileChooser.setDialogTitle("Select Profile Image");
+         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+         fileChooser.setAcceptAllFileFilterUsed(false);
+         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JPEG Image", "jpg", "jpeg"));
+         int result = fileChooser.showOpenDialog(this);
 
-        if (result == JFileChooser.APPROVE_OPTION) {
-            selectedImageFile = fileChooser.getSelectedFile();
-            
-            // Redimensionar la imagen seleccionada
-            ImageIcon originalIcon = new ImageIcon(selectedImageFile.getAbsolutePath());
-            Image originalImage = originalIcon.getImage();
-            
-            // Define un tamaño máximo (por ejemplo, 100x100 píxeles)
-            int maxWidth = 100;
-            int maxHeight = 100;
-            
-            // Escalar la imagen para que se ajuste dentro del tamaño máximo
-            Image scaledImage = originalImage.getScaledInstance(maxWidth, maxHeight, Image.SCALE_SMOOTH);
-            
-            // Establecer la imagen escalada en el JLabel
-            imagePreview.setIcon(new ImageIcon(scaledImage));
-            imagePreview.setText("");   
-        }
+         if (result == JFileChooser.APPROVE_OPTION) {
+             selectedImageFile = fileChooser.getSelectedFile();
+             
+             // Redimensionar la imagen seleccionada
+             ImageIcon originalIcon = new ImageIcon(selectedImageFile.getAbsolutePath());
+             Image originalImage = originalIcon.getImage();
+             
+             // Define un tamaño máximo (por ejemplo, 100x100 píxeles)
+             int maxWidth = 100;
+             int maxHeight = 100;
+             
+             // Escalar la imagen para que se ajuste dentro del tamaño máximo
+             Image scaledImage = originalImage.getScaledInstance(maxWidth, maxHeight, Image.SCALE_SMOOTH);
+             
+             // Establecer la imagen escalada en el JLabel
+             imagePreview.setIcon(new ImageIcon(scaledImage));
+             imagePreview.setText("");  
+         }
     }
 
-    
-    
-
     private void handleBackToLogin() {
-    	this.mainFrame.showLoginPanel();
-	}
+        mainFrame.showLoginPanel();
+    }
 
-
-
-	private void handleRegister() {
+    private void handleRegister() {
 		boolean OK = false;
 		OK = validateForm();
 		if (OK) {
@@ -463,33 +438,4 @@ public class VentanaRegister extends JPanel {
         }
         return isValid;
     }
-	
-	private void setupTextFieldWithPlaceholder(JTextField textField, String placeholder) {
-	    textField.setText(placeholder);
-	    textField.setForeground(Color.GRAY);
-
-	    textField.addFocusListener(new java.awt.event.FocusListener() {
-	        @Override
-	        public void focusGained(java.awt.event.FocusEvent e) {
-	            if (textField.getText().equals(placeholder)) {
-	                textField.setText("");
-	                textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
-	            }
-	        }
-
-	        @Override
-	        public void focusLost(java.awt.event.FocusEvent e) {
-	            if (textField.getText().isEmpty()) {
-	                textField.setText(placeholder);
-	                textField.setForeground(Color.GRAY);
-	            }
-	        }
-	    });
-	}
-
-	
-    public void setMainFrame(VentanaInicio mainFrame) {
-        this.mainFrame = mainFrame;
-    }
-
 }
