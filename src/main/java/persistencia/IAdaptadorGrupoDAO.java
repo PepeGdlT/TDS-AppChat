@@ -8,10 +8,10 @@ public interface IAdaptadorGrupoDAO {
 
 		// Metodos CRUD
 	
-	    public void registrarGrupo(Grupo grupo);
-	    public void borrarGrupo(Grupo grupo);
-	    public void modificarGrupo(Grupo grupo);
-	    public Grupo recuperarGrupo(int codigo);
-	    public List<Grupo> recuperarTodosGrupos();
+	     void registrarGrupo(Grupo grupo);
+	     void borrarGrupo(Grupo grupo);
+	     void modificarGrupo(Grupo grupo);
+	     Grupo recuperarGrupo(int codigo);
+	     List<Grupo> recuperarTodosGrupos();
 	   
 }

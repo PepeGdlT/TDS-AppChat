@@ -5,12 +5,12 @@ import java.util.*;
 import persistencia.DAOException;
 import persistencia.FactoriaDAO;
 
-public class CatalogoUsuarios {
+public enum CatalogoUsuarios {
+	INSTANCE;
 	
 	private Map<String, Usuario> usuariosTelefono;
 	private Map<Integer, Usuario> usuariosCodigo;
 	
-	private static CatalogoUsuarios unicaInstancia = new CatalogoUsuarios();
 	private FactoriaDAO dao;
 	
 	private CatalogoUsuarios() {
@@ -29,9 +29,7 @@ public class CatalogoUsuarios {
 		}
 	}
 	
-	public static CatalogoUsuarios getUnicaInstancia() {
-		return unicaInstancia;
-	}
+
 	public List<Usuario> getUsuarios() {
 		return new LinkedList<Usuario>(usuariosTelefono.values());
 	}
@@ -67,7 +65,3 @@ public class CatalogoUsuarios {
 	
 	
 }
-	
-	
-	
-

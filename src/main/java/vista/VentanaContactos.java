@@ -35,7 +35,7 @@ public class VentanaContactos extends JPanel {
     }
 
     private void cargarContactos() {
-        ControladorAppChat controlador = ControladorAppChat.getUnicaInstancia();
+        ControladorAppChat controlador = ControladorAppChat.INSTANCE;
         Usuario usuarioActual = controlador.getUsuarioActual();
 
         if (usuarioActual == null) {

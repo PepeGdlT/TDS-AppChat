@@ -19,7 +19,7 @@ class EnviarMensajesTest {
 
     @BeforeEach
     void setUp() {
-        controlador = ControladorAppChat.getUnicaInstancia();
+        controlador = ControladorAppChat.INSTANCE;
         controlador.cerrarSesion();  // Aseguramos que no haya sesión activa para cada test.
 
         // Registrar usuarios

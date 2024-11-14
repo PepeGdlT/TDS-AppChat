@@ -7,9 +7,9 @@ import modelo.ChatIndividual;
 public interface IAdaptadorChatIndividualDAO {
 	
 	// Metodos CRUD - Create, Read, Update, Delete
-	public void registrarChatIndividual(ChatIndividual chat);
-	public void borrarChatIndividual(ChatIndividual chat);
-	public void modificarChatIndividual(ChatIndividual chat);
-	public ChatIndividual recuperarChatIndividual(int codigo);
-	public List<ChatIndividual> recuperarTodosChatsIndividuales();
+	 void registrarChatIndividual(ChatIndividual chat);
+	 void borrarChatIndividual(ChatIndividual chat);
+	 void modificarChatIndividual(ChatIndividual chat);
+	 ChatIndividual recuperarChatIndividual(int codigo);
+	 List<ChatIndividual> recuperarTodosChatsIndividuales();
 }

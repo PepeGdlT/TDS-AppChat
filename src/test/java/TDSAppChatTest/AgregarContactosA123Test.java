@@ -14,7 +14,7 @@ class AgregarContactosA123Test {
 
     @BeforeEach
     void setUp() {
-        controlador = ControladorAppChat.getUnicaInstancia();
+        controlador = ControladorAppChat.INSTANCE;
         controlador.cerrarSesion();  // Aseguramos que no haya sesión activa para cada test.
         
         // Crear y registrar al usuario con número 123

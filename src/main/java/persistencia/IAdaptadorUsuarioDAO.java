@@ -8,9 +8,9 @@ import modelo.Usuario;
 public interface IAdaptadorUsuarioDAO {
 	
 	// Metodos CRUD - Create, Read, Update, Delete
-	public void registrarUsuario(Usuario usuario);
-	public void borrarUsuario(Usuario usuario);
-	public void modificarUsuario(Usuario usuario);
-	public Usuario recuperarUsuario(int codigo);
-	public List<Usuario> recuperarTodosUsuarios();
+	 void registrarUsuario(Usuario usuario);
+	 void borrarUsuario(Usuario usuario);
+	 void modificarUsuario(Usuario usuario);
+	 Usuario recuperarUsuario(int codigo);
+	 List<Usuario> recuperarTodosUsuarios();
 }

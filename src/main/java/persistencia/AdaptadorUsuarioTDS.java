@@ -29,19 +29,13 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
     private static final String PREMIUM = "Premium";
     private static final String GRUPOS = "grupos";
 
-    private static ServicioPersistencia servPersistencia;
-    private static AdaptadorUsuarioTDS unicaInstancia = null;
-
-    // Singleton
-    public static AdaptadorUsuarioTDS getUnicaInstancia() {
-        if (unicaInstancia == null) {
-            unicaInstancia = new AdaptadorUsuarioTDS();
-        }
-        return unicaInstancia;
-    }
-
-    private AdaptadorUsuarioTDS() {
+    private ServicioPersistencia servPersistencia;
+    private FactoriaDAO factoria;
+    
+    // Constructor
+    public AdaptadorUsuarioTDS() throws DAOException {
         servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
+        factoria = FactoriaDAO.getUnicaInstancia();
     }
 
     @Override
@@ -76,7 +70,7 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
     @Override
     public void borrarUsuario(Usuario usuario) {
         Entidad eUsuario = servPersistencia.recuperarEntidad(usuario.getCodigo());
-        
+
         borrarChats(usuario.getChatIndividuales());
         borrarGrupos(usuario.getGrupos());
 
@@ -87,7 +81,7 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
     @Override
     public void modificarUsuario(Usuario usuario) {
         Entidad eUsuario = servPersistencia.recuperarEntidad(usuario.getCodigo());
-        
+
         actualizarPropiedadesUsuario(eUsuario, usuario);
         registrarChats(usuario.getChatIndividuales());
         registrarGrupos(usuario.getGrupos());
@@ -121,22 +115,22 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
     // -----------------------------------------------------------------------------------------
 
     private void registrarChats(List<ChatIndividual> chats) {
-        AdaptadorChatIndividualTDS adaptadorChatIndividual = AdaptadorChatIndividualTDS.getUnicaInstancia();
+        AdaptadorChatIndividualTDS adaptadorChatIndividual = (AdaptadorChatIndividualTDS) factoria.getChatIndividualDAO();
         chats.forEach(adaptadorChatIndividual::registrarChatIndividual);
     }
 
     private void borrarChats(List<ChatIndividual> chats) {
-        AdaptadorChatIndividualTDS adaptadorChatIndividual = AdaptadorChatIndividualTDS.getUnicaInstancia();
+        AdaptadorChatIndividualTDS adaptadorChatIndividual = (AdaptadorChatIndividualTDS) factoria.getChatIndividualDAO();
         chats.forEach(adaptadorChatIndividual::borrarChatIndividual);
     }
 
     private void registrarGrupos(List<Grupo> grupos) {
-        AdaptadorGrupoTDS adaptadorGrupo = AdaptadorGrupoTDS.getUnicaInstancia();
+        AdaptadorGrupoTDS adaptadorGrupo = (AdaptadorGrupoTDS) factoria.getGrupoDAO();
         grupos.forEach(adaptadorGrupo::registrarGrupo);
     }
 
     private void borrarGrupos(List<Grupo> grupos) {
-        AdaptadorGrupoTDS adaptadorGrupo = AdaptadorGrupoTDS.getUnicaInstancia();
+        AdaptadorGrupoTDS adaptadorGrupo = (AdaptadorGrupoTDS) factoria.getGrupoDAO();
         grupos.forEach(adaptadorGrupo::borrarGrupo);
     }
 
@@ -190,7 +184,7 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
     private List<Grupo> obtenerGruposDesdeCodigos(String codigos) {
         List<Grupo> grupos = new LinkedList<>();
         StringTokenizer strTok = new StringTokenizer(codigos, " ");
-        AdaptadorGrupoTDS adaptadorGrupo = AdaptadorGrupoTDS.getUnicaInstancia();
+        AdaptadorGrupoTDS adaptadorGrupo = (AdaptadorGrupoTDS) factoria.getGrupoDAO();
         while (strTok.hasMoreTokens()) {
             grupos.add(adaptadorGrupo.recuperarGrupo(Integer.parseInt(strTok.nextToken())));
         }
@@ -200,7 +194,7 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
     private List<ChatIndividual> obtenerChatsDesdeCodigos(String codigos) {
         List<ChatIndividual> chats = new LinkedList<>();
         StringTokenizer strTok = new StringTokenizer(codigos, " ");
-        AdaptadorChatIndividualTDS adaptadorChat = AdaptadorChatIndividualTDS.getUnicaInstancia();
+        AdaptadorChatIndividualTDS adaptadorChat = (AdaptadorChatIndividualTDS) factoria.getChatIndividualDAO();
         while (strTok.hasMoreTokens()) {
             chats.add(adaptadorChat.recuperarChatIndividual(Integer.parseInt(strTok.nextToken())));
         }

@@ -353,7 +353,7 @@ public class VentanaRegister extends JPanel {
 			 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 		     String formattedDate = dateFormat.format(dateChooser.getDate());
 			
-			registrado = ControladorAppChat.getUnicaInstancia().registrarUsuario(
+			registrado = ControladorAppChat.INSTANCE.registrarUsuario(
 					fullNameField.getText(),
 					phoneField.getText(),
 					emailField.getText(),

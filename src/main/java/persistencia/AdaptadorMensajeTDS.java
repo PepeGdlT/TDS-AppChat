@@ -25,17 +25,11 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
     private static final String EMOTICONO = "emoticono";
 
     private static ServicioPersistencia servPersistencia;
-    private static AdaptadorMensajeTDS unicaInstancia = null;
+    private static FactoriaDAO factoria;
 
-    public static AdaptadorMensajeTDS getUnicaInstancia() {
-        if (unicaInstancia == null) {
-            unicaInstancia = new AdaptadorMensajeTDS();
-        }
-        return unicaInstancia;
-    }
-
-    private AdaptadorMensajeTDS() {
+    AdaptadorMensajeTDS() throws DAOException {
         servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
+        factoria = FactoriaDAO.getUnicaInstancia();
     }
 
     @Override
@@ -100,8 +94,7 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
         String texto = servPersistencia.recuperarPropiedadEntidad(eMensaje, TEXTO);
         LocalDateTime hora = LocalDateTime.parse(servPersistencia.recuperarPropiedadEntidad(eMensaje, HORA));
         int emoticono = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, EMOTICONO));
-
-        Usuario emisor = AdaptadorUsuarioTDS.getUnicaInstancia().recuperarUsuario(
+        Usuario emisor = factoria.getUsuarioDAO().recuperarUsuario(
                 Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, EMISOR)));
         Object receptor = getReceptor(servPersistencia.recuperarPropiedadEntidad(eMensaje, RECEPTOR));
 
@@ -145,8 +138,8 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
 
     private Object getReceptor(String receptorCodigo) {
         int codigo = Integer.parseInt(receptorCodigo);
-        AdaptadorChatIndividualTDS adaptadorChatIndividual = AdaptadorChatIndividualTDS.getUnicaInstancia();
-        AdaptadorGrupoTDS adaptadorGrupo = AdaptadorGrupoTDS.getUnicaInstancia();
+        AdaptadorChatIndividualTDS adaptadorChatIndividual = (AdaptadorChatIndividualTDS) factoria.getChatIndividualDAO();
+        AdaptadorGrupoTDS adaptadorGrupo = (AdaptadorGrupoTDS) factoria.getGrupoDAO();
 
         ChatIndividual chat = adaptadorChatIndividual.recuperarChatIndividual(codigo);
         if (chat != null) return chat;

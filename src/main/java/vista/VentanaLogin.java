@@ -149,7 +149,7 @@ public class VentanaLogin extends JPanel {
         }
 
         try {
-            boolean login = ControladorAppChat.getUnicaInstancia().iniciarSesion(phone, password);
+            boolean login = ControladorAppChat.INSTANCE.iniciarSesion(phone, password);
 
             if (login && mainFrame != null) {
                 mainFrame.showMainWindow();

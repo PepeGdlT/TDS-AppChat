@@ -23,7 +23,7 @@ public class VentanaPrincipal extends JPanel {
 
     public VentanaPrincipal(VentanaInicio mainFrame) {
         this.mainFrame = mainFrame;
-        this.controlador = ControladorAppChat.getUnicaInstancia();
+        this.controlador = ControladorAppChat.INSTANCE;
 
         setLayout(new BorderLayout(0, 0));
 

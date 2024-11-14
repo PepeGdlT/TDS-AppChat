@@ -1,7 +1,7 @@
 package persistencia;
 
 public abstract class FactoriaDAO {
-	private static FactoriaDAO unicaInstancia;
+	private static FactoriaDAO unicaInstancia = null;
 	
 	public static final String DAO_TDS = "persistencia.TDSFactoriaDAO";
 	

@@ -1,24 +1,49 @@
 package persistencia;
 
+
+
 public class TDSFactoriaDAO extends FactoriaDAO {
+	
+	public TDSFactoriaDAO() {	}
+	
+	@Override
+	public AdaptadorUsuarioTDS getUsuarioDAO() {	
+		try {
+			return new AdaptadorUsuarioTDS();
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+		return null; 
+	}
+
 
 	@Override
-	public IAdaptadorUsuarioDAO getUsuarioDAO() {
-		return AdaptadorUsuarioTDS.getUnicaInstancia();
+	public AdaptadorMensajeTDS getMensajeDAO() {
+		try {
+			return new AdaptadorMensajeTDS();
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
-	public IAdaptadorMensajeDAO getMensajeDAO() {
-		return AdaptadorMensajeTDS.getUnicaInstancia();
+	public AdaptadorChatIndividualTDS getChatIndividualDAO() {
+		try {
+			return new AdaptadorChatIndividualTDS();
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
-	public IAdaptadorChatIndividualDAO getChatIndividualDAO() {
-		return AdaptadorChatIndividualTDS.getUnicaInstancia();
-	}
-
-	@Override
-	public IAdaptadorGrupoDAO getGrupoDAO() {
-		return AdaptadorGrupoTDS.getUnicaInstancia();
+	public AdaptadorGrupoTDS getGrupoDAO() {
+		try {
+			return new AdaptadorGrupoTDS();
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

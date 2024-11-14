@@ -20,19 +20,13 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
     private static final String CONTACTO = "contacto";
     private static final String MENSAJES_ENVIADOS = "mensajesEnviados";
 
-    private static AdaptadorChatIndividualTDS unicaInstancia = null;
     private static ServicioPersistencia servPersistencia;
+    private static FactoriaDAO factoria;
 
-    // Singleton
-    public static AdaptadorChatIndividualTDS getUnicaInstancia() {
-        if (unicaInstancia == null) {
-            unicaInstancia = new AdaptadorChatIndividualTDS();
-        }
-        return unicaInstancia;
-    }
 
-    private AdaptadorChatIndividualTDS() {
+    AdaptadorChatIndividualTDS() throws DAOException {
         servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
+        factoria = FactoriaDAO.getUnicaInstancia();
     }
 
     // -----------------------------------------------------------------------------------------
@@ -100,7 +94,8 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
 
         // Recuperar el código del contacto y obtener el Usuario
         int codigoContacto = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eChat, CONTACTO));
-        Usuario contacto = AdaptadorUsuarioTDS.getUnicaInstancia().recuperarUsuario(codigoContacto);
+        
+        Usuario contacto = factoria.getUsuarioDAO().recuperarUsuario(codigoContacto);
         if (contacto == null) return null;
 
         // Crear ChatIndividual usando el contacto
@@ -134,12 +129,12 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
     // -----------------------------------------------------------------------------------------
 
     private void registrarMensajes(List<Mensaje> mensajes) {
-        AdaptadorMensajeTDS adaptadorMensajes = AdaptadorMensajeTDS.getUnicaInstancia();
+        AdaptadorMensajeTDS adaptadorMensajes = (AdaptadorMensajeTDS) factoria.getMensajeDAO();
         mensajes.forEach(adaptadorMensajes::registrarMensaje);
     }
 
     private void borrarMensajes(List<Mensaje> mensajes) {
-        AdaptadorMensajeTDS adaptadorMensajes = AdaptadorMensajeTDS.getUnicaInstancia();
+        AdaptadorMensajeTDS adaptadorMensajes = (AdaptadorMensajeTDS) factoria.getMensajeDAO();
         mensajes.forEach(adaptadorMensajes::borrarMensaje);
     }
 
@@ -156,7 +151,7 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
         if (codigos == null || codigos.isEmpty()) return mensajes;
 
         StringTokenizer strTok = new StringTokenizer(codigos, " ");
-        AdaptadorMensajeTDS adaptadorMensaje = AdaptadorMensajeTDS.getUnicaInstancia();
+        AdaptadorMensajeTDS adaptadorMensaje =(AdaptadorMensajeTDS) factoria.getMensajeDAO();
         while (strTok.hasMoreTokens()) {
             mensajes.add(adaptadorMensaje.recuperarMensaje(Integer.parseInt(strTok.nextToken())));
         }

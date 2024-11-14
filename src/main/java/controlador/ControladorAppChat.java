@@ -19,9 +19,9 @@ import persistencia.IAdaptadorGrupoDAO;
 import persistencia.IAdaptadorMensajeDAO;
 import persistencia.IAdaptadorUsuarioDAO;
 
-public class ControladorAppChat {
-    
-    private static ControladorAppChat unicaInstancia;
+public enum ControladorAppChat {
+    INSTANCE;
+   
     
     private IAdaptadorUsuarioDAO adaptadorUsuario;
     private IAdaptadorChatIndividualDAO adaptadorChatIndividual;
@@ -33,17 +33,12 @@ public class ControladorAppChat {
     private Usuario usuarioActual;
     private ChatIndividual chatActual;
 
-    public ControladorAppChat() {
+    private ControladorAppChat() {
         inicializarAdaptadores();
         inicializarCatalogos();
     }
 
-    public static ControladorAppChat getUnicaInstancia() {
-        if (unicaInstancia == null) {
-            unicaInstancia = new ControladorAppChat();
-        }
-        return unicaInstancia;
-    }
+
     
     private void inicializarAdaptadores() {
         FactoriaDAO factoria = null;
@@ -59,7 +54,7 @@ public class ControladorAppChat {
     }
     
     private void inicializarCatalogos() {
-        catalogoUsuarios = CatalogoUsuarios.getUnicaInstancia();
+        catalogoUsuarios = CatalogoUsuarios.INSTANCE;
     }
 
     //-----------------------------------------------------
@@ -82,7 +77,7 @@ public class ControladorAppChat {
     }
 
     public Usuario existeUsuario(String numeroTelefono) {
-        return CatalogoUsuarios.getUnicaInstancia().encontrarUsuario(numeroTelefono);
+        return catalogoUsuarios.encontrarUsuario(numeroTelefono);
     }
 
     public boolean iniciarSesion(String phone, String contrasena) {

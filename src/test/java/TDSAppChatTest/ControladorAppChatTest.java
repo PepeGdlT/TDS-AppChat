@@ -16,7 +16,7 @@ class ControladorAppChatTest {
 
     @BeforeEach
     void setUp() {
-        controlador = ControladorAppChat.getUnicaInstancia();
+        controlador = ControladorAppChat.INSTANCE;
         controlador.cerrarSesion();  // Aseguramos que no haya sesión activa para cada test.
     }
 
@@ -27,7 +27,7 @@ class ControladorAppChatTest {
                 "Hola, soy Juan!", "fotoUrl", "01/01/2000"
         );
         assertTrue(registrado, "El usuario debería registrarse correctamente.");
-        assertNotNull(CatalogoUsuarios.getUnicaInstancia().encontrarUsuario("123456789"));
+        assertNotNull(CatalogoUsuarios.INSTANCE.encontrarUsuario("123456789"));
     }
 
     @Test

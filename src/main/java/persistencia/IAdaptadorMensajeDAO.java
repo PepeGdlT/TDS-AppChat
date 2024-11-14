@@ -8,10 +8,10 @@ public interface IAdaptadorMensajeDAO {
 	
 	// Metodos CRUD
 	
-	public void registrarMensaje(Mensaje mensaje);
-	public void borrarMensaje(Mensaje mensaje);
-	public void modificarMensaje(Mensaje mensaje);
-	public Mensaje recuperarMensaje(int codigo);
-	public List<Mensaje> recuperarTodosMensajes();
+	 void registrarMensaje(Mensaje mensaje);
+	 void borrarMensaje(Mensaje mensaje);
+	 void modificarMensaje(Mensaje mensaje);
+	 Mensaje recuperarMensaje(int codigo);
+	 List<Mensaje> recuperarTodosMensajes();
 
 }
