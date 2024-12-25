@@ -13,16 +13,17 @@ import modelo.Mensaje;
 import modelo.Usuario;
 import tds.driver.FactoriaServicioPersistencia;
 import tds.driver.ServicioPersistencia;
+import java.util.Optional;
 
 public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
 
     private static final String CHAT = "chat";
+    private static final String NOMBRE = "nombre";
     private static final String CONTACTO = "contacto";
     private static final String MENSAJES_ENVIADOS = "mensajesEnviados";
 
     private static ServicioPersistencia servPersistencia;
     private static FactoriaDAO factoria;
-
 
     AdaptadorChatIndividualTDS() throws DAOException {
         servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
@@ -40,6 +41,7 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
         Entidad eChat = new Entidad();
         eChat.setNombre(CHAT);
         eChat.setPropiedades(new ArrayList<>(List.of(
+        		new Propiedad(NOMBRE, chat.getNombreContacto()),
                 new Propiedad(CONTACTO, String.valueOf(chat.getContacto().getCodigo())),
                 new Propiedad(MENSAJES_ENVIADOS, obtenerCodigosMensajes(chat.getMensajesEnviados()))
         )));
@@ -47,7 +49,7 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
         eChat = servPersistencia.registrarEntidad(eChat);
         chat.setCodigo(eChat.getId());
 
-        PoolDAO.getUnicaInstancia().addObjeto(chat.getCodigo(), chat);
+        PoolDAO.INSTANCE.addObjeto(chat.getCodigo(), chat);
 
         // Registrar mensajes asociados
         registrarMensajes(chat.getMensajesEnviados());
@@ -63,7 +65,7 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
         borrarMensajes(chat.getMensajesEnviados());
         servPersistencia.borrarEntidad(eChat);
 
-        PoolDAO.getUnicaInstancia().removeObjeto(chat.getCodigo());
+        PoolDAO.INSTANCE.removeObjeto(chat.getCodigo());
     }
 
     @Override
@@ -73,36 +75,42 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
         Entidad eChat = servPersistencia.recuperarEntidad(chat.getCodigo());
         if (eChat == null) return;
 
-        servPersistencia.eliminarPropiedadEntidad(eChat, CONTACTO);
-        servPersistencia.anadirPropiedadEntidad(eChat, CONTACTO, String.valueOf(chat.getContacto().getCodigo()));
-        
-        servPersistencia.eliminarPropiedadEntidad(eChat, MENSAJES_ENVIADOS);
-        servPersistencia.anadirPropiedadEntidad(eChat, MENSAJES_ENVIADOS, obtenerCodigosMensajes(chat.getMensajesEnviados()));
+		for (Propiedad propiedad : eChat.getPropiedades()) {
+			if (propiedad.getNombre().equals(NOMBRE)) {
+				propiedad.setValor(chat.getNombreContacto());
+			} else if (propiedad.getNombre().equals(CONTACTO)) {
+				propiedad.setValor(String.valueOf(chat.getContacto().getCodigo()));
+			} else if (propiedad.getNombre().equals(MENSAJES_ENVIADOS)) {
+				propiedad.setValor(obtenerCodigosMensajes(chat.getMensajesEnviados()));
+			}
+			servPersistencia.modificarPropiedad(propiedad);
 
+		}
         // Registrar cualquier mensaje nuevo
         registrarMensajes(chat.getMensajesEnviados());
     }
 
     @Override
     public ChatIndividual recuperarChatIndividual(int codigo) {
-        if (PoolDAO.getUnicaInstancia().contiene(codigo)) {
-            return (ChatIndividual) PoolDAO.getUnicaInstancia().getObjeto(codigo);
+        if (PoolDAO.INSTANCE.contiene(codigo)) {
+            return (ChatIndividual) PoolDAO.INSTANCE.getObjeto(codigo);
         }
 
         Entidad eChat = servPersistencia.recuperarEntidad(codigo);
         if (eChat == null) return null;
 
         // Recuperar el código del contacto y obtener el Usuario
+        String nombreContacto = servPersistencia.recuperarPropiedadEntidad(eChat, NOMBRE);
         int codigoContacto = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eChat, CONTACTO));
         
         Usuario contacto = factoria.getUsuarioDAO().recuperarUsuario(codigoContacto);
         if (contacto == null) return null;
 
         // Crear ChatIndividual usando el contacto
-        ChatIndividual chat = new ChatIndividual(contacto);
+        ChatIndividual chat = new ChatIndividual(nombreContacto, contacto.getNumeroTelefono(), contacto);
         chat.setCodigo(codigo);
 
-        PoolDAO.getUnicaInstancia().addObjeto(codigo, chat);
+        PoolDAO.INSTANCE.addObjeto(codigo, chat);
 
         // Recuperar y asignar mensajes enviados
         List<Mensaje> mensajesEnviados = obtenerMensajesDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eChat, MENSAJES_ENVIADOS));
@@ -151,7 +159,7 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
         if (codigos == null || codigos.isEmpty()) return mensajes;
 
         StringTokenizer strTok = new StringTokenizer(codigos, " ");
-        AdaptadorMensajeTDS adaptadorMensaje =(AdaptadorMensajeTDS) factoria.getMensajeDAO();
+        AdaptadorMensajeTDS adaptadorMensaje = (AdaptadorMensajeTDS) factoria.getMensajeDAO();
         while (strTok.hasMoreTokens()) {
             mensajes.add(adaptadorMensaje.recuperarMensaje(Integer.parseInt(strTok.nextToken())));
         }

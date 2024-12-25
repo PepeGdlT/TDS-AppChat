@@ -2,83 +2,92 @@ package modelo;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
-public class ChatIndividual {
-    private int codigo;
+import javax.swing.ImageIcon;
+
+
+public class ChatIndividual extends Contacto {
     private Usuario contacto;
-    private List<Mensaje> mensajes;
+    private String numeroTelefono;
 
-    // Constructor
-    public ChatIndividual(Usuario contacto) {
-        this.contacto = contacto;
-        this.mensajes = new LinkedList<>();
+    public ChatIndividual(String nombre, String numeroTelefono, Usuario contacto) {
+        super(nombre);
+    	this.contacto = contacto;
+        this.numeroTelefono = numeroTelefono;
     }
-
-    // Getters y Setters
-    public String getNombre() {
-        return contacto.getNombreCompleto();
+    public ChatIndividual(String nombre, String numeroTelefono, LinkedList<Mensaje>mensajes,  Usuario contacto) {
+        super(nombre, mensajes);
+    	this.contacto = contacto;
+        this.numeroTelefono = contacto.getNumeroTelefono();
     }
-
-    public String getNumeroTelefono() {
-        return contacto.getNumeroTelefono();
-    }
-
-	public Usuario getContacto() {
-		return contacto;
-	}
-	public void setContacto(Usuario contacto) {
-		this.contacto = contacto;
-	}
     
-    public String getFoto() {
-        return contacto.getFotoPerfilURL(); // Devuelve la URL de la foto de perfil del contacto
-    }
 
-    public int getCodigo() {
-        return codigo;
-    }
 
-    public void setCodigo(int codigo) {
-        this.codigo = codigo;
-    }
 
-    public List<Mensaje> getMensajesEnviados() {
-        return mensajes;
-    }
+	public Usuario getContacto() { return contacto; }
+	public String getnumeroTelefono() { return numeroTelefono; }
 
-    // Métodos para gestionar mensajes
-    public void enviarMensaje(Mensaje mensaje) {
-        mensajes.add(mensaje);
-    }
+	public void setnumeroTelefono(String numeroTelefono) { this.numeroTelefono = numeroTelefono; }
+	public void setContacto(Usuario contacto) { this.contacto = contacto; }
 
-    public List<Mensaje> removeMensajesEnviados() {
-        List<Mensaje> copia = new LinkedList<>(mensajes);
-        mensajes.clear();
-        return copia;
-    }
+	
+	
+	
+	
+	public ChatIndividual getChatIndividual(Usuario contacto) {
+		return this.contacto.getContactos().stream().filter(c -> c instanceof ChatIndividual)
+				.map(c -> (ChatIndividual) c).filter(c -> c.getContacto().equals(contacto)).findAny().orElse(null);
+	}
+	
+	@Override
+	public List<Mensaje> getMensajesRecibidos(Optional<Usuario> usuario) {
+		ChatIndividual chat = getChatIndividual(usuario.orElse(null));
+		return (chat != null) ? chat.getMensajesEnviados() : new LinkedList<>();
 
-    // HashCode y Equals para comparación
-    @Override
-    public int hashCode() {
-        final int prime = 73;
-        int result = 1;
-        result = prime * result + (contacto.getNumeroTelefono() != null ? contacto.getNumeroTelefono().hashCode() : 0);
-        return result;
-    }
+	}
+	
+	public String getUltimoMensaje() {
+		if (getMensajesEnviados().isEmpty())
+			return "";
+		return getMensajesEnviados().get(getMensajesEnviados().size() - 1).getTexto();
+	}
+	
+	@Override
+	public String getFoto() {
+         return contacto.getFotoPerfil();
+	}
+	
+	public void addGrupo(Grupo g) {
+		this.contacto.addContacto(g);
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null || getClass() != obj.getClass())
-            return false;
-        ChatIndividual other = (ChatIndividual) obj;
-        return contacto.getNumeroTelefono().equals(other.contacto.getNumeroTelefono());
-    }
+	public void removeGrupo(Grupo g) {
+		this.contacto.removeContacto(g);
+	}
+	
+	public void modificarGrupo(Grupo g) {
+		List<Grupo> grupos = contacto.getGrupos();
+		grupos.remove(g);
+		grupos.add(g);
+	}
+	
+	public void eliminarGrupo(Grupo g) {
+		this.contacto.removeContacto(g);
+	}
+	
+	public String getSaludo() {
+	    return contacto != null ? contacto.getSaludo() : "Hey there! I'm using AppChat!";
+	}
 
-    // toString para mostrar el nombre del contacto
-    @Override
-    public String toString() {
-        return contacto.getNombreCompleto();
-    }
+	
+	@Override
+	public String toString() {
+		return super.toString() + "ChatIndividual [contacto=" + contacto + ", numeroTelefono=" + numeroTelefono + "]";
+	}
+
+	
+	
+	
+
 }

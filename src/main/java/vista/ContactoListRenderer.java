@@ -11,7 +11,7 @@ public class ContactoListRenderer extends DefaultListCellRenderer {
                     boolean cellHasFocus) {
         if (value instanceof ContactoVisor) {
             ContactoVisor contact = (ContactoVisor) value;
-            contact.setBackground(isSelected ? ElegantPalette.PANEL_BACKGROUND : ElegantPalette.BACKGROUND);
+            contact.setSeleccionado(isSelected);
             return contact;
         } else {
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);

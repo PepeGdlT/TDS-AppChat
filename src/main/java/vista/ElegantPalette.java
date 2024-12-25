@@ -1,4 +1,4 @@
-package vista; 
+package vista;
 
 import java.awt.Color;
 
@@ -38,9 +38,12 @@ public class ElegantPalette {
     // Texto de enlaces o acciones secundarias (Verde claro para destacarse)
     public static final Color LINK_TEXT = new Color(0, 255, 128); // #00FF80
 
- // Fondo en hover (Gris más claro)
+    // Fondo en hover (Gris más claro)
     public static final Color HOVER_BACKGROUND = new Color(60, 60, 60); // #3C3C3C
 
+    // **Colores para las burbujas de mensajes (oscuro)**
+    public static final Color SENT_MESSAGE_BACKGROUND = new Color(25, 25, 25); // Muy oscuro para mensajes enviados (casi negro)
+    public static final Color RECEIVED_MESSAGE_BACKGROUND = new Color(40, 40, 40); // Oscuro gris para mensajes recibidos (casi negro)
 
     // Constructor privado para prevenir instanciación
     private ElegantPalette() {

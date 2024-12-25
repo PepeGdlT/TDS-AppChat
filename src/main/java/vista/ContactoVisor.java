@@ -1,83 +1,95 @@
 package vista;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.event.*;
-
-import javax.swing.SwingConstants;
-import java.awt.Font;
+import java.awt.*;
+import java.net.URL;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.Border;
 
 public class ContactoVisor extends JPanel {
-    
-    public ContactoVisor(String nombre, String fotorurl, String ultimoMensaje) {
 
-    	
-        // Establecer tamaño y color de fondo del panel
-        setSize(new Dimension(300, 60));
-        this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        fixSize(this, 250, 70);
-        this.setBorder(new EmptyBorder(5, 10, 5, 10)); // Margen interno alrededor del panel
+    private static final Border SELECCIONADO = BorderFactory.createLineBorder(ElegantPalette.HOVER_BACKGROUND, 2);
+    private static final Border NO_SELECCIONADO = BorderFactory.createEmptyBorder(2, 2, 2, 2);
 
+    private JLabel lblImagen;
+    private JLabel lblNombre;
+    private JLabel lblUltimoMensaje;
+    private JLabel lblCirculo;
 
-        
-        // Imagen del contacto
-        JLabel lblimagen = new JLabel();
-        lblimagen.setIcon(new ImageIcon(IconsResource.class.getResource("/" + fotorurl)));
-        fixSize(lblimagen, 48, 48);
-        this.add(lblimagen);
+    public ContactoVisor(String nombre, String fotoUrl, String ultimoMensaje) {
+        setLayout(null); // Usar posicionamiento manual para flexibilidad
+        setPreferredSize(new Dimension(300, 70)); // Tamaño del componente
 
-        // Panel de información (nombre y último mensaje) con GridBagLayout
-        JPanel infoPanel = new JPanel();
-        fixSize(infoPanel, 200, 50);
-        infoPanel.setOpaque(false); // Hacer que el panel sea transparente para mostrar el fondo principal
-        
-        GridBagLayout gbl_infoPanel = new GridBagLayout();
-        infoPanel.setLayout(gbl_infoPanel);
+        // Configurar el fondo predeterminado
+        setBackground(Color.WHITE); // Color predeterminado para el fondo
+        setBorder(NO_SELECCIONADO); // Borde predeterminado
 
-        // Nombre del contacto (alineado a la izquierda y en negrita)
-        JLabel nombreLabel = new JLabel(nombre);
-        nombreLabel.setFont(nombreLabel.getFont().deriveFont(Font.BOLD, 14f)); // Negrita y tamaño
-        nombreLabel.setForeground(ElegantPalette.PRIMARY_TEXT); // Color de texto primario
-        
-        // Configuración específica para el nombre
-        GridBagConstraints gbcNombre = new GridBagConstraints();
-        gbcNombre.anchor = GridBagConstraints.WEST;
-        gbcNombre.gridx = 0;
-        gbcNombre.gridy = 0;
-        gbcNombre.weightx = 1.0;
-        gbcNombre.insets = new Insets(0, 10, 2, 0); // Espaciado debajo del nombre
-        infoPanel.add(nombreLabel, gbcNombre);
+        // Crear componentes
+        lblImagen = new JLabel();
+        lblNombre = new JLabel();
+        lblUltimoMensaje = new JLabel();
+        lblCirculo = new JLabel();
 
-        // Último mensaje (alineado a la izquierda y debajo del nombre)
-        JLabel ultmensaje = new JLabel(ultimoMensaje);
-        ultmensaje.setForeground(ElegantPalette.SECONDARY_TEXT); // Color de texto secundario
-        ultmensaje.setFont(ultmensaje.getFont().deriveFont(12f)); // Tamaño de fuente más pequeño
-        
-        // Configuración específica para el último mensaje
-        GridBagConstraints gbcUltmensaje = new GridBagConstraints();
-        gbcUltmensaje.anchor = GridBagConstraints.WEST;
-        gbcUltmensaje.gridx = 0;
-        gbcUltmensaje.gridy = 1; // Colocar en la segunda fila
-        gbcUltmensaje.insets = new Insets(0, 10, 0, 0); // Margen izquierdo para alineación
-        infoPanel.add(ultmensaje, gbcUltmensaje);
+        lblNombre.setFont(new Font("Arial", Font.BOLD, 14));
+        lblUltimoMensaje.setFont(new Font("Arial", Font.PLAIN, 12));
 
-        // Agregar el panel de información al panel principal
-        this.add(infoPanel);
+        // Configuración de posiciones
+        lblImagen.setBounds(10, 10, 50, 50); // Imagen a la izquierda
+        lblNombre.setBounds(70, 10, 200, 20); // Nombre al lado derecho de la imagen
+        lblUltimoMensaje.setBounds(70, 35, 200, 20); // Último mensaje debajo del nombre
+
+        // Configuración de la imagen del contacto
+        try {
+            URL url = new URL(fotoUrl);
+            Image imagenOriginal = ImageIO.read(url);
+            int anchoDeseado = 50;
+            int altoDeseado = 50;
+            Image imagenEscalada = imagenOriginal.getScaledInstance(anchoDeseado, altoDeseado, Image.SCALE_SMOOTH);
+            lblImagen.setIcon(new ImageIcon(imagenEscalada));
+        } catch (IOException e) {
+            lblImagen.setText("Imagen no disponible");
+        }
+
+        // Configuración del texto
+        lblNombre.setText(nombre);
+        lblUltimoMensaje.setText(ultimoMensaje);
+
+        // Agregar el círculo azul si el nombre contiene solo dígitos
+        if (esSoloDigitos(nombre)) {
+            lblCirculo.setBounds(5, 5, 15, 15); // Posición en la esquina superior izquierda
+            try {
+                ImageIcon originalIcon = new ImageIcon(ContactoVisor.class.getResource("/iconos/blue_circle.png"));
+                Image scaledImage = originalIcon.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH); // Tamaño reducido
+                lblCirculo.setIcon(new ImageIcon(scaledImage));
+            } catch (Exception e) {
+                lblCirculo.setText("X"); // Mostrar algo en caso de error
+            }
+            add(lblCirculo); // Agregar el círculo solo si el nombre es numérico
+        }
+
+        // Agregar los componentes al panel
+        add(lblImagen);
+        add(lblNombre);
+        add(lblUltimoMensaje);
     }
-    
-    // Método para fijar el tamaño de los componentes
-    private void fixSize(JComponent c, int x, int y) {
-        c.setMinimumSize(new Dimension(x, y));
-        c.setMaximumSize(new Dimension(x, y));
-        c.setPreferredSize(new Dimension(x, y));
+
+    public void setSeleccionado(boolean isSelected) {
+        if (isSelected) {
+            setBackground(ElegantPalette.BACKGROUND); // Color de fondo para selección
+            setBorder(SELECCIONADO); // Borde azul para mostrar selección
+        } else {
+            setBackground(ElegantPalette.HOVER_BACKGROUND); // Fondo blanco cuando no está seleccionado
+            setBorder(NO_SELECCIONADO); // Sin borde cuando no está seleccionado
+        }
+    }
+
+    // Validar si el nombre contiene solo dígitos
+    private boolean esSoloDigitos(String texto) {
+        return texto.matches("\\d+"); // Verificar si el nombre contiene solo números
+    }
+
+    public String getNombre() {
+        return lblNombre.getText();
     }
 }

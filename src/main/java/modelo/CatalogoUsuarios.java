@@ -34,12 +34,12 @@ public enum CatalogoUsuarios {
 		return new LinkedList<Usuario>(usuariosTelefono.values());
 	}
 	
-	public Usuario encontrarUsuario(String login) {
-		return usuariosTelefono.get(login);
+	public Optional<Usuario>  encontrarUsuario(String numeroTelefono) {
+		return usuariosTelefono.values().stream().filter(u -> u.getNumeroTelefono().equals(numeroTelefono)).findAny();
 	}
 
-	public Usuario encontrarUsuario(int id) {
-		return usuariosCodigo.get(id);
+	public  Usuario encontrarUsuario(int id) {
+		return usuariosCodigo.values().stream().filter(u -> u.getCodigo() == id).findAny().orElse(null);
 	}
 	
 	
@@ -55,7 +55,9 @@ public enum CatalogoUsuarios {
 		usuariosCodigo.remove(usuario.getCodigo());
     }
 	
-	
+	public Usuario getUsuario(String numeroTelefono) {
+		return usuariosTelefono.get(numeroTelefono);
+	}
 	
 	public boolean contains(Usuario usuario) {
 		return usuariosTelefono.containsValue(usuario);

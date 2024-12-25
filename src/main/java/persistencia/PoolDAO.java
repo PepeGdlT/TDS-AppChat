@@ -4,19 +4,15 @@ package persistencia;
 
 import java.util.Hashtable;
 
-public class PoolDAO {
-	private static PoolDAO unicaInstancia;
+public enum PoolDAO {
+	INSTANCE;
 	private Hashtable<Integer, Object> pool;
 	
 	private PoolDAO() {
 		pool = new Hashtable<Integer, Object>();
 	}
 
-	public static PoolDAO getUnicaInstancia() {
-		if (unicaInstancia == null) unicaInstancia = new PoolDAO();
-		return unicaInstancia;
-		
-	}
+
 	
 	public Object getObjeto(int id) {
 		return pool.get(id);

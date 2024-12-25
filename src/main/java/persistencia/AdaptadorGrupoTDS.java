@@ -1,6 +1,7 @@
 package persistencia;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
@@ -37,19 +38,19 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
         Entidad eGrupo = new Entidad();
         eGrupo.setNombre(GRUPO);
         eGrupo.setPropiedades(new ArrayList<>(List.of(
-                new Propiedad(NOMBRE, grupo.getNombre()),
+                new Propiedad(NOMBRE, grupo.getNombreContacto()),
                 new Propiedad(ADMINISTRADOR, String.valueOf(grupo.getAdministrador().getCodigo())),
-                new Propiedad(MIEMBROS, obtenerCodigosMiembros(grupo.getListaMiembros())),
+                new Propiedad(MIEMBROS, obtenerCodigosMiembros(grupo.getMiembros())),
                 new Propiedad(MENSAJES, obtenerCodigosMensajes(grupo.getMensajesEnviados()))
         )));
 
         eGrupo = servPersistencia.registrarEntidad(eGrupo);
         grupo.setCodigo(eGrupo.getId());
 
-        PoolDAO.getUnicaInstancia().addObjeto(grupo.getCodigo(), grupo);
+        PoolDAO.INSTANCE.addObjeto(grupo.getCodigo(), grupo);
 
         // Registrar miembros y mensajes
-        registrarMiembros(grupo.getListaMiembros());
+        registrarMiembros(grupo.getMiembros());
         registrarMensajes(grupo.getMensajesEnviados());
     }
 
@@ -61,7 +62,7 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
         borrarMensajes(grupo.getMensajesEnviados());
         servPersistencia.borrarEntidad(eGrupo);
 
-        PoolDAO.getUnicaInstancia().removeObjeto(grupo.getCodigo());
+        PoolDAO.INSTANCE.removeObjeto(grupo.getCodigo());
     }
 
     @Override
@@ -74,8 +75,8 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 
     @Override
     public Grupo recuperarGrupo(int codigo) {
-        if (PoolDAO.getUnicaInstancia().contiene(codigo)) {
-            return (Grupo) PoolDAO.getUnicaInstancia().getObjeto(codigo);
+        if (PoolDAO.INSTANCE.contiene(codigo)) {
+            return (Grupo) PoolDAO.INSTANCE.getObjeto(codigo);
         }
 
         Entidad eGrupo = servPersistencia.recuperarEntidad(codigo);
@@ -83,13 +84,13 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
         Usuario administrador = factoria.getUsuarioDAO().recuperarUsuario(
                 Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eGrupo, ADMINISTRADOR)));
         
-        Grupo grupo = new Grupo(nombre, new ArrayList<>(), new ArrayList<>(), administrador);
+        Grupo grupo = new Grupo(nombre, new LinkedList<>(), new LinkedList<>(), administrador);
         grupo.setCodigo(codigo);
 
         grupo.setMensajesEnviados(obtenerMensajesDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MENSAJES)));
-        grupo.setListaMiembros(obtenerMiembrosDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MIEMBROS)));
+        grupo.setMiembros(obtenerMiembrosDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MIEMBROS)));
 
-        PoolDAO.getUnicaInstancia().addObjeto(codigo, grupo);
+        PoolDAO.INSTANCE.addObjeto(codigo, grupo);
         return grupo;
     }
 
@@ -112,17 +113,19 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
     }
 
     private void actualizarPropiedadesGrupo(Entidad eGrupo, Grupo grupo) {
-        servPersistencia.eliminarPropiedadEntidad(eGrupo, NOMBRE);
-        servPersistencia.anadirPropiedadEntidad(eGrupo, NOMBRE, grupo.getNombre());
-
-        servPersistencia.eliminarPropiedadEntidad(eGrupo, ADMINISTRADOR);
-        servPersistencia.anadirPropiedadEntidad(eGrupo, ADMINISTRADOR, String.valueOf(grupo.getAdministrador().getCodigo()));
-
-        servPersistencia.eliminarPropiedadEntidad(eGrupo, MIEMBROS);
-        servPersistencia.anadirPropiedadEntidad(eGrupo, MIEMBROS, obtenerCodigosMiembros(grupo.getListaMiembros()));
-
-        servPersistencia.eliminarPropiedadEntidad(eGrupo, MENSAJES);
-        servPersistencia.anadirPropiedadEntidad(eGrupo, MENSAJES, obtenerCodigosMensajes(grupo.getMensajesEnviados()));
+    	
+		for (Propiedad prop : eGrupo.getPropiedades()) {
+			if (prop.getNombre().equals(NOMBRE)) {
+				prop.setValor(grupo.getNombreContacto());
+			} else if (prop.getNombre().equals(ADMINISTRADOR)) {
+				prop.setValor(String.valueOf(grupo.getAdministrador().getCodigo()));
+			} else if (prop.getNombre().equals(MIEMBROS)) {
+				prop.setValor(obtenerCodigosMiembros(grupo.getMiembros()));
+			} else if (prop.getNombre().equals(MENSAJES)) {
+				prop.setValor(obtenerCodigosMensajes(grupo.getMensajesEnviados()));
+			}
+			servPersistencia.modificarPropiedad(prop);
+		}    	
     }
 
     private void registrarMiembros(List<ChatIndividual> miembros) {

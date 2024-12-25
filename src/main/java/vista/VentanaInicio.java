@@ -3,6 +3,8 @@ package vista;
 import javax.swing.*;
 import com.formdev.flatlaf.intellijthemes.*;
 import controlador.ControladorAppChat;
+import modelo.ChatIndividual;
+
 import java.awt.*;
 
 public class VentanaInicio {
@@ -13,7 +15,6 @@ public class VentanaInicio {
     public VentanaInicio() {
         initialize();
     }
-
     private void initialize() {
         try {
             UIManager.setLookAndFeel(new FlatXcodeDarkIJTheme());
@@ -66,6 +67,15 @@ public class VentanaInicio {
         mainPanel.revalidate();
         mainPanel.repaint();
     }
-    
+    /*
+	public void showContactEditPanel(ChatIndividual chatIndividual) {
+        mainPanel.removeAll();
+        VentanaContactoEdit contactEditPanel = new VentanaContactoEdit(this, chatIndividual);
+        mainPanel.add(contactEditPanel, BorderLayout.CENTER);
+        mainPanel.revalidate();
+        mainPanel.repaint();
+		
+	}
+    */
 
 }

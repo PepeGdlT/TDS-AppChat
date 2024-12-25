@@ -150,8 +150,9 @@ public class VentanaLogin extends JPanel {
 
         try {
             boolean login = ControladorAppChat.INSTANCE.iniciarSesion(phone, password);
-
+            
             if (login && mainFrame != null) {
+                System.out.println(ControladorAppChat.INSTANCE.getUsuarioActual().toString());
                 mainFrame.showMainWindow();
             } else {
                 JOptionPane.showMessageDialog(null, "Nombre de usuario o contraseña no válido", "Error",
