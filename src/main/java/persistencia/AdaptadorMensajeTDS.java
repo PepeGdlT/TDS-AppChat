@@ -39,11 +39,11 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
         Entidad eMensaje = new Entidad();
         eMensaje.setNombre(MENSAJE);
         eMensaje.setPropiedades(new ArrayList<>(List.of(
-                new Propiedad(TEXTO, mensaje.getTexto()),
+        		new Propiedad(TEXTO, mensaje.getTexto() != null ? mensaje.getTexto() : ""),
                 new Propiedad(EMISOR, String.valueOf(mensaje.getEmisor().getCodigo())),
                 new Propiedad(RECEPTOR, getReceptorCodigo(mensaje.getReceptor())),
                 new Propiedad(HORA, mensaje.getHora().toString()),
-                new Propiedad(EMOTICONO, String.valueOf(mensaje.getEmoticono()))
+                new Propiedad(EMOTICONO, mensaje.getEmoticono() != null ? String.valueOf(mensaje.getEmoticono()) : "-1")
         )));
 
         eMensaje = servPersistencia.registrarEntidad(eMensaje);
@@ -84,7 +84,7 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
 			servPersistencia.modificarPropiedad(prop);
 		}
     }
-
+    
     @Override
     public Mensaje recuperarMensaje(int codigo) {
         if (PoolDAO.INSTANCE.contiene(codigo)) {
@@ -92,19 +92,38 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
         }
 
         Entidad eMensaje = servPersistencia.recuperarEntidad(codigo);
+
+        // Recuperar las propiedades del mensaje
         String texto = servPersistencia.recuperarPropiedadEntidad(eMensaje, TEXTO);
         LocalDateTime hora = LocalDateTime.parse(servPersistencia.recuperarPropiedadEntidad(eMensaje, HORA));
-        int emoticono = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, EMOTICONO));
+        String emoticonoStr = servPersistencia.recuperarPropiedadEntidad(eMensaje, EMOTICONO);
+        Integer emoticono = null;
+
+        if (emoticonoStr != null && !emoticonoStr.isEmpty()) {
+            try {
+                emoticono = Integer.parseInt(emoticonoStr);
+            } catch (NumberFormatException e) {
+                emoticono = -1; // Valor predeterminado para emoticono inválido
+            }
+        }
+
         Usuario emisor = factoria.getUsuarioDAO().recuperarUsuario(
                 Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, EMISOR)));
         Object receptor = getReceptor(servPersistencia.recuperarPropiedadEntidad(eMensaje, RECEPTOR));
 
-        Mensaje mensaje = new Mensaje(texto, emoticono, hora);
-        mensaje.setEmisor(emisor);
-        mensaje.setReceptor(receptor);
-        mensaje.setCodigo(codigo);
+        // Decidir cuál constructor usar
+        Mensaje mensaje;
+        if (texto != null && !texto.isEmpty()) {
+            mensaje = new Mensaje(texto, hora, emisor, receptor);
+        } else if (emoticono != null && emoticono != -1) {
+            mensaje = new Mensaje(emoticono, hora, emisor, receptor);
+        } else {
+            throw new IllegalArgumentException("El mensaje no tiene texto ni emoticono válido.");
+        }
 
+        mensaje.setCodigo(codigo);
         PoolDAO.INSTANCE.addObjeto(codigo, mensaje);
+
         return mensaje;
     }
 

@@ -16,7 +16,7 @@ public class VentanaContactoEdit extends JDialog {
     private JLabel lblSaludo;
 
     public VentanaContactoEdit(JFrame owner, ChatIndividual chat) {
-        super(owner, "Editar Contacto", true); // Ventana modal
+        super(owner, "Editar Contacto", true); 
         this.chat = chat;
         this.controlador = ControladorAppChat.INSTANCE;
 

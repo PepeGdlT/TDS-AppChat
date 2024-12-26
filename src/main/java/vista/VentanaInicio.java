@@ -67,15 +67,4 @@ public class VentanaInicio {
         mainPanel.revalidate();
         mainPanel.repaint();
     }
-    /*
-	public void showContactEditPanel(ChatIndividual chatIndividual) {
-        mainPanel.removeAll();
-        VentanaContactoEdit contactEditPanel = new VentanaContactoEdit(this, chatIndividual);
-        mainPanel.add(contactEditPanel, BorderLayout.CENTER);
-        mainPanel.revalidate();
-        mainPanel.repaint();
-		
-	}
-    */
-
 }

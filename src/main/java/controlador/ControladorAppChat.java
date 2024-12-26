@@ -431,4 +431,22 @@ public enum ControladorAppChat {
         return null; // Si no se encuentra ningún chat
     }
 
+    
+    
+    public List<String[]> getContactosParaTabla() {
+        if (usuarioActual == null) {
+            return new ArrayList<>();
+        }
+        return usuarioActual.getChatsIndividuales().stream()
+                .map(chat -> new String[]{chat.getNombreContacto(), chat.getnumeroTelefono()})
+                .collect(Collectors.toList());
+    }
+
+
+
+    // Obtener un contacto por su nombre (ejemplo para edición o visualización)
+    public ChatIndividual getContactoPorNombre(String nombre) {
+        return getChatIndividual(nombre);
+    }
+    
 }

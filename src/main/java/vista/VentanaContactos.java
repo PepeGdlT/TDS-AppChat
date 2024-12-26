@@ -1,25 +1,27 @@
 package vista;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import controlador.ControladorAppChat;
 import modelo.ChatIndividual;
-import modelo.Usuario;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import java.awt.*;
+import java.util.List;
 
 public class VentanaContactos extends JPanel {
 
+    private JTable contactTable;
+    private DefaultTableModel tableModel;
+    private JButton addButton, backButton;
+    private JPopupMenu popupMenu;
+    private JMenuItem itemVisualizar, itemEditar;
     private VentanaInicio mainFrame;
-    private JList<String> contactList;
-    private DefaultListModel<String> contactListModel;
 
     public VentanaContactos(VentanaInicio mainFrame) {
+        ControladorAppChat controlador = ControladorAppChat.INSTANCE; // Referencia al controlador global
         this.mainFrame = mainFrame;
-        
+
         setLayout(new BorderLayout());
         setBackground(Color.LIGHT_GRAY);
 
@@ -28,78 +30,105 @@ public class VentanaContactos extends JPanel {
         title.setHorizontalAlignment(SwingConstants.CENTER);
         add(title, BorderLayout.NORTH);
 
-        // Crear la lista para mostrar los contactos
-        contactListModel = new DefaultListModel<>();
-        contactList = new JList<>(contactListModel);
-        JScrollPane scrollPane = new JScrollPane(contactList);
+        // Modelo de tabla
+        tableModel = new DefaultTableModel(new String[]{"Nombre", "Teléfono"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // No editable
+            }
+        };
+
+        contactTable = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(contactTable);
         add(scrollPane, BorderLayout.CENTER);
 
-        cargarContactos();
+        // Menú contextual
+        popupMenu = new JPopupMenu();
+        itemVisualizar = new JMenuItem("Visualizar contacto");
+        itemEditar = new JMenuItem("Editar contacto");
+        popupMenu.add(itemVisualizar);
+        popupMenu.add(itemEditar);
 
-        // Panel inferior con botones
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        
-        JButton backButton = new JButton("Volver a Inicio");
-        backButton.addActionListener(new ActionListener() {
+        contactTable.setComponentPopupMenu(popupMenu);
+        contactTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                mainFrame.showMainWindow();
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                int row = contactTable.rowAtPoint(e.getPoint());
+                if (row >= 0) {
+                    contactTable.setRowSelectionInterval(row, row);
+                }
             }
         });
+
+        // Botones inferiores
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+        // Volver a inicio
+        backButton = new JButton("Volver a Inicio");
+        backButton.addActionListener(e -> mainFrame.showMainWindow());
         buttonPanel.add(backButton);
-        
-        JButton addButton = new JButton("Agregar Contacto");
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                agregarContacto();
+
+        // Agregar contacto
+        addButton = new JButton("Agregar Contacto");
+        addButton.addActionListener(e -> {
+            String nombre = JOptionPane.showInputDialog(this, "Ingrese el nombre del contacto:");
+            String telefono = JOptionPane.showInputDialog(this, "Ingrese el teléfono del contacto:");
+
+            if (nombre != null && telefono != null && !nombre.isEmpty() && !telefono.isEmpty()) {
+                if (controlador.agregarContacto(nombre, telefono)) {
+                    JOptionPane.showMessageDialog(this, "Contacto agregado correctamente.");
+                    cargarContactos(controlador);
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se pudo agregar el contacto.");
+                }
             }
         });
         buttonPanel.add(addButton);
-
         add(buttonPanel, BorderLayout.SOUTH);
-    }
 
-    private void cargarContactos() {
-        ControladorAppChat controlador = ControladorAppChat.INSTANCE;
-        Usuario usuarioActual = controlador.getUsuarioActual();
-
-        if (usuarioActual == null) {
-            System.out.println("No hay un usuario en sesión.");
-            return;
-        }
-
-        List<ChatIndividual> chats = usuarioActual.getChatsIndividuales();
-        
-        if (chats == null || chats.isEmpty()) {
-            System.out.println("No hay chats individuales para el usuario.");
-            return;
-        }
-
-        List<String> nombresContactos = chats.stream()
-                .map(ChatIndividual::getNombreContacto)
-                .collect(Collectors.toList());
-
-        contactListModel.clear();
-        for (String nombre : nombresContactos) {
-            contactListModel.addElement(nombre);
-        }
-    }
-
-    private void agregarContacto() {
-        String nombre = JOptionPane.showInputDialog(this, "Ingrese el nombre del contacto:");
-        String telefono = JOptionPane.showInputDialog(this, "Ingrese el número de teléfono del contacto:");
-        
-        if (nombre != null && telefono != null && !nombre.isEmpty() && !telefono.isEmpty()) {
-            ControladorAppChat controlador = ControladorAppChat.INSTANCE;
-            boolean agregado = controlador.agregarContacto(nombre, telefono);
-            if (agregado) {
-                JOptionPane.showMessageDialog(this, "Contacto agregado correctamente.");
-                cargarContactos();
+        // Listener para visualizar contacto
+        itemVisualizar.addActionListener(e -> {
+            int row = contactTable.getSelectedRow();
+            if (row >= 0) {
+                String nombre = (String) tableModel.getValueAt(row, 0);
+                ChatIndividual chat = controlador.getContactoPorNombre(nombre);
+                if (chat != null) {
+                    new VentanaContactoVer(mainFrame.frame, chat).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se pudo encontrar el contacto.");
+                }
             } else {
-                JOptionPane.showMessageDialog(this, "No se pudo agregar el contacto. Verifique la información.");
+                JOptionPane.showMessageDialog(this, "Seleccione un contacto.");
             }
+        });
+
+        // Listener para editar contacto
+        itemEditar.addActionListener(e -> {
+            int row = contactTable.getSelectedRow();
+            if (row >= 0) {
+                String nombre = (String) tableModel.getValueAt(row, 0);
+                ChatIndividual chat = controlador.getContactoPorNombre(nombre);
+                if (chat != null) {
+                    new VentanaContactoEdit(mainFrame.frame, chat).setVisible(true);
+                    cargarContactos(controlador);
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se pudo encontrar el contacto.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Seleccione un contacto.");
+            }
+        });
+
+        // Cargar contactos iniciales
+        cargarContactos(controlador);
+    }
+
+    private void cargarContactos(ControladorAppChat controlador) {
+        tableModel.setRowCount(0); // Limpiar la tabla
+        List<String[]> contactos = controlador.getContactosParaTabla();
+        for (String[] contacto : contactos) {
+            tableModel.addRow(contacto);
         }
     }
 }

@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public class Mensaje implements Comparable<Mensaje> {
     private int codigo;
     private String texto;
-    private int emoticono;
+    private Integer emoticono;
     private LocalDateTime hora;
     private Usuario emisor;
     private Object receptor; // Puede ser Grupo o ChatIndividual
@@ -16,6 +16,7 @@ public class Mensaje implements Comparable<Mensaje> {
         this.hora = hora;
         this.emisor = emisor;
         this.receptor = receptor;
+        this.emoticono = -1;
     }
 
     // Constructor para mensajes de emoticono
@@ -27,58 +28,32 @@ public class Mensaje implements Comparable<Mensaje> {
         this.receptor = receptor;
     }
 
-    // Constructor para mensajes de texto y emoticono
-    public Mensaje(String texto, int emoticono, LocalDateTime hora) {
-        this.texto = texto;
-        this.emoticono = emoticono;
-        this.hora = hora;
-    }
 
-    // Getters
-    public String getTexto() {
-        return texto;
-    }
+    // Getters y Setters
+    public int getCodigo() { return codigo; }
+    public void setCodigo(int codigo) { this.codigo = codigo; }
+    public String getTexto() { return texto; }
+    public void setTexto(String texto) { this.texto = texto; }
+    public Integer getEmoticono() { return emoticono; }
+    public void setEmoticono(int emoticono) { this.emoticono = emoticono; }
+    public LocalDateTime getHora() { return hora; }
+    public void setHora(LocalDateTime hora) { this.hora = hora; }
+    public Usuario getEmisor() { return emisor; }
+    public void setEmisor(Usuario emisor) { this.emisor = emisor; }
+    public Object getReceptor() { return receptor; }
+    public void setReceptor(Object receptor) { this.receptor = receptor; }
 
-    public LocalDateTime getHora() {
-        return hora;
-    }
-
-    public int getEmoticono() {
-        return emoticono;
-    }
-
-    public Usuario getEmisor() {
-        return emisor;
-    }
-
-    public Object getReceptor() {
-        return receptor;
-    }
-
-    public int getCodigo() {
-        return codigo;
-    }
-
-    // Setters
-    public void setCodigo(int codigo) {
-        this.codigo = codigo;
-    }
-
-    public void setReceptor(Object receptor) {
-        this.receptor = receptor;
-    }
-
-    public void setTexto(String texto) {
-        this.texto = texto;
-    }
-
-    public void setEmisor(Usuario emisor) {
-        this.emisor = emisor;
-    }
-
-    // Comparator
+    // Comparador para ordenamiento por hora
     @Override
-    public int compareTo(Mensaje o) {
-        return hora.compareTo(o.hora);
+    public int compareTo(Mensaje o) { return this.hora.compareTo(o.hora); }
+
+    @Override
+    public String toString() {
+        return "Mensaje{" +
+                "texto='" + texto + '\'' +
+                ", emoticono=" + emoticono +
+                ", hora=" + hora +
+                ", emisor=" + emisor.getNombreCompleto() +
+                '}';
     }
 }
