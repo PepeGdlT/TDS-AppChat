@@ -67,4 +67,12 @@ public class VentanaInicio {
         mainPanel.revalidate();
         mainPanel.repaint();
     }
+	public void showGroupPanel() {
+        mainPanel.removeAll();
+        VentanaGrupos gruposPanel = new VentanaGrupos(this);
+        mainPanel.add(gruposPanel, BorderLayout.CENTER);
+        mainPanel.revalidate();
+        mainPanel.repaint();
+		
+	}
 }

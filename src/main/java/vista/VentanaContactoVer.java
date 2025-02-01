@@ -41,7 +41,7 @@ public class VentanaContactoVer extends JDialog {
         lblSaludo.setHorizontalAlignment(SwingConstants.CENTER);
 
         // Número del contacto
-        JLabel lblNumero = new JLabel("Número: " + chat.getnumeroTelefono());
+        JLabel lblNumero = new JLabel("Número de teléfono: " + chat.getnumeroTelefono());
         lblNumero.setFont(new Font("Arial", Font.PLAIN, 12));
         lblNumero.setForeground(new Color(200, 200, 200));
         lblNumero.setHorizontalAlignment(SwingConstants.CENTER);

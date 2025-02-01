@@ -2,6 +2,7 @@ package controlador;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -169,16 +170,17 @@ public enum ControladorAppChat {
     // Funciones de control de chats
     //-----------------------------------------------------
     
-    public List<Mensaje> getMensajes(ChatIndividual chat) {
-        if (chat == null) {
-            return new ArrayList<>();
+    public List<Mensaje> getMensajes(Contacto contacto) {
+        if (contacto == null || contacto.getMensajesEnviados() == null) {
+            return Collections.emptyList(); // Devuelve una lista vacía segura
         }
 
-        // Recuperar mensajes relacionados al chat
-        return chat.getMensajesEnviados().stream()
-                   .sorted(Comparator.comparing(Mensaje::getHora))
-                   .collect(Collectors.toList());
+        return contacto.getMensajesEnviados().stream()
+                .sorted(Comparator.comparing(Mensaje::getHora))
+                .collect(Collectors.toList());
     }
+
+    
     
     public Mensaje getUltimoMensaje(ChatIndividual chat) {
         List<Mensaje> mensajes = getMensajes(chat);
@@ -448,5 +450,20 @@ public enum ControladorAppChat {
     public ChatIndividual getContactoPorNombre(String nombre) {
         return getChatIndividual(nombre);
     }
+    
+
+
+
+	public Grupo getGrupoPorNombre(String nombre) {
+        return usuarioActual.getGrupos().stream()
+                .filter(grupo -> grupo.getNombreContacto().equalsIgnoreCase(nombre))
+                .findFirst()
+                .orElse(null);
+	}
+
+
+
+
+
     
 }

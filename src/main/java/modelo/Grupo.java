@@ -67,6 +67,14 @@ public class Grupo extends Contacto {
 		return super.toString() + "Grupo [administrador=" + administrador + ", miembros=" + miembros + "]";
 	}
 
+	public String getUltimoMensaje() {
+	    return getMensajesEnviados().stream()
+	        .max((m1, m2) -> m1.getHora().compareTo(m2.getHora())) 
+	        .map(Mensaje::getTexto) 
+	        .orElse(""); 
+	}
+
+
 	
 	
 }

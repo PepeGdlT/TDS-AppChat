@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import beans.Entidad;
 import beans.Propiedad;
 import modelo.ChatIndividual;
+import modelo.Contacto;
 import modelo.Grupo;
 import modelo.Mensaje;
 import modelo.Usuario;
@@ -109,7 +110,7 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
 
         Usuario emisor = factoria.getUsuarioDAO().recuperarUsuario(
                 Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eMensaje, EMISOR)));
-        Object receptor = getReceptor(servPersistencia.recuperarPropiedadEntidad(eMensaje, RECEPTOR));
+        Contacto receptor = (Contacto) getReceptor(servPersistencia.recuperarPropiedadEntidad(eMensaje, RECEPTOR));
 
         // Decidir cuál constructor usar
         Mensaje mensaje;

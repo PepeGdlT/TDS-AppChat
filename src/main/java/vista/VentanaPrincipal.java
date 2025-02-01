@@ -83,89 +83,106 @@ public class VentanaPrincipal extends JPanel {
 
 
 	// Crear el panel de lista de contactos
+	// Crear el panel de lista de contactos
 	private JPanel createContactListPanel() {
-		JPanel contactPanel = new JPanel(new BorderLayout());
-		contactPanel.setPreferredSize(new Dimension(250, getHeight()));
+	    JPanel contactPanel = new JPanel(new BorderLayout());
+	    contactPanel.setPreferredSize(new Dimension(250, getHeight()));
 
-		modeloLista = new DefaultListModel<>();
-		listaContactos = new JList<>(modeloLista);
-		listaContactos.setCellRenderer(new ContactoListRenderer());
-		listaContactos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    modeloLista = new DefaultListModel<>();
+	    listaContactos = new JList<>(modeloLista);
+	    listaContactos.setCellRenderer(new ContactoListRenderer());
+	    listaContactos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		listaContactos.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
-					ContactoVisor seleccionado = listaContactos.getSelectedValue();
-					if (seleccionado != null) {
-						abrirChat(seleccionado);
-					} else {
-						JOptionPane.showMessageDialog(VentanaPrincipal.this, "No se ha seleccionado ningún contacto.", "Error", JOptionPane.ERROR_MESSAGE);
-					}
-				} else if (e.getButton() == MouseEvent.BUTTON3) {
-					// Mostrar menú contextual
-					JPopupMenu menu = new JPopupMenu();
+	    // Evento de doble clic o clic derecho
+	    listaContactos.addMouseListener(new MouseAdapter() {
+	        @Override
+	        public void mouseClicked(MouseEvent e) {
+	            if (e.getClickCount() == 2) {
+	                // Doble clic para abrir chat
+	                ContactoVisor seleccionado = listaContactos.getSelectedValue();
+	                if (seleccionado != null) {
+	                    abrirChat(seleccionado);
+	                } else {
+	                    JOptionPane.showMessageDialog(VentanaPrincipal.this, 
+	                        "No se ha seleccionado ningún contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+	                }
+	            } else if (e.getButton() == MouseEvent.BUTTON3) {
+	                // Mostrar menú contextual con botón derecho
+	                JPopupMenu menu = new JPopupMenu();
 
-					JMenuItem itemVisualizar = new JMenuItem("Visualizar perfil contacto");
-					itemVisualizar.addActionListener(e2 -> {
-						ContactoVisor seleccionado = listaContactos.getSelectedValue();
-						if (seleccionado != null) {
-							ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
-							if (chat != null) {
-								new VentanaContactoVer(mainFrame.frame, chat).setVisible(true);
-								cargarContactos();
-							} else {
-								JOptionPane.showMessageDialog(VentanaPrincipal.this, "No se ha podido encontrar el contacto.", "Error", JOptionPane.ERROR_MESSAGE);
-							}
-						} else {
-							JOptionPane.showMessageDialog(VentanaPrincipal.this, "No se ha seleccionado ningún contacto.", "Error", JOptionPane.ERROR_MESSAGE);
-						}
-					});
+	                JMenuItem itemVisualizar = new JMenuItem("Visualizar perfil contacto");
+	                itemVisualizar.addActionListener(e2 -> {
+	                    ContactoVisor seleccionado = listaContactos.getSelectedValue();
+	                    if (seleccionado != null) {
+	                        ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
+	                        if (chat != null) {
+	                            new VentanaContactoVer(mainFrame.frame, chat).setVisible(true);
+	                            cargarContactos();
+	                        } else {
+	                            JOptionPane.showMessageDialog(VentanaPrincipal.this, 
+	                                "No se ha podido encontrar el contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+	                        }
+	                    } else {
+	                        JOptionPane.showMessageDialog(VentanaPrincipal.this, 
+	                            "No se ha seleccionado ningún contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+	                    }
+	                });
 
-					JMenuItem itemEditar = new JMenuItem("Editar contacto");
-					itemEditar.addActionListener(e2 -> {
-						ContactoVisor seleccionado = listaContactos.getSelectedValue();
-						if (seleccionado != null) {
-							ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
-							if (chat != null) {
-								new VentanaContactoEdit(mainFrame.frame, chat).setVisible(true);
-								cargarContactos();
-							} else {
-								JOptionPane.showMessageDialog(VentanaPrincipal.this, "No se ha podido encontrar el contacto.", "Error", JOptionPane.ERROR_MESSAGE);
-							}
-						} else {
-							JOptionPane.showMessageDialog(VentanaPrincipal.this, "No se ha seleccionado ningún contacto.", "Error", JOptionPane.ERROR_MESSAGE);
-						}
-					});
+	                JMenuItem itemEditar = new JMenuItem("Editar contacto");
+	                itemEditar.addActionListener(e2 -> {
+	                    ContactoVisor seleccionado = listaContactos.getSelectedValue();
+	                    if (seleccionado != null) {
+	                        ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
+	                        if (chat != null) {
+	                            new VentanaContactoEdit(mainFrame.frame, chat).setVisible(true);
+	                            cargarContactos();
+	                        } else {
+	                            JOptionPane.showMessageDialog(VentanaPrincipal.this, 
+	                                "No se ha podido encontrar el contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+	                        }
+	                    } else {
+	                        JOptionPane.showMessageDialog(VentanaPrincipal.this, 
+	                            "No se ha seleccionado ningún contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+	                    }
+	                });
 
+	                menu.add(itemVisualizar);
+	                menu.add(itemEditar);
+	                menu.show(listaContactos, e.getX(), e.getY());
+	            }
+	        }
+	    });
 
+	    // Configuración de JScrollPane
+	    JScrollPane scrollPane = new JScrollPane(listaContactos);
+	    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+	    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
+	    // Botón para agregar contacto
+	    JButton btnAgregarContacto = new JButton("Agregar Contacto");
+	    btnAgregarContacto.addActionListener(e -> agregarContacto());
 
-					menu.add(itemEditar);
-					menu.add(itemVisualizar);
-					menu.show(listaContactos, e.getX(), e.getY());
-				}
-			}
-		});
+	    // Botón para crear grupo
+	    JButton btnCrearGrupo = new JButton("Crear Grupo");
+	    btnCrearGrupo.addActionListener(e -> crearGrupo());
 
+	    // Panel para los botones en la parte inferior
+	    JPanel buttonPanel = new JPanel();
+	    buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER)); // Alineación centrada
+	    buttonPanel.add(btnAgregarContacto);
+	    buttonPanel.add(btnCrearGrupo);
 
-		// Configuración de JScrollPane
-		JScrollPane scrollPane = new JScrollPane(listaContactos);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); // Solo barra vertical cuando es necesario
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER); // Desactivar la barra horizontal
+	    // Agregar componentes al panel principal
+	    contactPanel.add(scrollPane, BorderLayout.CENTER); // Lista en el centro
+	    contactPanel.add(buttonPanel, BorderLayout.SOUTH); // Botones abajo
 
-		// Botón para agregar contacto
-		JButton btnAgregarContacto = new JButton("Agregar Contacto");
-		btnAgregarContacto.addActionListener(e -> agregarContacto());
+	    // Cargar contactos en la lista
+	    cargarContactos();
 
-		contactPanel.add(scrollPane, BorderLayout.CENTER);
-		contactPanel.add(btnAgregarContacto, BorderLayout.SOUTH);
-
-
-		cargarContactos();
-
-		return contactPanel;
+	    return contactPanel;
 	}
+
+
 
 
 	// Crear el panel de chat
@@ -343,6 +360,11 @@ public class VentanaPrincipal extends JPanel {
 	// Agregar un nuevo contacto
 	private void agregarContacto() {	
 		mainFrame.showContactPanel();
+	}
+	
+	private void crearGrupo() {
+		// TODO Auto-generated method stub
+		mainFrame.showGroupPanel();
 	}
 
 	// Enviar mensaje

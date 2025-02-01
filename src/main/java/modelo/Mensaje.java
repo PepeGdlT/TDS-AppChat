@@ -8,10 +8,10 @@ public class Mensaje implements Comparable<Mensaje> {
     private Integer emoticono;
     private LocalDateTime hora;
     private Usuario emisor;
-    private Object receptor; // Puede ser Grupo o ChatIndividual
+    private Contacto receptor; // Puede ser Grupo o ChatIndividual
 
     // Constructor para mensajes de texto
-    public Mensaje(String texto, LocalDateTime hora, Usuario emisor, Object receptor) {
+    public Mensaje(String texto, LocalDateTime hora, Usuario emisor, Contacto receptor) {
         this.texto = texto;
         this.hora = hora;
         this.emisor = emisor;
@@ -20,7 +20,7 @@ public class Mensaje implements Comparable<Mensaje> {
     }
 
     // Constructor para mensajes de emoticono
-    public Mensaje(int emoticono, LocalDateTime hora, Usuario emisor, Object receptor) {
+    public Mensaje(int emoticono, LocalDateTime hora, Usuario emisor, Contacto receptor) {
         this.texto = "";
         this.hora = hora;
         this.emoticono = emoticono;
@@ -41,7 +41,7 @@ public class Mensaje implements Comparable<Mensaje> {
     public Usuario getEmisor() { return emisor; }
     public void setEmisor(Usuario emisor) { this.emisor = emisor; }
     public Object getReceptor() { return receptor; }
-    public void setReceptor(Object receptor) { this.receptor = receptor; }
+    public void setReceptor(Contacto receptor) { this.receptor = receptor; }
 
     // Comparador para ordenamiento por hora
     @Override
