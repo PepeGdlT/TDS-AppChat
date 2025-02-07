@@ -1,43 +1,25 @@
 package modelo;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 public class DescuentoPorFecha implements Descuento {
     private double descuento;
-    private String fechaInicio;
-    private String fechaFin;
+    private LocalDate fechaInicio;
+    private LocalDate fechaFin;
 
-
-    @Override
-    public double getDescuento(double precio) {
-        return precio;
+    public DescuentoPorFecha(double descuento, String fechaInicio, String fechaFin) {
+        this.descuento = descuento;
+        this.fechaInicio = LocalDate.parse(fechaInicio, DateTimeFormatter.ISO_DATE);
+        this.fechaFin = LocalDate.parse(fechaFin, DateTimeFormatter.ISO_DATE);
     }
 
+    @Override
+    public double getDescuento(Usuario usuario) {
+        LocalDate fechaRegistro = usuario.getFechaRegistro();
+        boolean estaEnRango = (fechaRegistro.isAfter(fechaInicio) || fechaRegistro.isEqual(fechaInicio)) &&
+                              (fechaRegistro.isBefore(fechaFin) || fechaRegistro.isEqual(fechaFin));
 
-	public String getFechaFin() {
-		return fechaFin;
-	}
-
-
-	public void setFechaFin(String fechaFin) {
-		this.fechaFin = fechaFin;
-	}
-
-
-	public double getDescuento() {
-		return descuento;
-	}
-
-
-	public void setDescuento(double descuento) {
-		this.descuento = descuento;
-	}
-
-
-	public String getFechaInicio() {
-		return fechaInicio;
-	}
-
-
-	public void setFechaInicio(String fechaInicio) {
-		this.fechaInicio = fechaInicio;
-	}
+        return estaEnRango ? descuento : 0;
+    }
 }

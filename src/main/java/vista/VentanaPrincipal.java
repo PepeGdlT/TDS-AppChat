@@ -3,14 +3,21 @@ package vista;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
 
 import controlador.ControladorAppChat;
 import modelo.ChatIndividual;
 import modelo.Contacto;
+import modelo.Descuento;
+import modelo.DescuentoPorFecha;
+import modelo.DescuentoPorMensaje;
+import modelo.ExportPDF;
+import modelo.FactoriaDescuento;
 import modelo.Grupo;
 import modelo.Mensaje;
+import modelo.Usuario;
 import tds.BubbleText;
 
 public class VentanaPrincipal extends JPanel {
@@ -56,9 +63,25 @@ public class VentanaPrincipal extends JPanel {
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		JLabel lblUsuario = new JLabel(controlador.getUsuarioActual().getNombreCompleto());
-		JButton btnPremium = new JButton("Hacer Premium");
-		btnPremium.addActionListener(e -> activarPremium());
-
+		JButton btnPremium = new JButton(esUsuarioPremium() ? "Exportar PDF" : "Hacer Premium");
+		btnPremium.addActionListener(e -> {
+		    if (esUsuarioPremium()) {
+		        ContactoVisor seleccionado = listaContactos.getSelectedValue();
+		        if (seleccionado != null) {
+		            ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
+		            if (chat != null) {
+		                ExportPDF exportPDF = new ExportPDF();
+		                exportPDF.crearPDF(controlador.getUsuarioActual(), chat);
+		            } else {
+		                JOptionPane.showMessageDialog(this, "No se ha podido encontrar el chat del contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+		            }
+		        } else {
+		            JOptionPane.showMessageDialog(this, "Seleccione un contacto para exportar el chat.", "Error", JOptionPane.ERROR_MESSAGE);
+		        }
+		    } else {
+		        activarPremium();
+		    }
+		});
 		campoBusqueda = new JTextField(15);
 		JButton btnBuscar = new JButton("Buscar");
 		btnBuscar.addActionListener(e -> buscarContacto());
@@ -390,9 +413,148 @@ public class VentanaPrincipal extends JPanel {
 	}
 
 
-	// Activar cuenta premium
+	// Método para activar Premium con pantalla de descuentos y validación de la factoría
 	private void activarPremium() {
-		controlador.hacerPremium(true);
-		JOptionPane.showMessageDialog(this, "¡Tu cuenta ahora es Premium!");
+	    // Mostrar ventana de descuentos
+	    JDialog ventanaDescuentos = crearVentanaDescuentos();
+
+	    // Panel para mostrar el coste y los descuentos
+	    JPanel panelDescuentos = new JPanel();
+	    panelDescuentos.setLayout(new BoxLayout(panelDescuentos, BoxLayout.Y_AXIS));
+
+	    // Mostrar coste inicial
+	    JLabel lblCostoInicial = new JLabel("Coste inicial: $24.99");
+	    panelDescuentos.add(lblCostoInicial);
+
+	    // Crear los descuentos disponibles (simulamos descuentos)
+	    String[] descuentos = {"Descuento por Fecha (10%)", "Descuento por Mensajes (15%)"};
+	    JComboBox<String> comboDescuentos = new JComboBox<>(descuentos);
+	    panelDescuentos.add(comboDescuentos);
+
+	    // Label para mostrar el precio actualizado
+	    JLabel lblPrecioActualizado = new JLabel("Precio actualizado: $24.99");
+	    panelDescuentos.add(lblPrecioActualizado);
+
+	    // Crear botón para aplicar descuento
+	    JButton btnAplicarDescuento = crearBotonAplicarDescuento(comboDescuentos, lblPrecioActualizado);
+	    panelDescuentos.add(btnAplicarDescuento);
+
+	    // Crear botón de confirmar y pagar
+	    JButton btnConfirmarPago = crearBotonConfirmarPago(ventanaDescuentos);
+	    panelDescuentos.add(btnConfirmarPago);
+
+	    // Añadir el panel de descuentos al dialog
+	    ventanaDescuentos.add(panelDescuentos, BorderLayout.CENTER);
+
+	    // Configuración de la ventana de descuentos
+	    configurarVentanaDescuentos(ventanaDescuentos);
 	}
+
+	// Método que crea la ventana de descuentos
+	private JDialog crearVentanaDescuentos() {
+	    return new JDialog(mainFrame.frame, "Descuentos Premium", true);
+	}
+
+	// Método que crea el botón de aplicar descuento
+	private JButton crearBotonAplicarDescuento(JComboBox<String> comboDescuentos, JLabel lblPrecioActualizado) {
+	    JButton btnAplicarDescuento = new JButton("Aplicar Descuento");
+	    btnAplicarDescuento.addActionListener(e -> aplicarDescuento(comboDescuentos, lblPrecioActualizado));
+	    return btnAplicarDescuento;
+	}
+
+	// Método que aplica el descuento seleccionado
+	private void aplicarDescuento(JComboBox<String> comboDescuentos, JLabel lblPrecioActualizado) {
+	    String selectedDescuento = (String) comboDescuentos.getSelectedItem();
+	    double precioOriginal = 24.99;
+	    double precioFinal = precioOriginal;
+
+	    try {
+	        // Obtener el descuento adecuado según la selección
+	        Descuento descuento = obtenerDescuento(selectedDescuento);
+
+	        // Si existe un descuento, lo aplicamos
+	        if (descuento != null && esDescuentoValido(descuento)) {
+	            precioFinal -= precioOriginal * (descuento.getDescuento(controlador.getUsuarioActual()) / 100);
+	            lblPrecioActualizado.setText("Precio actualizado: $" + String.format("%.2f", precioFinal));
+	        } else {
+	            JOptionPane.showMessageDialog(null, "Descuento no válido.", "Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    } catch (IllegalArgumentException ex) {
+	        JOptionPane.showMessageDialog(null, "Error al aplicar descuento: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+	    }
+	}
+
+	// Método que verifica si el descuento es válido
+	private boolean esDescuentoValido(Descuento descuento) {
+	    if (descuento instanceof DescuentoPorFecha) {
+	        return esFechaValida();
+	    } else if (descuento instanceof DescuentoPorMensaje) {
+	        return esMensajeValido();
+	    }
+	    return false;
+	}
+
+	// Método que obtiene el descuento según la selección
+	private Descuento obtenerDescuento(String descuentoSeleccionado) {
+	    if (descuentoSeleccionado.equals("Descuento por Fecha (10%)")) {
+	        return new DescuentoPorFecha(10.0, "2025-01-01", "2025-07-31"); // Ejemplo de fechas
+	    } else if (descuentoSeleccionado.equals("Descuento por Mensajes (15%)")) {
+	        return new DescuentoPorMensaje(15.0, 10); // Ejemplo: requiere 10 mensajes
+	    }
+	    return null; // Si no es un descuento válido
+	}
+
+	// Método que crea el botón de confirmar y pagar
+	private JButton crearBotonConfirmarPago(JDialog ventanaDescuentos) {
+	    JButton btnConfirmarPago = new JButton("Confirmar y Pagar");
+	    btnConfirmarPago.addActionListener(e -> {
+	        if (realizarPago()) {
+	            controlador.getUsuarioActual().setPremium(true); // Actualizar estado a premium
+	            JOptionPane.showMessageDialog(ventanaDescuentos, "¡Pago realizado exitosamente! Ahora eres usuario Premium.", "Confirmación", JOptionPane.INFORMATION_MESSAGE);
+	            ventanaDescuentos.dispose(); // Cierra la ventana de descuentos
+	            mainFrame.showMainWindow(); // Actualiza la ventana
+	            controlador.modificarUsuario(controlador.getUsuarioActual()); // Actualiza el usuario en la base de datos)
+	            
+	        } else {
+	            JOptionPane.showMessageDialog(ventanaDescuentos, "Error en el pago.", "Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    });
+	    return btnConfirmarPago;
+	}
+	private boolean realizarPago() {
+        // Simulación de pago correcto
+	    return true; 
+	}
+
+
+	// Método que configura la ventana de descuentos
+	private void configurarVentanaDescuentos(JDialog ventanaDescuentos) {
+	    ventanaDescuentos.setSize(300, 250);
+	    ventanaDescuentos.setLocationRelativeTo(this);
+	    ventanaDescuentos.setVisible(true);
+	}
+
+	// Método que simula la comprobación de fechas del usuario
+	private boolean esFechaValida() {
+	    // Verificar si la fecha de registro del usuario está dentro del rango permitido
+	    LocalDate fechaRegistro = controlador.getUsuarioActual().getFechaRegistro();
+	    LocalDate fechaInicio = LocalDate.of(2025, 1, 1);
+	    LocalDate fechaFin = LocalDate.of(2025, 07, 31);
+
+	    // Verificar si la fecha de registro está dentro del rango
+	    return !fechaRegistro.isBefore(fechaInicio) && !fechaRegistro.isAfter(fechaFin);
+	}
+
+	// Método que simula la comprobación de los mensajes enviados por el usuario
+	private boolean esMensajeValido() {
+	    int mensajesEnviados = controlador.getUsuarioActual().getMensajesEnviadosUltimoMes();
+	    return mensajesEnviados >= 10;  // Por ejemplo, se requiere al menos 10 mensajes
+	}
+	
+	private boolean esUsuarioPremium() {
+	    return controlador.getUsuarioActual().isPremium(); 
+	}
+	
+	
+
 }

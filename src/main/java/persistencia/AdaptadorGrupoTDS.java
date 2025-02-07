@@ -1,9 +1,6 @@
 package persistencia;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import beans.Entidad;
@@ -25,8 +22,9 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 
     private static ServicioPersistencia servPersistencia;
     private static FactoriaDAO factoria;
+    private static final Set<Integer> gruposEnRecuperacion = new HashSet<>(); // Prevent infinite recursion
 
-    AdaptadorGrupoTDS() throws DAOException {
+    public AdaptadorGrupoTDS() throws DAOException {
         servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
         factoria = FactoriaDAO.getUnicaInstancia();
     }
@@ -37,19 +35,18 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 
         Entidad eGrupo = new Entidad();
         eGrupo.setNombre(GRUPO);
-        eGrupo.setPropiedades(new ArrayList<>(List.of(
+        eGrupo.setPropiedades(List.of(
                 new Propiedad(NOMBRE, grupo.getNombreContacto()),
                 new Propiedad(ADMINISTRADOR, String.valueOf(grupo.getAdministrador().getCodigo())),
                 new Propiedad(MIEMBROS, obtenerCodigosMiembros(grupo.getMiembros())),
                 new Propiedad(MENSAJES, obtenerCodigosMensajes(grupo.getMensajesEnviados()))
-        )));
+        ));
 
         eGrupo = servPersistencia.registrarEntidad(eGrupo);
         grupo.setCodigo(eGrupo.getId());
 
         PoolDAO.INSTANCE.addObjeto(grupo.getCodigo(), grupo);
 
-        // Registrar miembros y mensajes
         registrarMiembros(grupo.getMiembros());
         registrarMensajes(grupo.getMensajesEnviados());
     }
@@ -79,29 +76,53 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
             return (Grupo) PoolDAO.INSTANCE.getObjeto(codigo);
         }
 
-        Entidad eGrupo = servPersistencia.recuperarEntidad(codigo);
-        String nombre = servPersistencia.recuperarPropiedadEntidad(eGrupo, NOMBRE);
-        Usuario administrador = factoria.getUsuarioDAO().recuperarUsuario(
-                Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eGrupo, ADMINISTRADOR)));
-        
-        Grupo grupo = new Grupo(nombre, new LinkedList<>(), new LinkedList<>(), administrador);
-        grupo.setCodigo(codigo);
+        // Prevent infinite recursion
+        if (gruposEnRecuperacion.contains(codigo)) {
+            System.err.println("Warning: Grupo " + codigo + " is already being recovered. Avoiding infinite loop.");
+            return null;
+        }
+        gruposEnRecuperacion.add(codigo);
 
-        grupo.setMensajesEnviados(obtenerMensajesDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MENSAJES)));
-        grupo.setMiembros(obtenerMiembrosDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eGrupo, MIEMBROS)));
+        Grupo grupo = null;
+        try {
+            Entidad eGrupo = servPersistencia.recuperarEntidad(codigo);
+            if (eGrupo == null) {
+                System.err.println("Error: Grupo " + codigo + " not found.");
+                return null;
+            }
 
-        PoolDAO.INSTANCE.addObjeto(codigo, grupo);
+            String nombre = servPersistencia.recuperarPropiedadEntidad(eGrupo, NOMBRE);
+            int codigoAdmin = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eGrupo, ADMINISTRADOR));
+
+            Usuario administrador = factoria.getUsuarioDAO().recuperarUsuario(codigoAdmin);
+            if (administrador == null) {
+                System.err.println("Error: Grupo " + codigo + " has a missing administrator (ID: " + codigoAdmin + ")");
+                return null;
+            }
+
+            List<ChatIndividual> miembros = obtenerMiembrosDesdeCodigos(
+                    servPersistencia.recuperarPropiedadEntidad(eGrupo, MIEMBROS));
+
+            List<Mensaje> mensajes = obtenerMensajesDesdeCodigos(
+                    servPersistencia.recuperarPropiedadEntidad(eGrupo, MENSAJES));
+
+            grupo = new Grupo(nombre, mensajes, miembros, administrador);
+            grupo.setCodigo(codigo);
+
+            PoolDAO.INSTANCE.addObjeto(codigo, grupo);
+        } finally {
+            gruposEnRecuperacion.remove(codigo);
+        }
+
         return grupo;
     }
 
     @Override
     public List<Grupo> recuperarTodosGrupos() {
-        List<Grupo> grupos = new ArrayList<>();
-        List<Entidad> entidades = servPersistencia.recuperarEntidades(GRUPO);
-        for (Entidad eGrupo : entidades) {
-            grupos.add(recuperarGrupo(eGrupo.getId()));
-        }
-        return grupos;
+        return servPersistencia.recuperarEntidades(GRUPO).stream()
+                .map(entidad -> recuperarGrupo(entidad.getId()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     // --------------------------------------------------------------------------------
@@ -113,19 +134,15 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
     }
 
     private void actualizarPropiedadesGrupo(Entidad eGrupo, Grupo grupo) {
-    	
-		for (Propiedad prop : eGrupo.getPropiedades()) {
-			if (prop.getNombre().equals(NOMBRE)) {
-				prop.setValor(grupo.getNombreContacto());
-			} else if (prop.getNombre().equals(ADMINISTRADOR)) {
-				prop.setValor(String.valueOf(grupo.getAdministrador().getCodigo()));
-			} else if (prop.getNombre().equals(MIEMBROS)) {
-				prop.setValor(obtenerCodigosMiembros(grupo.getMiembros()));
-			} else if (prop.getNombre().equals(MENSAJES)) {
-				prop.setValor(obtenerCodigosMensajes(grupo.getMensajesEnviados()));
-			}
-			servPersistencia.modificarPropiedad(prop);
-		}    	
+        for (Propiedad prop : eGrupo.getPropiedades()) {
+            switch (prop.getNombre()) {
+                case NOMBRE -> prop.setValor(grupo.getNombreContacto());
+                case ADMINISTRADOR -> prop.setValor(String.valueOf(grupo.getAdministrador().getCodigo()));
+                case MIEMBROS -> prop.setValor(obtenerCodigosMiembros(grupo.getMiembros()));
+                case MENSAJES -> prop.setValor(obtenerCodigosMensajes(grupo.getMensajesEnviados()));
+            }
+            servPersistencia.modificarPropiedad(prop);
+        }
     }
 
     private void registrarMiembros(List<ChatIndividual> miembros) {
@@ -144,9 +161,12 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
     }
 
     private List<Mensaje> obtenerMensajesDesdeCodigos(String codigos) {
-        List<Mensaje> mensajes = new ArrayList<>();
+        if (codigos == null || codigos.isEmpty()) return new ArrayList<>();
+
         StringTokenizer strTok = new StringTokenizer(codigos, " ");
         AdaptadorMensajeTDS adaptadorMensaje = (AdaptadorMensajeTDS) factoria.getMensajeDAO();
+        List<Mensaje> mensajes = new ArrayList<>();
+
         while (strTok.hasMoreTokens()) {
             mensajes.add(adaptadorMensaje.recuperarMensaje(Integer.parseInt(strTok.nextToken())));
         }
@@ -154,9 +174,12 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
     }
 
     private List<ChatIndividual> obtenerMiembrosDesdeCodigos(String codigos) {
-        List<ChatIndividual> miembros = new ArrayList<>();
+        if (codigos == null || codigos.isEmpty()) return new ArrayList<>();
+
         StringTokenizer strTok = new StringTokenizer(codigos, " ");
         AdaptadorChatIndividualTDS adaptadorChatIndividual = (AdaptadorChatIndividualTDS) factoria.getChatIndividualDAO();
+        List<ChatIndividual> miembros = new ArrayList<>();
+
         while (strTok.hasMoreTokens()) {
             miembros.add(adaptadorChatIndividual.recuperarChatIndividual(Integer.parseInt(strTok.nextToken())));
         }

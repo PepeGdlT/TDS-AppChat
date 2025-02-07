@@ -1,34 +1,16 @@
 package modelo;
 
-public class DescuentoPorMensaje implements Descuento{
+public class DescuentoPorMensaje implements Descuento {
+    private double descuento;
+    private int cantidadMensajesRequeridos;
 
-
-
-	private double descuento;
-    private int cantidadMensajes;
-
+    public DescuentoPorMensaje(double descuento, int cantidadMensajesRequeridos) {
+        this.descuento = descuento;
+        this.cantidadMensajesRequeridos = cantidadMensajesRequeridos;
+    }
 
     @Override
-    public double getDescuento(double precio) {
-        return precio;
+    public double getDescuento(Usuario usuario) {
+        return usuario.getMensajesEnviadosUltimoMes() >= cantidadMensajesRequeridos ? descuento : 0;
     }
-    
-    public double getDescuento() {
-		return descuento;
-	}
-
-
-	public void setDescuento(double descuento) {
-		this.descuento = descuento;
-	}
-
-
-	public int getCantidadMensajes() {
-		return cantidadMensajes;
-	}
-
-
-	public void setCantidadMensajes(int cantidadMensajes) {
-		this.cantidadMensajes = cantidadMensajes;
-	}
 }

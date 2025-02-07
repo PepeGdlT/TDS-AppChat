@@ -77,7 +77,7 @@ public class ChatIndividual extends Contacto {
 	}
 	
 	public String getSaludo() {
-	    return contacto != null ? contacto.getSaludo() : "Hey there! I'm using AppChat!";
+	    return contacto.getSaludo() != "Write a greeting message (optional)" ? contacto.getSaludo() : "Hey there! I'm using AppChat!";
 	}
 
 	

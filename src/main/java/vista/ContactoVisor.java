@@ -18,14 +18,12 @@ public class ContactoVisor extends JPanel {
     private JLabel lblCirculo;
 
     public ContactoVisor(String nombre, String fotoUrl, String ultimoMensaje) {
-        setLayout(null); // Usar posicionamiento manual para flexibilidad
-        setPreferredSize(new Dimension(300, 70)); // Tamaño del componente
+        setLayout(null); 
+        setPreferredSize(new Dimension(300, 70)); 
 
-        // Configurar el fondo predeterminado
-        setBackground(Color.WHITE); // Color predeterminado para el fondo
-        setBorder(NO_SELECCIONADO); // Borde predeterminado
+        setBackground(Color.WHITE); 
+        setBorder(NO_SELECCIONADO); 
 
-        // Crear componentes
         lblImagen = new JLabel();
         lblNombre = new JLabel();
         lblUltimoMensaje = new JLabel();
@@ -34,10 +32,9 @@ public class ContactoVisor extends JPanel {
         lblNombre.setFont(new Font("Arial", Font.BOLD, 14));
         lblUltimoMensaje.setFont(new Font("Arial", Font.PLAIN, 12));
 
-        // Configuración de posiciones
-        lblImagen.setBounds(10, 10, 50, 50); // Imagen a la izquierda
-        lblNombre.setBounds(70, 10, 200, 20); // Nombre al lado derecho de la imagen
-        lblUltimoMensaje.setBounds(70, 35, 200, 20); // Último mensaje debajo del nombre
+        lblImagen.setBounds(10, 10, 50, 50); 
+        lblNombre.setBounds(70, 10, 200, 20);
+        lblUltimoMensaje.setBounds(70, 35, 200, 20);
 
         // Configuración de la imagen del contacto
         try {
