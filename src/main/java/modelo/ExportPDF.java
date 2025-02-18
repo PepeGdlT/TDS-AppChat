@@ -17,7 +17,7 @@ public class ExportPDF {
      * @param u                Usuario actual (emisor principal)
      * @param chatConContacto  ChatIndividual que representa la conversación con el contacto seleccionado
      */
-    public void crearPDF(Usuario u, ChatIndividual chatConContacto) {
+    public static void crearPDF(Usuario u, ChatIndividual chatConContacto) {
         try {
             // Construir el nombre del archivo PDF
             String fileName = u.getNombreCompleto() + "_" + chatConContacto.getNombreContacto() + "_" + LocalDate.now() + ".pdf";

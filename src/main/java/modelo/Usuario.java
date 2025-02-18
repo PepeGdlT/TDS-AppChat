@@ -1,6 +1,7 @@
 package modelo;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,7 +22,7 @@ public class Usuario {
     private LocalDate fechaRegistro;
     private int mensajesEnviadosUltimoMes; 
 
-    public Usuario(String nombreCompleto, String numeroTelefono, String email, String contrasena, String saludo, String fotoPerfil, String fechaNacimiento) {
+    public Usuario(String nombreCompleto, String numeroTelefono, String email, String contrasena, String saludo, String fotoPerfil, String fechaNacimiento, LocalDate fechaRegistro) {
         this.nombreCompleto = nombreCompleto;
         this.numeroTelefono = numeroTelefono;
         this.email = email;
@@ -31,11 +32,12 @@ public class Usuario {
         this.fechaNacimiento = fechaNacimiento;
         this.contactos = new LinkedList<>();
         this.premium = false;
-        this.fechaRegistro = LocalDate.now();
+        this.fechaRegistro = fechaRegistro;
         this.mensajesEnviadosUltimoMes = 0; 
     }
 
-    // Getters
+
+	// Getters
     public int getCodigo() { return codigo; }
     public String getNombreCompleto() { return nombreCompleto; }
     public String getNumeroTelefono() { return numeroTelefono; }

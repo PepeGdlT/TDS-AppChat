@@ -1,4 +1,4 @@
-package vista;
+package vista.Ventana;
 
 import javax.swing.*;
 import com.formdev.flatlaf.intellijthemes.*;
@@ -11,8 +11,10 @@ public class VentanaInicio {
 
     protected JFrame frame;
     private JPanel mainPanel;
+    private ControladorAppChat controlador;
 
     public VentanaInicio() {
+    	controlador = ControladorAppChat.INSTANCE;
         initialize();
     }
     private void initialize() {
@@ -38,7 +40,7 @@ public class VentanaInicio {
 
     public void showLoginPanel() {
         mainPanel.removeAll();
-        VentanaLogin loginPanel = new VentanaLogin(this);
+        VentanaLogin loginPanel = new VentanaLogin(this,controlador);
         mainPanel.add(loginPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -46,7 +48,7 @@ public class VentanaInicio {
 
     public void showRegisterPanel() {
         mainPanel.removeAll();
-        VentanaRegister registerPanel = new VentanaRegister(this);
+        VentanaRegister registerPanel = new VentanaRegister(this,controlador);
         mainPanel.add(registerPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -54,7 +56,7 @@ public class VentanaInicio {
 
     public void showMainWindow() {
         mainPanel.removeAll();
-        VentanaPrincipal mainWindow = new VentanaPrincipal(this);
+        VentanaPrincipal mainWindow = new VentanaPrincipal(this,controlador);
         mainPanel.add(mainWindow, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -62,17 +64,25 @@ public class VentanaInicio {
 
     public void showContactPanel() {
         mainPanel.removeAll();
-        VentanaContactos contactPanel = new VentanaContactos(this);
+        VentanaContactos contactPanel = new VentanaContactos(this,controlador);
         mainPanel.add(contactPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
     }
 	public void showGroupPanel() {
         mainPanel.removeAll();
-        VentanaGrupos gruposPanel = new VentanaGrupos(this);
+        VentanaGrupos gruposPanel = new VentanaGrupos(this,controlador);
         mainPanel.add(gruposPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
 		
 	}
+	public void showBusquedaMensajesPanel() {
+	    mainPanel.removeAll();
+	    VentanaBusquedaMensajes busquedaMensajesPanel = new VentanaBusquedaMensajes(this,controlador);
+	    mainPanel.add(busquedaMensajesPanel, BorderLayout.CENTER);
+	    mainPanel.revalidate();
+	    mainPanel.repaint();
+	}
+
 }

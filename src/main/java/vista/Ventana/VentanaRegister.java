@@ -1,4 +1,4 @@
-package vista;
+package vista.Ventana;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -9,6 +9,8 @@ import java.awt.event.*;
 import com.toedter.calendar.JDateChooser;
 
 import controlador.ControladorAppChat;
+import vista.utils.ElegantPalette;
+import vista.utils.IconsResource;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,11 +28,12 @@ public class VentanaRegister extends JPanel {
 	private JDateChooser dateChooser;
 	private String imagenURL;
 	private boolean isPasswordVisible = false;
+	private ControladorAppChat controlador;
 	private VentanaInicio mainFrame; 
 
-	public VentanaRegister(VentanaInicio mainFrame) {
+	public VentanaRegister(VentanaInicio mainFrame, ControladorAppChat controlador) {
 		this.mainFrame = mainFrame;
-
+		this.controlador = controlador;
 
 		// Layout Configuration
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -346,7 +349,7 @@ public class VentanaRegister extends JPanel {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 			String formattedDate = dateFormat.format(dateChooser.getDate());
 
-			registrado = ControladorAppChat.INSTANCE.registrarUsuario(
+			registrado = controlador.registrarUsuario(
 					fullNameField.getText(),
 					phoneField.getText(),
 					emailField.getText(),

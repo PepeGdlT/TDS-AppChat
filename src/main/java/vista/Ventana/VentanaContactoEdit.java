@@ -1,4 +1,4 @@
-package vista;
+package vista.Ventana;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,10 +15,10 @@ public class VentanaContactoEdit extends JDialog {
     private JLabel lblFoto;
     private JLabel lblSaludo;
 
-    public VentanaContactoEdit(JFrame owner, ChatIndividual chat) {
+    public VentanaContactoEdit(JFrame owner, ChatIndividual chat, ControladorAppChat controlador) {
         super(owner, "Editar Contacto", true); 
         this.chat = chat;
-        this.controlador = ControladorAppChat.INSTANCE;
+        this.controlador = controlador;
 
         // Configuración de la ventana
         setLayout(new BorderLayout());

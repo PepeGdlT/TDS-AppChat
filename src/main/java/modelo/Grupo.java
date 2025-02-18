@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
 
-import vista.IconsResource;
+import vista.utils.IconsResource;
 
 public class Grupo extends Contacto {
 

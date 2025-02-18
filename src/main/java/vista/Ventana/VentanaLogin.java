@@ -1,8 +1,11 @@
-package vista;
+package vista.Ventana;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import controlador.ControladorAppChat;
+import vista.utils.ElegantPalette;
+import vista.utils.IconsResource;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -12,10 +15,12 @@ public class VentanaLogin extends JPanel {
     private JPasswordField passwordField;
     private JButton showPasswordButton;
     private boolean isPasswordVisible = false;
+    private ControladorAppChat controlador;
     private VentanaInicio mainFrame; 
 
-    public VentanaLogin(VentanaInicio mainFrame) {
+    public VentanaLogin(VentanaInicio mainFrame, ControladorAppChat controlador) {
     	this.mainFrame = mainFrame;
+    	this.controlador = controlador;
 
         setupLayout();
         setupComponents();
@@ -149,10 +154,10 @@ public class VentanaLogin extends JPanel {
         }
 
         try {
-            boolean login = ControladorAppChat.INSTANCE.iniciarSesion(phone, password);
+            boolean login = controlador.iniciarSesion(phone, password);
             
             if (login && mainFrame != null) {
-                System.out.println(ControladorAppChat.INSTANCE.getUsuarioActual().toString());
+                System.out.println(controlador.getUsuarioActual().toString());
                 mainFrame.showMainWindow();
             } else {
                 JOptionPane.showMessageDialog(null, "Nombre de usuario o contraseña no válido", "Error",

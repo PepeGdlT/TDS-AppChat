@@ -1,4 +1,4 @@
-package modelo;
+package modelo.Descuento;
 
 import java.lang.reflect.Constructor;
 
@@ -15,10 +15,18 @@ public class FactoriaDescuento {
 
             Class<?>[] tiposParametros = new Class<?>[parametros.length];
             for (int i = 0; i < parametros.length; i++) {
-                tiposParametros[i] = parametros[i].getClass();
+                if (parametros[i] instanceof Double) {
+                    tiposParametros[i] = double.class;  
+                } 
+                else if (parametros[i] instanceof Integer) {
+                    tiposParametros[i] = int.class;  
+                } else {
+                    tiposParametros[i] = parametros[i].getClass();
+                }
             }
 
             Constructor<?> constructor = clase.getConstructor(tiposParametros);
+
 
             return (Descuento) constructor.newInstance(parametros);
 

@@ -31,6 +31,7 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
     private static final String SALUDO = "saludo";
     private static final String FOTOPERFILURL = "fotoPerfilURL";
     private static final String FECHANACIMIENTO = "fechaNacimiento";
+    private static final String FECHAREGISTRO = "fechaRegistro";
     private static final String CHATS_INDIVIDUALES = "chatsIndividuales";
     private static final String PREMIUM = "Premium";
     private static final String GRUPOS = "grupos";
@@ -57,6 +58,7 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
                 new Propiedad(SALUDO, usuario.getSaludo()),
                 new Propiedad(FOTOPERFILURL, usuario.getFotoPerfil()),
                 new Propiedad(FECHANACIMIENTO, usuario.getFechaNacimiento()),
+                new Propiedad(FECHAREGISTRO, usuario.getFechaRegistro().format(DateTimeFormatter.ISO_DATE)),
                 new Propiedad(CHATS_INDIVIDUALES, obtenerCodigosChatIndividual(usuario.getChatsIndividuales())),
                 new Propiedad(PREMIUM, String.valueOf(usuario.isPremium())),
                 new Propiedad(GRUPOS, obtenerCodigosGrupo(usuario.getGrupos()))
@@ -158,6 +160,8 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 				prop.setValor(usuario.getFotoPerfil());
 			} else if (prop.getNombre().equals(FECHANACIMIENTO)) {
 				prop.setValor(usuario.getFechaNacimiento());
+			} else if (prop.getNombre().equals(FECHAREGISTRO)) {
+				prop.setValor(usuario.getFechaRegistro().format(DateTimeFormatter.ISO_DATE));
 			} else if (prop.getNombre().equals(CHATS_INDIVIDUALES)) {
 				prop.setValor(obtenerCodigosChatIndividual(usuario.getChatsIndividuales()));
 			} else if (prop.getNombre().equals(PREMIUM)) {
@@ -179,8 +183,9 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
         String fotoPerfilURL = servPersistencia.recuperarPropiedadEntidad(eUsuario, FOTOPERFILURL);
         String fechaNacimientoStr = servPersistencia.recuperarPropiedadEntidad(eUsuario, FECHANACIMIENTO);
         boolean premium = Boolean.parseBoolean(servPersistencia.recuperarPropiedadEntidad(eUsuario, PREMIUM));
+        LocalDate fechaRegistro = LocalDate.parse(servPersistencia.recuperarPropiedadEntidad(eUsuario, FECHAREGISTRO));
         
-        Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimientoStr);
+        Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimientoStr, fechaRegistro);
         usuario.setPremium(premium);
         usuario.setCodigo(eUsuario.getId());
 

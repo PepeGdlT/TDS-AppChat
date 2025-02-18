@@ -4,7 +4,7 @@ import java.awt.EventQueue;
 import java.io.File;
 
 import controlador.ControladorAppChat;
-import vista.VentanaInicio;
+import vista.Ventana.VentanaInicio;
 
 public class Lanzador {
     public static void main(final String[] args) {
@@ -27,6 +27,7 @@ public class Lanzador {
             public void run() {
                 try {
                     VentanaInicio ventana = new VentanaInicio();
+                  
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

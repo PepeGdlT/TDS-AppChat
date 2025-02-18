@@ -1,4 +1,4 @@
-package vista;
+package vista.Ventana;
 
 import controlador.ControladorAppChat;
 import modelo.ChatIndividual;
@@ -16,10 +16,11 @@ public class VentanaContactos extends JPanel {
     private JButton addButton, backButton;
     private JPopupMenu popupMenu;
     private JMenuItem itemVisualizar, itemEditar;
+    private ControladorAppChat controlador;
     private VentanaInicio mainFrame;
 
-    public VentanaContactos(VentanaInicio mainFrame) {
-        ControladorAppChat controlador = ControladorAppChat.INSTANCE; // Referencia al controlador global
+    public VentanaContactos(VentanaInicio mainFrame, ControladorAppChat controlador) {
+        this.controlador = controlador;
         this.mainFrame = mainFrame;
 
         setLayout(new BorderLayout());
@@ -110,7 +111,7 @@ public class VentanaContactos extends JPanel {
                 String nombre = (String) tableModel.getValueAt(row, 0);
                 ChatIndividual chat = controlador.getContactoPorNombre(nombre);
                 if (chat != null) {
-                    new VentanaContactoEdit(mainFrame.frame, chat).setVisible(true);
+                    new VentanaContactoEdit(mainFrame.frame, chat,controlador).setVisible(true);
                     cargarContactos(controlador);
                 } else {
                     JOptionPane.showMessageDialog(this, "No se pudo encontrar el contacto.");

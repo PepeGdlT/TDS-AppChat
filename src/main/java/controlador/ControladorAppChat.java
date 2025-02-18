@@ -1,5 +1,6 @@
 package controlador;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,7 +75,7 @@ public enum ControladorAppChat {
     		return false;
     	}
     	
-        Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimiento);
+        Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimiento, LocalDate.now());
 
     	if (catalogoUsuarios.contains(usuario)) {
     	      return false;

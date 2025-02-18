@@ -40,7 +40,7 @@ public class Mensaje implements Comparable<Mensaje> {
     public void setHora(LocalDateTime hora) { this.hora = hora; }
     public Usuario getEmisor() { return emisor; }
     public void setEmisor(Usuario emisor) { this.emisor = emisor; }
-    public Object getReceptor() { return receptor; }
+    public Contacto getReceptor() { return receptor; }
     public void setReceptor(Contacto receptor) { this.receptor = receptor; }
 
     // Comparador para ordenamiento por hora
