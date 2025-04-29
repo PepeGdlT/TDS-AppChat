@@ -97,11 +97,21 @@ public class AdaptadorChatIndividualTDS implements IAdaptadorChatIndividualDAO {
         }
 
         Entidad eChat = servPersistencia.recuperarEntidad(codigo);
-        if (eChat == null) return null;
+        if (eChat == null || !"chat".equals(eChat.getNombre())) {
+            System.out.println("Entidad con ID " + codigo + " no es un chat (es: " + (eChat != null ? eChat.getNombre() : "null") + ")");
+            return null;
+        }
 
         // Recuperar el código del contacto y obtener el Usuario
         String nombreContacto = servPersistencia.recuperarPropiedadEntidad(eChat, NOMBRE);
-        int codigoContacto = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eChat, CONTACTO));
+        String codigoContactoStr = servPersistencia.recuperarPropiedadEntidad(eChat, CONTACTO);
+        if (codigoContactoStr == null || codigoContactoStr.isEmpty()) {
+            System.out.println("El código de chatindv es nulo o vacío para el chat con ID: " + eChat.getId());
+        	return null;
+           
+        }
+        int codigoContacto = Integer.parseInt(codigoContactoStr);
+
         
         Usuario contacto = factoria.getUsuarioDAO().recuperarUsuario(codigoContacto);
         if (contacto == null) return null;

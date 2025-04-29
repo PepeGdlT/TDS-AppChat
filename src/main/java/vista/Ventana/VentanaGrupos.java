@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class VentanaGrupos extends JPanel {
@@ -136,11 +137,18 @@ public class VentanaGrupos extends JPanel {
     private void agregarGrupo() {
         String nombreGrupo = JOptionPane.showInputDialog(this, "Ingrese el nombre del grupo:");
         if (nombreGrupo != null && !nombreGrupo.trim().isEmpty()) {
-            controlador.crearGrupo(nombreGrupo, List.of());
-            JOptionPane.showMessageDialog(this, "Grupo creado.");
-            cargarGrupos();
+            // Crear el grupo con un miembro (en este caso, el usuario actual)
+            List<ChatIndividual> miembros = new ArrayList<>();
+            Grupo grupo = controlador.crearGrupo(nombreGrupo, miembros);
+            if (grupo != null) {
+                JOptionPane.showMessageDialog(this, "Grupo creado.");
+                cargarGrupos();
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al crear el grupo.");
+            }
         }
     }
+
 
     private void agregarUsuarioAGrupo() {
         String selectedGroup = groupList.getSelectedValue();

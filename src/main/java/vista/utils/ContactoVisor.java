@@ -1,92 +1,69 @@
 package vista.utils;
 
-import java.awt.*;
-import java.net.URL;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.io.IOException;
-import javax.imageio.ImageIO;
-import javax.swing.*;
+import java.net.URL;
+import javax.swing.ImageIcon;
+import java.awt.Image;
+
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.border.Border;
 
-public class ContactoVisor extends JPanel {
 
-    private static final Border SELECCIONADO = BorderFactory.createLineBorder(ElegantPalette.HOVER_BACKGROUND, 2);
-    private static final Border NO_SELECCIONADO = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+import modelo.Contacto;
+//En ContactoVisor.java
+public class ContactoVisor extends Visor {
 
-    private JLabel lblImagen;
-    private JLabel lblNombre;
-    private JLabel lblUltimoMensaje;
-    private JLabel lblCirculo;
 
-    public ContactoVisor(String nombre, String fotoUrl, String ultimoMensaje) {
-        setLayout(null); 
-        setPreferredSize(new Dimension(300, 70)); 
+	public ContactoVisor(String nombre, String fotoUrl, String ultimoMensaje) {
 
-        setBackground(Color.WHITE); 
-        setBorder(NO_SELECCIONADO); 
 
-        lblImagen = new JLabel();
-        lblNombre = new JLabel();
-        lblUltimoMensaje = new JLabel();
-        lblCirculo = new JLabel();
+		super(nombre, fotoUrl, ultimoMensaje);
 
-        lblNombre.setFont(new Font("Arial", Font.BOLD, 14));
-        lblUltimoMensaje.setFont(new Font("Arial", Font.PLAIN, 12));
+		if (esSoloDigitos(nombre)) {
+			lblNombre.setText(nombre);  // Mostrar el número de teléfono
+			mostrarCirculoAzul();  // Mostrar el círculo azul
+		} else {
+			// Si no es solo dígitos, mostrar el nombre del contacto
+			lblNombre.setText(nombre);  // Mostrar el nombre
+		}
 
-        lblImagen.setBounds(10, 10, 50, 50); 
-        lblNombre.setBounds(70, 10, 200, 20);
-        lblUltimoMensaje.setBounds(70, 35, 200, 20);
+		// Establecer el último mensaje
+		lblUltimoMensaje.setText(ultimoMensaje);
+	}
 
-        // Configuración de la imagen del contacto
-        try {
-            URL url = new URL(fotoUrl);
-            Image imagenOriginal = ImageIO.read(url);
-            int anchoDeseado = 50;
-            int altoDeseado = 50;
-            Image imagenEscalada = imagenOriginal.getScaledInstance(anchoDeseado, altoDeseado, Image.SCALE_SMOOTH);
-            lblImagen.setIcon(new ImageIcon(imagenEscalada));
-        } catch (IOException e) {
-            lblImagen.setText("Imagen no disponible");
-        }
+	// Implementación del método abstracto
+	@Override
+	protected void setNombreYUltimoMensaje(String ultimoMensaje) {
+		lblUltimoMensaje.setText(ultimoMensaje);  // Establecer el último mensaje
+	}
 
-        // Configuración del texto
-        lblNombre.setText(nombre);
-        lblUltimoMensaje.setText(ultimoMensaje);
+	// Método para verificar si el nombre es solo dígitos (número de teléfono)
+	private boolean esSoloDigitos(String nombre) {
+		return nombre.matches("\\d+");  // Verificar si el nombre contiene solo números (es un número de teléfono)
+	}
 
-        // Agregar el círculo azul si el nombre contiene solo dígitos
-        if (esSoloDigitos(nombre)) {
-            lblCirculo.setBounds(5, 5, 15, 15); // Posición en la esquina superior izquierda
-            try {
-                ImageIcon originalIcon = new ImageIcon(ContactoVisor.class.getResource("/iconos/blue_circle.png"));
-                Image scaledImage = originalIcon.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH); // Tamaño reducido
-                lblCirculo.setIcon(new ImageIcon(scaledImage));
-            } catch (Exception e) {
-                lblCirculo.setText("X"); // Mostrar algo en caso de error
-            }
-            add(lblCirculo); // Agregar el círculo solo si el nombre es numérico
-        }
+	// Método para mostrar el círculo azul
+	private void mostrarCirculoAzul() {
+		lblCirculo.setBounds(5, 5, 15, 15); // Posición en la esquina superior izquierda
+		try {
+			// Usamos la clase utils para cargar la imagen
+			ImageIcon icono = IconsResource.BLUE_CIRCLE;
+			Image imgEscalada = icono.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+			lblCirculo.setIcon(new ImageIcon(imgEscalada));
+		} catch (Exception e) {
+			lblCirculo.setText("X"); // Mostrar algo en caso de error
+		}
+		add(lblCirculo);  // Agregar el círculo solo si el nombre es numérico
+	}
+	
 
-        // Agregar los componentes al panel
-        add(lblImagen);
-        add(lblNombre);
-        add(lblUltimoMensaje);
-    }
 
-    public void setSeleccionado(boolean isSelected) {
-        if (isSelected) {
-            setBackground(ElegantPalette.BACKGROUND); // Color de fondo para selección
-            setBorder(SELECCIONADO); // Borde azul para mostrar selección
-        } else {
-            setBackground(ElegantPalette.HOVER_BACKGROUND); // Fondo blanco cuando no está seleccionado
-            setBorder(NO_SELECCIONADO); // Sin borde cuando no está seleccionado
-        }
-    }
-
-    // Validar si el nombre contiene solo dígitos
-    private boolean esSoloDigitos(String texto) {
-        return texto.matches("\\d+"); // Verificar si el nombre contiene solo números
-    }
-
-    public String getNombre() {
-        return lblNombre.getText();
-    }
 }
+

@@ -11,8 +11,6 @@ public enum PoolDAO {
 	private PoolDAO() {
 		pool = new Hashtable<Integer, Object>();
 	}
-
-
 	
 	public Object getObjeto(int id) {
 		return pool.get(id);

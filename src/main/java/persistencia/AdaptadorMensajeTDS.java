@@ -158,13 +158,35 @@ public class AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
     }
 
     private Object getReceptor(String receptorCodigo) {
-        int codigo = Integer.parseInt(receptorCodigo);
-        AdaptadorChatIndividualTDS adaptadorChatIndividual = (AdaptadorChatIndividualTDS) factoria.getChatIndividualDAO();
-        AdaptadorGrupoTDS adaptadorGrupo = (AdaptadorGrupoTDS) factoria.getGrupoDAO();
+        if (receptorCodigo == null || receptorCodigo.trim().isEmpty()) {
+            throw new IllegalArgumentException("El código del receptor no puede ser nulo o vacío.");
+        }
 
-        ChatIndividual chat = adaptadorChatIndividual.recuperarChatIndividual(codigo);
-        if (chat != null) return chat;
+        int codigo;
+        try {
+            codigo = Integer.parseInt(receptorCodigo);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("El código del receptor no es un número válido: " + receptorCodigo, e);
+        }
 
-        return adaptadorGrupo.recuperarGrupo(codigo);
+        Entidad entidad = servPersistencia.recuperarEntidad(codigo);
+        if (entidad == null) {
+            throw new IllegalStateException("No se encontró ninguna entidad con código: " + codigo);
+        }
+
+        String tipo = entidad.getNombre();
+        switch (tipo) {
+            case "chat" -> {
+                return factoria.getChatIndividualDAO().recuperarChatIndividual(codigo);
+            }
+            case "grupo" -> {
+                return factoria.getGrupoDAO().recuperarGrupo(codigo);
+            }
+            default -> throw new IllegalStateException("El tipo de entidad para el receptor con código " + codigo + " es desconocido: " + tipo);
+        }
     }
+
+
+
+
 }

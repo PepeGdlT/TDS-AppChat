@@ -173,7 +173,7 @@ public enum ControladorAppChat {
     
     public List<Mensaje> getMensajes(Contacto contacto) {
         if (contacto == null || contacto.getMensajesEnviados() == null) {
-            return Collections.emptyList(); // Devuelve una lista vacía segura
+            return Collections.emptyList(); 
         }
 
         return contacto.getMensajesEnviados().stream()
@@ -194,46 +194,58 @@ public enum ControladorAppChat {
     public void enviarMensaje(Contacto contacto, String mensajeTexto) {
         if (mensajeTexto == null || mensajeTexto.trim().isEmpty()) return;
 
-        // Crear el mensaje
         Mensaje mensaje = new Mensaje(mensajeTexto, LocalDateTime.now(), usuarioActual, contacto);
-
-        // Añadir el mensaje al chat del emisor
-        contacto.enviarMensaje(mensaje);
         adaptadorMensaje.registrarMensaje(mensaje);
 
-        if (contacto instanceof ChatIndividual) {
-            ChatIndividual chatIndividual = (ChatIndividual) contacto;
-
-            // Obtener el usuario receptor
-            Usuario receptor = chatIndividual.getContacto();
-
-            // Encontrar el chat correspondiente en el receptor
-            ChatIndividual chatReceptor = receptor.getChatsIndividuales().stream()
-                    .filter(c -> c.getnumeroTelefono().equals(usuarioActual.getNumeroTelefono()))
-                    .findFirst()
-                    .orElse(null);
-
-            // Si el chat no existe en el receptor, se crea
-            if (chatReceptor == null) {
-                chatReceptor = new ChatIndividual(usuarioActual.getNumeroTelefono(),
-                                                  usuarioActual.getNumeroTelefono(), usuarioActual);
-                receptor.addContacto(chatReceptor);
-                adaptadorChatIndividual.registrarChatIndividual(chatReceptor);
+        // Enviar mensaje a todos los contactos o grupo
+        if (contacto instanceof Grupo) {
+            Grupo grupo = (Grupo) contacto;
+            System.out.println("Enviando mensaje al grupo: " + grupo.getNombreContacto());
+            for (ChatIndividual miembro : grupo.getMiembros()) {
+                // Asegúrate de enviar el mensaje a cada miembro
+                System.out.println("Enviando mensaje a: " + miembro.getContacto().getNombreCompleto());
+                enviarMensajePrivadoAReceptor(miembro.getContacto(), mensaje);
             }
+            grupo.enviarMensaje(mensaje); // Asegúrate de que el grupo recibe el mensaje
+            adaptadorGrupo.modificarGrupo(grupo);
+        } else if (contacto instanceof ChatIndividual) {
+            ChatIndividual chatEmisor = (ChatIndividual) contacto;
+            Usuario receptor = chatEmisor.getContacto();
+            // Agregar mensaje al chat del emisor también
+            chatEmisor.enviarMensaje(mensaje);
+            enviarMensajePrivadoAReceptor(receptor, mensaje);
+            adaptadorChatIndividual.modificarChatIndividual(chatEmisor);
+        }
+    }
 
-            // Añadir el mensaje al chat del receptor
-            chatReceptor.enviarMensaje(mensaje);
-            adaptadorChatIndividual.modificarChatIndividual(chatReceptor);
 
-            // Actualizar al receptor en la base de datos
-            adaptadorUsuario.modificarUsuario(receptor);
-        } else if (contacto instanceof Grupo) {
-            adaptadorGrupo.modificarGrupo((Grupo) contacto);
+
+
+
+    private void enviarMensajePrivadoAReceptor(Usuario receptor, Mensaje mensaje) {
+        // Buscamos el chat individual del receptor
+    	ChatIndividual chatReceptor = receptor.getChatsIndividuales().stream()
+    		    .filter(c -> c.getContacto().equals(usuarioActual))
+    		    .findFirst()
+    		    .orElse(null);
+
+
+        if (chatReceptor == null) {
+            // Si no existe un chat con el receptor, lo creamos
+            chatReceptor = new ChatIndividual(usuarioActual.getNombreCompleto(),
+                                              usuarioActual.getNumeroTelefono(), usuarioActual);
+            receptor.addContacto(chatReceptor);
+            adaptadorChatIndividual.registrarChatIndividual(chatReceptor);
         }
 
-        // Actualizar el chat del emisor
-        adaptadorChatIndividual.modificarChatIndividual((ChatIndividual) contacto);
+        // Enviar el mensaje al receptor
+        chatReceptor.enviarMensaje(mensaje);
+        adaptadorChatIndividual.modificarChatIndividual(chatReceptor); // Persistir cambios en el receptor
+        adaptadorUsuario.modificarUsuario(receptor);  // Persistir cambios en el receptor
     }
+
+
+
 
 
     public void enviarMensaje(Contacto contacto, int emoji) {
@@ -355,23 +367,18 @@ public enum ControladorAppChat {
 		List<ChatIndividual> eliminados = new LinkedList<>(grupo.getMiembros());
 		eliminados.removeAll(miembros);
 
-		// Le modifico el grupo si el usuario ya existia. Si es nuevo, se lo añado
 		mantenidos.stream().forEach(p -> p.modificarGrupo(grupo));
 		nuevos.stream().forEach(p -> p.addGrupo(grupo));
 
-		// Elimino el grupo de los participantes que ya no lo tienen
 		eliminados.stream().forEach(p -> {
 			p.eliminarGrupo(grupo);
 			adaptadorUsuario.modificarUsuario(p.getContacto());
 		});
 
-		// Se le cambia al grupo la lista de participantes
 		grupo.setMiembros(miembros);
 
-		// Conexion con persistencia
 		adaptadorGrupo.modificarGrupo(grupo);
 
-		// Actualiza los usuarios que no estaban antes en el grupo
 		nuevos.stream().map(ChatIndividual::getContacto).forEach(u -> adaptadorUsuario.modificarUsuario(u));
 
 		return grupo;
@@ -389,13 +396,6 @@ public enum ControladorAppChat {
 		adaptadorMensaje.modificarMensaje(mensaje);
 	}
 
-    //-----------------------------------------------------
-    // Funciones de búsqueda de mensajes
-    //-----------------------------------------------------
-    
-    public List<Mensaje> buscarMensajes(String emisor, LocalDateTime fechaInicio, LocalDateTime fechaFin, String text) {
-    	return null;
-    }
 
     //-----------------------------------------------------
     // Funciones de eliminación de objetos
@@ -421,17 +421,15 @@ public enum ControladorAppChat {
 
     public ChatIndividual getChatIndividual(String nombre) {
         if (usuarioActual == null || nombre == null || nombre.trim().isEmpty()) {
-            return null; // Si no hay usuario actual o el nombre es inválido
+            return null; 
         }
-
-        // Buscar el chat individual con el nombre especificado
         for (ChatIndividual chat : usuarioActual.getChatsIndividuales()) {
             if (chat.getNombreContacto().equalsIgnoreCase(nombre.trim())) {
-                return chat; // Devolver el chat encontrado
+                return chat; 
             }
         }
 
-        return null; // Si no se encuentra ningún chat
+        return null;
     }
 
     
@@ -448,9 +446,20 @@ public enum ControladorAppChat {
 
 
     // Obtener un contacto por su nombre (ejemplo para edición o visualización)
-    public ChatIndividual getContactoPorNombre(String nombre) {
-        return getChatIndividual(nombre);
+    public Contacto getContactoPorNombre(String nombre) {
+        ChatIndividual chat = getChatIndividual(nombre);
+        if (chat != null) {
+            return chat;  
+        }
+
+        Grupo grupo = getGrupoPorNombre(nombre);
+        if (grupo != null) {
+            return grupo;  
+        }
+
+        return null; 
     }
+
     
 
 

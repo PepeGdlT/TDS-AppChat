@@ -2,6 +2,7 @@ package modelo;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.swing.ImageIcon;
@@ -85,9 +86,6 @@ public class ChatIndividual extends Contacto {
 	public String toString() {
 		return super.toString() + "ChatIndividual [contacto=" + contacto + ", numeroTelefono=" + numeroTelefono + "]";
 	}
-
-	
-	
 	
 
 }

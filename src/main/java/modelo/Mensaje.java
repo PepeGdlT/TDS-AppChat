@@ -8,7 +8,7 @@ public class Mensaje implements Comparable<Mensaje> {
     private Integer emoticono;
     private LocalDateTime hora;
     private Usuario emisor;
-    private Contacto receptor; // Puede ser Grupo o ChatIndividual
+    private Contacto receptor;
 
     // Constructor para mensajes de texto
     public Mensaje(String texto, LocalDateTime hora, Usuario emisor, Contacto receptor) {

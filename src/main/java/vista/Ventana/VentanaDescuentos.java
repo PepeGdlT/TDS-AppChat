@@ -2,7 +2,6 @@ package vista.Ventana;
 
 import javax.swing.*;
 import java.awt.*;
-
 import modelo.Usuario;
 import modelo.Descuento.Descuento;
 import modelo.Descuento.FactoriaDescuento;
@@ -14,6 +13,7 @@ public class VentanaDescuentos extends JDialog {
     private JLabel lblEstadoDescuentoFecha;
     private JLabel lblEstadoDescuentoMensajes;
     private JButton btnAplicarDescuentos;
+    private JButton btnConfirmarPago;
 
     private double precioOriginal = 24.99;
     private double precioFinal;
@@ -54,12 +54,11 @@ public class VentanaDescuentos extends JDialog {
         panelDescuentos.add(btnAplicarDescuentos);
 
         // Botón para confirmar pago
-        JButton btnConfirmarPago = new JButton("Confirmar y Pagar");
+        btnConfirmarPago = new JButton("Confirmar y Pagar");
         btnConfirmarPago.addActionListener(e -> {
             JOptionPane.showMessageDialog(this, "¡Pago realizado exitosamente! Ahora eres usuario Premium.", "Confirmación", JOptionPane.INFORMATION_MESSAGE);
             controlador.hacerPremium(true);
             this.dispose();
-            
         });
         panelDescuentos.add(btnConfirmarPago);
 
@@ -78,12 +77,10 @@ public class VentanaDescuentos extends JDialog {
             double totalDescuento = 0;
             boolean descuentoFechaAplicado = false;
             boolean descuentoMensajesAplicado = false;
-            String mensajeErrorFecha = "No válido en esta fecha";
-            String mensajeErrorMensajes = "No cumple con los mensajes mínimos";
 
             // Verificar descuento por fecha
             Descuento descuentoFecha = FactoriaDescuento.crearDescuento(
-                "modelo.DescuentoPorFecha", 10.0, "2025-01-01", "2025-07-31"
+                "modelo.Descuento.DescuentoPorFecha", 10.0, "2025-01-01", "2025-07-31"
             );
             if (descuentoFecha.esAplicable(usuario)) {
                 totalDescuento += descuentoFecha.getDescuento(usuario);
@@ -91,13 +88,13 @@ public class VentanaDescuentos extends JDialog {
                 lblEstadoDescuentoFecha.setForeground(Color.GREEN);
                 descuentoFechaAplicado = true;
             } else {
-                lblEstadoDescuentoFecha.setText("Descuento por Fecha: ✖ " + mensajeErrorFecha);
+                lblEstadoDescuentoFecha.setText("Descuento por Fecha: ✖ No válido en esta fecha");
                 lblEstadoDescuentoFecha.setForeground(Color.RED);
             }
 
             // Verificar descuento por mensajes
             Descuento descuentoMensajes = FactoriaDescuento.crearDescuento(
-                "modelo.DescuentoPorMensaje", 15.0, 20
+                "modelo.Descuento.DescuentoPorMensaje", 15.0, 20
             );
             if (descuentoMensajes.esAplicable(usuario)) {
                 totalDescuento += descuentoMensajes.getDescuento(usuario);
@@ -105,31 +102,31 @@ public class VentanaDescuentos extends JDialog {
                 lblEstadoDescuentoMensajes.setForeground(Color.GREEN);
                 descuentoMensajesAplicado = true;
             } else {
-                lblEstadoDescuentoMensajes.setText("Descuento por Mensajes: ✖ " + mensajeErrorMensajes);
+                lblEstadoDescuentoMensajes.setText("Descuento por Mensajes: ✖ No cumple con los mensajes mínimos");
                 lblEstadoDescuentoMensajes.setForeground(Color.RED);
             }
 
-            // Determinar si hay descuentos aplicables
+            // Si hay descuentos aplicados, actualizamos el precio final
             if (descuentoFechaAplicado || descuentoMensajesAplicado) {
-                precioFinal = precioOriginal - (precioOriginal * (totalDescuento / 100));
+                precioFinal = precioOriginal * (1 - totalDescuento / 100);
                 lblPrecioActualizado.setText("Precio actualizado: $" + String.format("%.2f", precioFinal));
                 lblPrecioActualizado.setForeground(Color.GREEN);
                 btnAplicarDescuentos.setBackground(Color.GREEN);
                 btnAplicarDescuentos.setText("Descuentos Aplicados");
             } else {
+                precioFinal = precioOriginal;
                 lblPrecioActualizado.setText("Precio actualizado: $" + precioOriginal);
                 lblPrecioActualizado.setForeground(Color.WHITE);
                 btnAplicarDescuentos.setBackground(Color.RED);
                 btnAplicarDescuentos.setText("No Aplicable");
             }
-
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al aplicar descuentos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void configurarVentanaDescuentos() {
-        this.setSize(400, 180);
+        this.setSize(400, 200);
         this.setLocationRelativeTo(this.getParent());
         this.setVisible(true);
     }

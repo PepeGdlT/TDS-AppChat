@@ -25,6 +25,7 @@ public class VentanaInicio {
         }
 
         frame = new JFrame();
+        frame.setTitle("AppChat");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
         frame.setResizable(false);
@@ -83,6 +84,14 @@ public class VentanaInicio {
 	    mainPanel.add(busquedaMensajesPanel, BorderLayout.CENTER);
 	    mainPanel.revalidate();
 	    mainPanel.repaint();
+	}
+	public void showEditarPerfil() {
+	    mainPanel.removeAll();
+	    VentanaEditarPerfil editarPerfil = new VentanaEditarPerfil(this,controlador);
+	    mainPanel.add(editarPerfil, BorderLayout.CENTER);
+	    mainPanel.revalidate();
+	    mainPanel.repaint();
+		
 	}
 
 }

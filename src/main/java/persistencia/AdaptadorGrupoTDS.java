@@ -22,7 +22,6 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 
     private static ServicioPersistencia servPersistencia;
     private static FactoriaDAO factoria;
-    private static final Set<Integer> gruposEnRecuperacion = new HashSet<>(); // Prevent infinite recursion
 
     public AdaptadorGrupoTDS() throws DAOException {
         servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
@@ -35,15 +34,16 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
 
         Entidad eGrupo = new Entidad();
         eGrupo.setNombre(GRUPO);
-        eGrupo.setPropiedades(List.of(
+        eGrupo.setPropiedades(new ArrayList<>(List.of(
                 new Propiedad(NOMBRE, grupo.getNombreContacto()),
                 new Propiedad(ADMINISTRADOR, String.valueOf(grupo.getAdministrador().getCodigo())),
                 new Propiedad(MIEMBROS, obtenerCodigosMiembros(grupo.getMiembros())),
                 new Propiedad(MENSAJES, obtenerCodigosMensajes(grupo.getMensajesEnviados()))
-        ));
+        )));
 
         eGrupo = servPersistencia.registrarEntidad(eGrupo);
         grupo.setCodigo(eGrupo.getId());
+
 
         PoolDAO.INSTANCE.addObjeto(grupo.getCodigo(), grupo);
 
@@ -76,46 +76,38 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
             return (Grupo) PoolDAO.INSTANCE.getObjeto(codigo);
         }
 
-        // Prevent infinite recursion
-        if (gruposEnRecuperacion.contains(codigo)) {
-            System.err.println("Warning: Grupo " + codigo + " is already being recovered. Avoiding infinite loop.");
+        Entidad eGrupo = servPersistencia.recuperarEntidad(codigo);
+        if (eGrupo == null) {
+            System.err.println("Error: Grupo " + codigo + " not found.");
             return null;
         }
-        gruposEnRecuperacion.add(codigo);
 
-        Grupo grupo = null;
-        try {
-            Entidad eGrupo = servPersistencia.recuperarEntidad(codigo);
-            if (eGrupo == null) {
-                System.err.println("Error: Grupo " + codigo + " not found.");
-                return null;
-            }
-
-            String nombre = servPersistencia.recuperarPropiedadEntidad(eGrupo, NOMBRE);
-            int codigoAdmin = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eGrupo, ADMINISTRADOR));
-
-            Usuario administrador = factoria.getUsuarioDAO().recuperarUsuario(codigoAdmin);
-            if (administrador == null) {
-                System.err.println("Error: Grupo " + codigo + " has a missing administrator (ID: " + codigoAdmin + ")");
-                return null;
-            }
-
-            List<ChatIndividual> miembros = obtenerMiembrosDesdeCodigos(
-                    servPersistencia.recuperarPropiedadEntidad(eGrupo, MIEMBROS));
-
-            List<Mensaje> mensajes = obtenerMensajesDesdeCodigos(
-                    servPersistencia.recuperarPropiedadEntidad(eGrupo, MENSAJES));
-
-            grupo = new Grupo(nombre, mensajes, miembros, administrador);
-            grupo.setCodigo(codigo);
-
-            PoolDAO.INSTANCE.addObjeto(codigo, grupo);
-        } finally {
-            gruposEnRecuperacion.remove(codigo);
+        String nombre = servPersistencia.recuperarPropiedadEntidad(eGrupo, NOMBRE);
+        String codigoAdminStr = servPersistencia.recuperarPropiedadEntidad(eGrupo, ADMINISTRADOR);
+        if (codigoAdminStr == null || codigoAdminStr.isEmpty()) {
+            System.err.println("El código de grupo es nulo o vacío para el grupo con ID: " + eGrupo.getId());
+            return null;
         }
+        int codigoAdmin = Integer.parseInt(codigoAdminStr);
+        Usuario administrador = factoria.getUsuarioDAO().recuperarUsuario(codigoAdmin);
+        if (administrador == null) return null;
+
+        Grupo grupo = new Grupo(nombre, new ArrayList<>(), new ArrayList<>(), administrador);
+        grupo.setCodigo(codigo);
+        PoolDAO.INSTANCE.addObjeto(codigo, grupo);
+
+        // Ahora sí podemos recuperar miembros y mensajes SIN bucle infinito
+        List<ChatIndividual> miembros = obtenerMiembrosDesdeCodigos(
+                servPersistencia.recuperarPropiedadEntidad(eGrupo, MIEMBROS));
+        List<Mensaje> mensajes = obtenerMensajesDesdeCodigos(
+                servPersistencia.recuperarPropiedadEntidad(eGrupo, MENSAJES));
+
+        grupo.setMiembros(miembros);
+        grupo.getMensajesEnviados().addAll(mensajes);
 
         return grupo;
     }
+
 
     @Override
     public List<Grupo> recuperarTodosGrupos() {
@@ -181,8 +173,15 @@ public class AdaptadorGrupoTDS implements IAdaptadorGrupoDAO {
         List<ChatIndividual> miembros = new ArrayList<>();
 
         while (strTok.hasMoreTokens()) {
-            miembros.add(adaptadorChatIndividual.recuperarChatIndividual(Integer.parseInt(strTok.nextToken())));
+            int id = Integer.parseInt(strTok.nextToken());
+            Entidad entidad = servPersistencia.recuperarEntidad(id);
+            if (entidad != null && "chat".equals(entidad.getNombre())) {
+                miembros.add(adaptadorChatIndividual.recuperarChatIndividual(id));
+            } else {
+                System.err.println("ID " + id + " no es un chat individual, es: " + (entidad != null ? entidad.getNombre() : "null"));
+            }
         }
+
         return miembros;
     }
 

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Usuario {
@@ -101,5 +102,26 @@ public class Usuario {
         this.contactos.removeIf(c -> c instanceof Grupo);
         this.contactos.addAll(grupos);
     }
+    public ChatIndividual getChatIndividualCon(Usuario usuario) {
+        return this.getChatsIndividuales().stream()
+            .filter(c -> c.getnumeroTelefono().equals(usuario.getNumeroTelefono()))
+            .findFirst()
+            .orElse(null);
+    }
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Usuario other = (Usuario) obj;
+        return Objects.equals(numeroTelefono, other.numeroTelefono);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numeroTelefono);
+    }
+
+    
 }

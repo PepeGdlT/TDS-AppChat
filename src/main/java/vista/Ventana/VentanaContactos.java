@@ -73,15 +73,40 @@ public class VentanaContactos extends JPanel {
         // Agregar contacto
         addButton = new JButton("Agregar Contacto");
         addButton.addActionListener(e -> {
-            String nombre = JOptionPane.showInputDialog(this, "Ingrese el nombre del contacto:");
-            String telefono = JOptionPane.showInputDialog(this, "Ingrese el teléfono del contacto:");
+            // Crear un panel personalizado con dos campos de texto
+            JPanel panel = new JPanel(new GridLayout(2, 2));
+            JTextField nombreField = new JTextField();
+            JTextField telefonoField = new JTextField();
 
-            if (nombre != null && telefono != null && !nombre.isEmpty() && !telefono.isEmpty()) {
-                if (controlador.agregarContacto(nombre, telefono)) {
-                    JOptionPane.showMessageDialog(this, "Contacto agregado correctamente.");
-                    cargarContactos(controlador);
+            panel.add(new JLabel("Nombre:"));
+            panel.add(nombreField);
+            panel.add(new JLabel("Teléfono:"));
+            panel.add(telefonoField);
+
+            // Mostrar el panel en un JOptionPane
+            int result = JOptionPane.showConfirmDialog(
+                    this,
+                    panel,
+                    "Agregar Contacto",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE
+            );
+
+            // Si el usuario hace clic en "Aceptar"
+            if (result == JOptionPane.OK_OPTION) {
+                String nombre = nombreField.getText().trim();
+                String telefono = telefonoField.getText().trim();
+
+                // Validar que los campos no estén vacíos
+                if (!nombre.isEmpty() && !telefono.isEmpty()) {
+                    if (controlador.agregarContacto(nombre, telefono)) {
+                        JOptionPane.showMessageDialog(this, "Contacto agregado correctamente.");
+                        cargarContactos(controlador); // Actualizar la tabla
+                    } else {
+                        JOptionPane.showMessageDialog(this, "No se pudo agregar el contacto.");
+                    }
                 } else {
-                    JOptionPane.showMessageDialog(this, "No se pudo agregar el contacto.");
+                    JOptionPane.showMessageDialog(this, "Por favor, complete ambos campos.");
                 }
             }
         });
@@ -93,7 +118,7 @@ public class VentanaContactos extends JPanel {
             int row = contactTable.getSelectedRow();
             if (row >= 0) {
                 String nombre = (String) tableModel.getValueAt(row, 0);
-                ChatIndividual chat = controlador.getContactoPorNombre(nombre);
+                ChatIndividual chat = (ChatIndividual) controlador.getContactoPorNombre(nombre);
                 if (chat != null) {
                     new VentanaContactoVer(mainFrame.frame, chat).setVisible(true);
                 } else {
@@ -109,7 +134,7 @@ public class VentanaContactos extends JPanel {
             int row = contactTable.getSelectedRow();
             if (row >= 0) {
                 String nombre = (String) tableModel.getValueAt(row, 0);
-                ChatIndividual chat = controlador.getContactoPorNombre(nombre);
+                ChatIndividual chat = (ChatIndividual) controlador.getContactoPorNombre(nombre);
                 if (chat != null) {
                     new VentanaContactoEdit(mainFrame.frame, chat,controlador).setVisible(true);
                     cargarContactos(controlador);

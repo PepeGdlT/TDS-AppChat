@@ -1,9 +1,13 @@
 package vista.Ventana;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
@@ -22,7 +26,10 @@ import tds.BubbleText;
 import vista.utils.ContactoListRenderer;
 import vista.utils.ContactoVisor;
 import vista.utils.ElegantPalette;
+import vista.utils.GrupoListRenderer;
+import vista.utils.GrupoVisor;
 import vista.utils.IconsResource;
+import vista.utils.Visor;
 import vista.utils.utils;
 
 public class VentanaPrincipal extends JPanel {
@@ -35,16 +42,27 @@ public class VentanaPrincipal extends JPanel {
 	 * 
 	 */
 
+	/*
+	 * FALTA
+	 * 
+	 * -LOGICA MENSAJES POR MES
+	 * -s
+	 * 
+	 * 
+	 * 
+	 */
+
 
 	// Componentes principales
-	private DefaultListModel<ContactoVisor> modeloLista;
-	private JList<ContactoVisor> listaContactos;
+	private DefaultListModel<Visor> modeloLista;
+	private JList<Visor> listaContactos;
 	private JPanel mensajesPanel; // Panel donde se colocarán las burbujas
 	private JPanel panelChat;
 	private JTextArea areaTexto;
 	private JTextField campoBusqueda;
 	private ControladorAppChat controlador;
 	private VentanaInicio mainFrame;
+	private boolean esVistaChatIndividual = true;
 
 	// Mapa para almacenar mensajes por contacto
 
@@ -65,17 +83,46 @@ public class VentanaPrincipal extends JPanel {
 	private JPanel createTopPanel() {
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
+		// Crear un botón con la foto y el nombre del usuario
+		JButton btnPerfil = new JButton();
+		btnPerfil.setLayout(new BorderLayout());
+
+		// Cargar la foto de perfil
+		String urlFotoPerfil = controlador.getUsuarioActual().getFotoPerfil();
+		JLabel lblFotoPerfil = new JLabel();
+		utils.cargarImagenDesdeURL(urlFotoPerfil, lblFotoPerfil, 40, 40);
+
+		// Cargar el nombre del usuario
 		JLabel lblUsuario = new JLabel(controlador.getUsuarioActual().getNombreCompleto());
-	    String urlFotoPerfil = controlador.getUsuarioActual().getFotoPerfil();
-	    
-	    JLabel lblFotoPerfil = new JLabel();
-	    utils.cargarImagenDesdeURL(urlFotoPerfil, lblFotoPerfil, 40, 40); 
+		lblUsuario.setFont(new Font("Arial", Font.BOLD, 14));
+
+		// Añadir la foto y el nombre al botón
+		btnPerfil.add(lblFotoPerfil, BorderLayout.WEST);
+		btnPerfil.add(lblUsuario, BorderLayout.CENTER);
+
+		// Quitar el borde y el fondo del botón para que parezca un JLabel
+		btnPerfil.setBorderPainted(false);
+		btnPerfil.setContentAreaFilled(false);
+		btnPerfil.setFocusPainted(false);
+
+
+
+		// Añadir acción al botón para abrir la ventana de edición de perfil
+		btnPerfil.addActionListener(e -> {
+			mainFrame.showEditarPerfil();
+		});
+
+		// Añadir el botón al panel superior
+		topPanel.add(btnPerfil);
+
+		// Resto del código del TopPanel (botones de búsqueda, premium, logout, etc.)
 		JButton btnPremium = new JButton(esUsuarioPremium() ? IconsResource.PDF : IconsResource.PREMIUM);
 		btnPremium.addActionListener(e -> {
 			if (esUsuarioPremium()) {
-				ContactoVisor seleccionado = listaContactos.getSelectedValue();
+				Visor seleccionado = listaContactos.getSelectedValue();
+				btnPremium.setIcon(esUsuarioPremium() ? IconsResource.PDF : IconsResource.PREMIUM);
 				if (seleccionado != null) {
-					ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
+					ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombreContacto());
 					if (chat != null) {
 						ExportPDF.crearPDF(controlador.getUsuarioActual(), chat);
 					} else {
@@ -88,32 +135,80 @@ public class VentanaPrincipal extends JPanel {
 				activarPremium();
 			}
 		});
-		campoBusqueda = new JTextField(15);
-		JButton btnBuscar = new JButton("Buscar");
-		btnBuscar.addActionListener(e -> buscarContacto());
-		
-	    JButton btnBuscarMensajes = new JButton(IconsResource.LUPA);
-	    btnBuscarMensajes.addActionListener(e -> buscaMensajes());
 
-		topPanel.add(lblFotoPerfil);
-		topPanel.add(lblUsuario);
-		topPanel.add(btnPremium);
+		campoBusqueda = new JTextField(15);
+		campoBusqueda.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				buscarContacto();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				buscarContacto();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				buscarContacto();
+			}
+		});
+
+		JButton btnBuscarMensajes = new JButton(IconsResource.LUPA);
+		btnBuscarMensajes.addActionListener(e -> buscaMensajes());
+
+		JButton btnCambioLista = new JButton(esVistaChatIndividual ? IconsResource.GROUP : IconsResource.CHAT);
+		btnCambioLista.addActionListener(e-> {
+			esVistaChatIndividual = !esVistaChatIndividual;
+			btnCambioLista.setIcon(esVistaChatIndividual ? IconsResource.GROUP : IconsResource.CHAT);
+			cargarContactos();
+		});
+
+		JButton btnLogout = new JButton(IconsResource.LOGOUT);
+		btnLogout.addActionListener(e -> {
+			controlador.cerrarSesion();
+			mainFrame.showLoginPanel();
+		});
+
+		btnPremium.setBorderPainted(false);
+		btnBuscarMensajes.setBorderPainted(false);
+		btnLogout.setBorderPainted(false);
+
 		topPanel.add(campoBusqueda);
-		topPanel.add(btnBuscar);
 		topPanel.add(btnBuscarMensajes);
+		topPanel.add(btnPremium);
+		topPanel.add(btnCambioLista);
+		topPanel.add(btnLogout);
 
 		return topPanel;
 	}
 
-	private void cargarContactos() {
-		modeloLista.clear(); 
 
-		List<ChatIndividual> contactos = controlador.getChatIndividuals(); // Obtiene todos los contactos del usuario actual
-		for (ChatIndividual chat : contactos) {
-			ContactoVisor contactoVisor = new ContactoVisor(chat.getNombreContacto(), chat.getFoto(), chat.getUltimoMensaje());
-			modeloLista.addElement(contactoVisor); 
+
+
+	private void cargarContactos() {
+		modeloLista.clear();  
+
+		if (esVistaChatIndividual) {
+			// Cargar contactos individuales
+			List<ChatIndividual> contactos = controlador.getChatIndividuals();
+			for (ChatIndividual chat : contactos) {
+				Visor contactoVisor = new ContactoVisor(chat.getNombreContacto() , chat.getFoto(), chat.getUltimoMensaje());
+				modeloLista.addElement(contactoVisor);
+			}
+			listaContactos.setCellRenderer(new ContactoListRenderer());  
+		} else {
+			// Cargar grupos
+			List<Grupo> grupos = controlador.getGrupos();
+			for (Grupo grupo : grupos) {
+				Visor grupoVisor = new GrupoVisor(grupo.getNombreContacto(), grupo.getFoto(), "Lista de Difusión");
+				modeloLista.addElement(grupoVisor);
+			}
+			listaContactos.setCellRenderer(new GrupoListRenderer());  
 		}
 	}
+
+
 
 
 	// Crear el panel de lista de contactos
@@ -123,7 +218,7 @@ public class VentanaPrincipal extends JPanel {
 
 		modeloLista = new DefaultListModel<>();
 		listaContactos = new JList<>(modeloLista);
-		listaContactos.setCellRenderer(new ContactoListRenderer());
+		//listaContactos.setCellRenderer(new VisorListRenderer<Visor>());
 		listaContactos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		// Evento de doble clic o clic derecho
@@ -132,50 +227,58 @@ public class VentanaPrincipal extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2) {
 					// Doble clic para abrir chat
-					ContactoVisor seleccionado = listaContactos.getSelectedValue();
+					Visor seleccionado = listaContactos.getSelectedValue();
 					if (seleccionado != null) {
-						abrirChat(seleccionado);
+						abrirChat(seleccionado);  
 					} else {
 						JOptionPane.showMessageDialog(VentanaPrincipal.this, 
-								"No se ha seleccionado ningún contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+								"No se ha seleccionado ningún grupo o contacto.", "Error", JOptionPane.ERROR_MESSAGE);
 					}
 				} else if (e.getButton() == MouseEvent.BUTTON3) {
 					// Mostrar menú contextual con botón derecho
 					JPopupMenu menu = new JPopupMenu();
 
-					JMenuItem itemVisualizar = new JMenuItem("Visualizar perfil contacto");
+					JMenuItem itemVisualizar = new JMenuItem("Visualizar perfil");
 					itemVisualizar.addActionListener(e2 -> {
-						ContactoVisor seleccionado = listaContactos.getSelectedValue();
+						Visor seleccionado = listaContactos.getSelectedValue();
 						if (seleccionado != null) {
-							ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
-							if (chat != null) {
-								new VentanaContactoVer(mainFrame.frame, chat).setVisible(true);
-								cargarContactos();
-							} else {
-								JOptionPane.showMessageDialog(VentanaPrincipal.this, 
-										"No se ha podido encontrar el contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+							if (seleccionado instanceof ContactoVisor) {
+								ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombreContacto());
+								if (chat != null) {
+									new VentanaContactoVer(mainFrame.frame, chat).setVisible(true);
+								}
+							} else if (seleccionado instanceof GrupoVisor) {
+								Grupo grupo = controlador.getGrupoPorNombre(seleccionado.getNombreContacto());
+								if (grupo != null) {
+									new VentanaGrupoVer(mainFrame.frame, grupo).setVisible(true);  // Nueva ventana para grupo
+								}
 							}
 						} else {
 							JOptionPane.showMessageDialog(VentanaPrincipal.this, 
-									"No se ha seleccionado ningún contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+									"No se ha seleccionado ningún grupo o contacto.", "Error", JOptionPane.ERROR_MESSAGE);
 						}
 					});
 
-					JMenuItem itemEditar = new JMenuItem("Editar contacto");
+					JMenuItem itemEditar = new JMenuItem("Editar");
 					itemEditar.addActionListener(e2 -> {
-						ContactoVisor seleccionado = listaContactos.getSelectedValue();
+						Visor seleccionado = listaContactos.getSelectedValue();
 						if (seleccionado != null) {
-							ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
-							if (chat != null) {
-								new VentanaContactoEdit(mainFrame.frame, chat,controlador).setVisible(true);
-								cargarContactos();
-							} else {
-								JOptionPane.showMessageDialog(VentanaPrincipal.this, 
-										"No se ha podido encontrar el contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+							if (seleccionado instanceof ContactoVisor) {
+								ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombreContacto());
+								if (chat != null) {
+									new VentanaContactoEdit(mainFrame.frame, chat, controlador).setVisible(true);
+									cargarContactos();
+								}
+							} else if (seleccionado instanceof GrupoVisor) {
+								Grupo grupo = controlador.getGrupoPorNombre(seleccionado.getNombreContacto());
+								if (grupo != null) {
+									new VentanaGrupoEdit(mainFrame.frame, grupo, controlador).setVisible(true);  // Nueva ventana para editar grupo
+									cargarContactos();  // Cambiar a cargarGrupos si es necesario
+								}
 							}
 						} else {
 							JOptionPane.showMessageDialog(VentanaPrincipal.this, 
-									"No se ha seleccionado ningún contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+									"No se ha seleccionado ningún grupo o contacto.", "Error", JOptionPane.ERROR_MESSAGE);
 						}
 					});
 
@@ -263,76 +366,76 @@ public class VentanaPrincipal extends JPanel {
 
 	// Crear el panel de emojis
 	private JPanel createEmojiPanel() {
-	    int emojisPorPagina = 9; 
-	    List<JLabel> emojiLabels = new ArrayList<>();
-	    JPanel emojiPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-	    
-	    for (int i = 0; i <= 25; i++) {
-	        JLabel emojiLabel = new JLabel();
-	        ImageIcon originalIcon = (ImageIcon) BubbleText.getEmoji(i);
-	        Image image = originalIcon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
-	        emojiLabel.setIcon(new ImageIcon(image));
-	        emojiLabel.setName(String.valueOf(i));
-	        emojiLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-	        
-	        emojiLabel.addMouseListener(new MouseAdapter() {
-	            @Override
-	            public void mouseClicked(MouseEvent e) {
-	                ContactoVisor seleccionado = listaContactos.getSelectedValue();
-	                if (seleccionado != null) {
-	                    ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
-	                    if (chat != null) {
-	                        controlador.enviarMensaje(chat, Integer.parseInt(emojiLabel.getName()));
-	                        abrirChat(seleccionado);
-	                        listaContactos.setSelectedValue(seleccionado, true);
-	                    }
-	                } else {
-	                    JOptionPane.showMessageDialog(VentanaPrincipal.this, "Selecciona un contacto.", "Error", JOptionPane.ERROR_MESSAGE);
-	                }
-	            }
-	        });
+		int emojisPorPagina = 8; 
+		List<JLabel> emojiLabels = new ArrayList<>();
+		JPanel emojiPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-	        emojiLabels.add(emojiLabel);
-	    }
+		for (int i = 0; i < 24; i++) {
+			JLabel emojiLabel = new JLabel();
+			ImageIcon originalIcon = (ImageIcon) BubbleText.getEmoji(i);
+			Image image = originalIcon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+			emojiLabel.setIcon(new ImageIcon(image));
+			emojiLabel.setName(String.valueOf(i));
+			emojiLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-	    JPanel navigationPanel = new JPanel(new BorderLayout());
-	    JButton leftButton = new JButton("◀");
-	    JButton rightButton = new JButton("▶");
-	    
-	    int[] paginaActual = {0}; // Array para modificar dentro de los eventos
+			emojiLabel.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					Visor seleccionado = listaContactos.getSelectedValue();
+					if (seleccionado != null) {
+						ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombreContacto());
+						if (chat != null) {
+							controlador.enviarMensaje(chat, Integer.parseInt(emojiLabel.getName()));
+							abrirChat(seleccionado);
+							listaContactos.setSelectedValue(seleccionado, true);
+						}
+					} else {
+						JOptionPane.showMessageDialog(VentanaPrincipal.this, "Selecciona un contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			});
 
-	    ActionListener actualizarEmojis = e -> {
-	        emojiPanel.removeAll();
-	        int start = paginaActual[0] * emojisPorPagina;
-	        int end = Math.min(start + emojisPorPagina, emojiLabels.size());
-	        for (int i = start; i < end; i++) {
-	            emojiPanel.add(emojiLabels.get(i));
-	        }
-	        emojiPanel.revalidate();
-	        emojiPanel.repaint();
-	    };
+			emojiLabels.add(emojiLabel);
+		}
 
-	    leftButton.addActionListener(e -> {
-	        if (paginaActual[0] > 0) {
-	            paginaActual[0]--;
-	            actualizarEmojis.actionPerformed(null);
-	        }
-	    });
+		JPanel navigationPanel = new JPanel(new BorderLayout());
+		JButton leftButton = new JButton("◀");
+		JButton rightButton = new JButton("▶");
 
-	    rightButton.addActionListener(e -> {
-	        if ((paginaActual[0] + 1) * emojisPorPagina < emojiLabels.size()) {
-	            paginaActual[0]++;
-	            actualizarEmojis.actionPerformed(null);
-	        }
-	    });
+		int[] paginaActual = {0}; // Array para modificar dentro de los eventos
 
-	    navigationPanel.add(leftButton, BorderLayout.WEST);
-	    navigationPanel.add(emojiPanel, BorderLayout.CENTER);
-	    navigationPanel.add(rightButton, BorderLayout.EAST);
+		ActionListener actualizarEmojis = e -> {
+			emojiPanel.removeAll();
+			int start = paginaActual[0] * emojisPorPagina;
+			int end = Math.min(start + emojisPorPagina, emojiLabels.size());
+			for (int i = start; i < end; i++) {
+				emojiPanel.add(emojiLabels.get(i));
+			}
+			emojiPanel.revalidate();
+			emojiPanel.repaint();
+		};
 
-	    actualizarEmojis.actionPerformed(null); // Mostrar primera página
+		leftButton.addActionListener(e -> {
+			if (paginaActual[0] > 0) {
+				paginaActual[0]--;
+				actualizarEmojis.actionPerformed(null);
+			}
+		});
 
-	    return navigationPanel;
+		rightButton.addActionListener(e -> {
+			if ((paginaActual[0] + 1) * emojisPorPagina < emojiLabels.size()) {
+				paginaActual[0]++;
+				actualizarEmojis.actionPerformed(null);
+			}
+		});
+
+		navigationPanel.add(leftButton, BorderLayout.WEST);
+		navigationPanel.add(emojiPanel, BorderLayout.CENTER);
+		navigationPanel.add(rightButton, BorderLayout.EAST);
+
+		actualizarEmojis.actionPerformed(null); // Mostrar primera página
+
+		return navigationPanel;
 	}
 
 
@@ -341,89 +444,142 @@ public class VentanaPrincipal extends JPanel {
 
 	// Buscar un contacto
 	private void buscarContacto() {
-	    String textoBusqueda = campoBusqueda.getText().trim().toLowerCase();
-	    modeloLista.clear();
+		String textoBusqueda = campoBusqueda.getText().trim().toLowerCase();
+		modeloLista.clear();
 
-	    List<ChatIndividual> contactos = controlador.getChatIndividuals();
+		List<ChatIndividual> contactos = controlador.getChatIndividuals();
 
-	    // Si el campo de búsqueda está vacío, restauramos la lista completa
-	    if (textoBusqueda.isEmpty()) {
-	        for (ChatIndividual chat : contactos) {
-	            ContactoVisor contactoVisor = new ContactoVisor(chat.getNombreContacto(), chat.getFoto(), chat.getUltimoMensaje());
-	            modeloLista.addElement(contactoVisor);
-	        }
-	        return; // Terminamos la ejecución aquí si no hay filtro
-	    }
+		// Si el campo de búsqueda está vacío, restauramos la lista completa
+		if (textoBusqueda.isEmpty()) {
+			for (ChatIndividual chat : contactos) {
+				ContactoVisor contactoVisor = new ContactoVisor(chat.getNombreContacto(), chat.getFoto(), chat.getUltimoMensaje());
+				modeloLista.addElement(contactoVisor);
+			}
+			return; // Terminamos la ejecución aquí si no hay filtro
+		}
 
-	    // Si hay búsqueda, filtramos los contactos
-	    for (ChatIndividual chat : contactos) {
-	        if (chat.getNombreContacto().toLowerCase().contains(textoBusqueda)) {
-	            ContactoVisor contactoVisor = new ContactoVisor(chat.getNombreContacto(), chat.getFoto(), chat.getUltimoMensaje());
-	            modeloLista.addElement(contactoVisor);
-	        }
-	    }
-	}
-
-
-
-	// Abrir un chat
-	private void abrirChat(ContactoVisor contacto) {
-		// Ocultar el título inicial del panel de chat
-		JPanel topPanel = (JPanel) panelChat.getComponent(0);
-		JLabel tituloChat = (JLabel) topPanel.getComponent(0);
-		tituloChat.setText(contacto.getNombre());
-
-		mensajesPanel.removeAll(); // Limpiar mensajes existentes
-
-		// Recuperar mensajes del contacto desde la base de datos
-		ChatIndividual chat = controlador.getChatIndividual(contacto.getNombre());
-		List<Mensaje> mensajes = controlador.getMensajes(chat);
-
-		for (Mensaje mensaje : mensajes) {
-			// Determinar si el mensaje fue enviado por el usuario
-			boolean enviado = mensaje.getEmisor().equals(controlador.getUsuarioActual());
-			Color fondoColor = enviado ? ElegantPalette.SENT_MESSAGE_BACKGROUND : ElegantPalette.RECEIVED_MESSAGE_BACKGROUND;
-
-			// Validar si el mensaje es un emoji o texto
-			if (mensaje.getTexto() != null && !mensaje.getTexto().trim().isEmpty()) {
-				// Crear burbuja para texto
-				BubbleText burbuja = new BubbleText(mensajesPanel, mensaje.getTexto(), fondoColor,
-						enviado ? "Tú" : contacto.getNombre(),
-								enviado ? BubbleText.SENT : BubbleText.RECEIVED,
-										12);
-
-				mensajesPanel.add(burbuja);
-			} else if (mensaje.getEmoticono() != null) { // Cambiar según el valor por defecto si no hay emoji
-				// Crear burbuja para emoji
-				BubbleText burbuja = new BubbleText(mensajesPanel, mensaje.getEmoticono(), fondoColor,
-						enviado ? "Tú" : contacto.getNombre(),
-								enviado ? BubbleText.SENT : BubbleText.RECEIVED,
-										18);
-
-				mensajesPanel.add(burbuja);
+		// Si hay búsqueda, filtramos los contactos
+		for (ChatIndividual chat : contactos) {
+			if (chat.getNombreContacto().toLowerCase().contains(textoBusqueda)) {
+				ContactoVisor contactoVisor = new ContactoVisor(chat.getNombreContacto(), chat.getFoto(), chat.getUltimoMensaje());
+				modeloLista.addElement(contactoVisor);
 			}
 		}
+	}
 
-		// Hacer visibles el panel de emojis y el input panel al abrir el chat
-		JPanel bottomPanel = (JPanel) panelChat.getComponent(2); // Contenedor inferior
-		JPanel emojiPanel = (JPanel) bottomPanel.getComponent(0); // Panel de emojis
-		emojiPanel.setVisible(true);
 
-		JPanel inputPanel = (JPanel) bottomPanel.getComponent(1); // Panel de entrada de texto
-		inputPanel.setVisible(true);
+	private void abrirChat(Visor contactoVisor) {
+	    // Obtener el contacto real desde ContactoVisor (puede ser ChatIndividual o Grupo)
+	    Contacto contacto = (Contacto) controlador.getContactoPorNombre(contactoVisor.getNombreContacto());  // Obtener el contacto real
 
-		// Verificar si el scroll está abajo antes de añadir mensajes
-		JScrollBar verticalScrollBar = ((JScrollPane) mensajesPanel.getParent().getParent()).getVerticalScrollBar();
-		boolean scrollAbajo = (verticalScrollBar.getValue() + verticalScrollBar.getVisibleAmount() == verticalScrollBar.getMaximum());
+	    // Ocultar el título inicial del panel de chat
+	    JPanel topPanel = (JPanel) panelChat.getComponent(0);
+	    JLabel tituloChat = (JLabel) topPanel.getComponent(0);
+	    tituloChat.setText(contacto.getNombreContacto());
 
-		mensajesPanel.revalidate();
-		mensajesPanel.repaint();
+	    mensajesPanel.removeAll(); // Limpiar mensajes existentes
 
-		// Forzar el scroll hacia abajo si estaba previamente abajo
-		if (scrollAbajo) {
-			SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum()));
+	    List<Mensaje> mensajes = obtenerMensajes(contactoVisor);
+
+	    // Filtramos solo los mensajes del grupo si el contacto es un grupo
+	    if (contacto instanceof Grupo) {
+	        Grupo grupo = (Grupo) contacto; // Convertimos contacto a Grupo
+	        // Solo mostramos los mensajes enviados al grupo, no los mensajes privados
+	        mensajes = grupo.getMensajesEnviados(); // Obtener solo los mensajes enviados al grupo
+	    }
+
+	    // Formateador de hora y fecha
+	    DateTimeFormatter horaFormatter = DateTimeFormatter.ofPattern("HH:mm");
+	    DateTimeFormatter fechaFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+	    // Variables para controlar la fecha actual
+	    LocalDate fechaAnterior = null;
+
+	    // Forzar el scroll hacia abajo si estaba previamente abajo
+	    JScrollBar verticalScrollBar = ((JScrollPane) mensajesPanel.getParent().getParent()).getVerticalScrollBar();
+	    boolean scrollAbajo = (verticalScrollBar.getValue() + verticalScrollBar.getVisibleAmount() == verticalScrollBar.getMaximum());
+
+	    for (Mensaje mensaje : mensajes) {
+	        LocalDate fechaMensaje = mensaje.getHora().toLocalDate();
+
+	        if (fechaAnterior == null || !fechaMensaje.isEqual(fechaAnterior)) {
+	            String etiquetaFecha = obtenerEtiquetaFecha(fechaMensaje, fechaFormatter);
+	            JLabel etiqueta = new JLabel(etiquetaFecha, SwingConstants.CENTER);
+	            etiqueta.setFont(new Font("Arial", Font.BOLD, 12));
+	            etiqueta.setForeground(Color.GRAY);
+	            etiqueta.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0)); // Espaciado
+	            mensajesPanel.add(etiqueta);
+	            fechaAnterior = fechaMensaje;
+	        }
+
+	        boolean enviado = mensaje.getEmisor().equals(controlador.getUsuarioActual());
+	        Color fondoColor = enviado ? ElegantPalette.SENT_MESSAGE_BACKGROUND : ElegantPalette.RECEIVED_MESSAGE_BACKGROUND;
+
+	        String hora = mensaje.getHora().format(horaFormatter);
+	        String remitente = (enviado ? "Tú" : contacto.getNombreContacto()) + " - " + hora;
+
+	        if (mensaje.getTexto() != null && !mensaje.getTexto().trim().isEmpty()) {
+	            // Mensaje de texto
+	            BubbleText burbuja = new BubbleText(mensajesPanel, mensaje.getTexto(), fondoColor,
+	                    remitente, enviado ? BubbleText.SENT : BubbleText.RECEIVED, 12);
+	            mensajesPanel.add(burbuja);
+	        } else if (mensaje.getEmoticono() != null) {
+	            // Emoji
+	            BubbleText burbuja = new BubbleText(mensajesPanel, mensaje.getEmoticono(), fondoColor,
+	                    remitente, enviado ? BubbleText.SENT : BubbleText.RECEIVED, 12);
+	            mensajesPanel.add(burbuja);
+	        }
+	    }
+
+
+	    // Hacer visibles el panel de emojis y el input panel al abrir el chat
+	    JPanel bottomPanel = (JPanel) panelChat.getComponent(2); // Contenedor inferior
+	    JPanel emojiPanel = (JPanel) bottomPanel.getComponent(0); // Panel de emojis
+	    emojiPanel.setVisible(true);
+
+	    JPanel inputPanel = (JPanel) bottomPanel.getComponent(1); // Panel de entrada de texto
+	    inputPanel.setVisible(true);
+
+	    // Revalidar y repintar el panel de mensajes
+	    mensajesPanel.revalidate();
+	    mensajesPanel.repaint();
+
+	    // Forzar el scroll hacia abajo si estaba previamente abajo
+	    if (scrollAbajo) {
+	        SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum()));
+	    }
+	}
+
+
+	// Método que obtiene la etiqueta de fecha para mostrar en los mensajes
+	private String obtenerEtiquetaFecha(LocalDate fechaMensaje, DateTimeFormatter fechaFormatter) {
+		if (fechaMensaje.isEqual(LocalDate.now())) {
+			return "Hoy";
+		} else if (fechaMensaje.isEqual(LocalDate.now().minusDays(1))) {
+			return "Ayer";
+		} else {
+			return fechaMensaje.format(fechaFormatter);
 		}
 	}
+	// Método que obtiene los mensajes dependiendo si es grupo o chat individual
+	private List<Mensaje> obtenerMensajes(Visor contactoVisor) {
+	    Contacto contacto = (Contacto) controlador.getContactoPorNombre(contactoVisor.getNombreContacto());  // Obtener el contacto real
+	    List<Mensaje> mensajesFiltrados = new ArrayList<>();
+
+	    if (contacto instanceof Grupo) {
+	        Grupo grupo = (Grupo) contacto;
+	        mensajesFiltrados = grupo.getMensajesEnviados();
+	    } else if (contacto instanceof ChatIndividual) {
+	        ChatIndividual chat = (ChatIndividual) contacto;
+	        mensajesFiltrados = controlador.getMensajes(chat); // Obtener mensajes del chat
+	    }
+
+	    return mensajesFiltrados;
+	}
+
+
+
+
 
 	private JPanel createInputPanel() {
 		JPanel inputPanel = new JPanel(new BorderLayout());
@@ -446,23 +602,27 @@ public class VentanaPrincipal extends JPanel {
 		// TODO Auto-generated method stub
 		mainFrame.showGroupPanel();
 	}
-	
+
 	private void buscaMensajes() {
-	    mainFrame.showBusquedaMensajesPanel();
+		mainFrame.showBusquedaMensajesPanel();
 	}
 
 	// Enviar mensaje
 	private void enviarMensaje() {
+
 		String mensaje = areaTexto.getText().trim();
 		if (!mensaje.isEmpty()) {
-			ContactoVisor seleccionado = listaContactos.getSelectedValue();
+			Visor seleccionado = listaContactos.getSelectedValue();
+
 			if (seleccionado != null) {
-				ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombre());
-				if (chat != null) {
-					controlador.enviarMensaje(chat, mensaje);
+				System.out.println("Enviando mensaje a " + seleccionado.getNombreContacto());
+				Contacto contacto = controlador.getContactoPorNombre(seleccionado.getNombreContacto());
+
+				if (contacto != null) {
+					controlador.enviarMensaje(contacto, mensaje);
 					cargarContactos();
 
-					// Mantener el contacto seleccionado y actualizar el chat
+					// Mantener la selección y refrescar la conversación
 					listaContactos.setSelectedValue(seleccionado, true);
 					abrirChat(seleccionado);
 
@@ -474,11 +634,12 @@ public class VentanaPrincipal extends JPanel {
 	}
 
 
+
 	// Método para activar Premium con pantalla de descuentos y validación de la factoría
 	private void activarPremium() {
 		VentanaDescuentos ventanaDes = new VentanaDescuentos(mainFrame.frame, controlador.getUsuarioActual(), controlador);
 
-		
+
 	}
 
 
