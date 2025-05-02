@@ -9,7 +9,7 @@ import java.awt.event.*;
 import com.toedter.calendar.JDateChooser;
 
 import controlador.ControladorAppChat;
-import vista.utils.ElegantPalette;
+import vista.utils.Palette;
 import vista.utils.IconsResource;
 
 import java.io.File;
@@ -28,12 +28,10 @@ public class VentanaRegister extends JPanel {
 	private JDateChooser dateChooser;
 	private String imagenURL;
 	private boolean isPasswordVisible = false;
-	private ControladorAppChat controlador;
 	private VentanaInicio mainFrame; 
 
-	public VentanaRegister(VentanaInicio mainFrame, ControladorAppChat controlador) {
+	public VentanaRegister(VentanaInicio mainFrame) {
 		this.mainFrame = mainFrame;
-		this.controlador = controlador;
 
 		// Layout Configuration
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -42,12 +40,12 @@ public class VentanaRegister extends JPanel {
 		gridBagLayout.columnWidths = new int[]{190, 190};
 		setLayout(gridBagLayout);
 		setPreferredSize(new Dimension(800, 600));
-		setBackground(ElegantPalette.PANEL_BACKGROUND);
+		setBackground(Palette.PANEL_BACKGROUND);
 
 		// Título
 		JLabel registerTitle = new JLabel("Register", SwingConstants.CENTER);
 		registerTitle.setVerticalAlignment(SwingConstants.BOTTOM);
-		registerTitle.setForeground(ElegantPalette.PRIMARY_TEXT);
+		registerTitle.setForeground(Palette.PRIMARY_TEXT);
 		registerTitle.setFont(new Font("Arial", Font.BOLD, 20));
 
 		GridBagConstraints gbcTitle = new GridBagConstraints();
@@ -123,7 +121,7 @@ public class VentanaRegister extends JPanel {
 		dateChooser = new JDateChooser();
 		dateChooser.setOpaque(false);
 		dateChooser.setBackground(new Color(255, 255, 255));
-		dateChooser.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
+		dateChooser.setForeground(Palette.TEXT_FIELD_TEXT);
 		dateChooser.setDateFormatString("dd-MM-yyyy");
 		GridBagConstraints gbcDateChooser = new GridBagConstraints();
 		gbcDateChooser.fill = GridBagConstraints.HORIZONTAL;
@@ -194,8 +192,8 @@ public class VentanaRegister extends JPanel {
 		// Botón para seleccionar imagen
 		selectImageButton = new JButton("Select Image");
 		selectImageButton.setPreferredSize(new Dimension(150, 40));
-		selectImageButton.setBackground(ElegantPalette.ACTION_BUTTON);
-		selectImageButton.setForeground(ElegantPalette.BUTTON_TEXT);
+		selectImageButton.setBackground(Palette.ACTION_BUTTON);
+		selectImageButton.setForeground(Palette.BUTTON_TEXT);
 		selectImageButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -214,8 +212,8 @@ public class VentanaRegister extends JPanel {
 		imagePreview = new JLabel("No image selected", SwingConstants.CENTER);
 		imagePreview.setPreferredSize(new Dimension(100, 100));
 		imagePreview.setOpaque(true);
-		imagePreview.setBackground(ElegantPalette.PANEL_BACKGROUND);
-		imagePreview.setBorder(BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR));
+		imagePreview.setBackground(Palette.PANEL_BACKGROUND);
+		imagePreview.setBorder(BorderFactory.createLineBorder(Palette.BORDER_COLOR));
 		GridBagConstraints gbcImagePreview = new GridBagConstraints();
 		gbcImagePreview.gridwidth = 2;
 		gbcImagePreview.gridx = 0;
@@ -237,7 +235,7 @@ public class VentanaRegister extends JPanel {
 		// Back to Login Button
 		backToLoginButton = new JButton("Back to Login");
 		backToLoginButton.setPreferredSize(new Dimension(150, 40));
-		backToLoginButton.setForeground(ElegantPalette.LINK_TEXT);
+		backToLoginButton.setForeground(Palette.LINK_TEXT);
 		backToLoginButton.addActionListener(e -> handleBackToLogin());
 
 		GridBagConstraints gbcBackToLoginButton = new GridBagConstraints();
@@ -250,8 +248,8 @@ public class VentanaRegister extends JPanel {
 		// Register Button
 		registerButton = new JButton("Registrar nuevo usuario");
 		registerButton.setPreferredSize(new Dimension(150, 40));
-		registerButton.setBackground(ElegantPalette.ACTION_BUTTON);
-		registerButton.setForeground(ElegantPalette.BUTTON_TEXT);
+		registerButton.setBackground(Palette.ACTION_BUTTON);
+		registerButton.setForeground(Palette.BUTTON_TEXT);
 		registerButton.addActionListener(e -> handleRegister());
 
 		GridBagConstraints gbcRegisterButton = new GridBagConstraints();
@@ -271,19 +269,19 @@ public class VentanaRegister extends JPanel {
 	}
 
 	private void setupTextField(JTextField textField) {
-		textField.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
-		textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
+		textField.setBackground(Palette.TEXT_FIELD_BACKGROUND);
+		textField.setForeground(Palette.TEXT_FIELD_TEXT);
 		textField.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR),
+				BorderFactory.createLineBorder(Palette.BORDER_COLOR),
 				new EmptyBorder(5, 5, 5, 5)
 				));
 	}
 
 	private void setupPasswordField(JPasswordField passwordField) {
-		passwordField.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
-		passwordField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
+		passwordField.setBackground(Palette.TEXT_FIELD_BACKGROUND);
+		passwordField.setForeground(Palette.TEXT_FIELD_TEXT);
 		passwordField.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR),
+				BorderFactory.createLineBorder(Palette.BORDER_COLOR),
 				new EmptyBorder(5, 5, 5, 5)
 				));
 	}
@@ -297,7 +295,7 @@ public class VentanaRegister extends JPanel {
 			public void focusGained(FocusEvent e) {
 				if (textField.getText().equals(placeholder)) {
 					textField.setText("");
-					textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
+					textField.setForeground(Palette.TEXT_FIELD_TEXT);
 				}
 			}
 
@@ -349,7 +347,7 @@ public class VentanaRegister extends JPanel {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 			String formattedDate = dateFormat.format(dateChooser.getDate());
 
-			registrado = controlador.registrarUsuario(
+			registrado = ControladorAppChat.INSTANCE.registrarUsuario(
 					fullNameField.getText(),
 					phoneField.getText(),
 					emailField.getText(),

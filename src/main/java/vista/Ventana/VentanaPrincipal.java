@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
+
 import controlador.ControladorAppChat;
 import modelo.ChatIndividual;
 import modelo.Contacto;
@@ -25,7 +26,7 @@ import modelo.Descuento.FactoriaDescuento;
 import tds.BubbleText;
 import vista.utils.ContactoListRenderer;
 import vista.utils.ContactoVisor;
-import vista.utils.ElegantPalette;
+import vista.utils.Palette;
 import vista.utils.GrupoListRenderer;
 import vista.utils.GrupoVisor;
 import vista.utils.IconsResource;
@@ -35,24 +36,6 @@ import vista.utils.utils;
 public class VentanaPrincipal extends JPanel {
 
 
-
-	/*
-	 * POSIBLE LISTENER PARA CAMBIOS DE CONTACTOS Y QUE SE HAGA UN CARGARCONTACTOS
-	 * 
-	 * 
-	 */
-
-	/*
-	 * FALTA
-	 * 
-	 * -LOGICA MENSAJES POR MES
-	 * -s
-	 * 
-	 * 
-	 * 
-	 */
-
-
 	// Componentes principales
 	private DefaultListModel<Visor> modeloLista;
 	private JList<Visor> listaContactos;
@@ -60,16 +43,14 @@ public class VentanaPrincipal extends JPanel {
 	private JPanel panelChat;
 	private JTextArea areaTexto;
 	private JTextField campoBusqueda;
-	private ControladorAppChat controlador;
 	private VentanaInicio mainFrame;
 	private boolean esVistaChatIndividual = true;
 
 	// Mapa para almacenar mensajes por contacto
 
 
-	public VentanaPrincipal(VentanaInicio mainFrame, ControladorAppChat controlador) {
+	public VentanaPrincipal(VentanaInicio mainFrame) {
 		this.mainFrame = mainFrame;
-		this.controlador = controlador;
 		setLayout(new BorderLayout());
 
 		// Crear los paneles principales
@@ -88,12 +69,12 @@ public class VentanaPrincipal extends JPanel {
 		btnPerfil.setLayout(new BorderLayout());
 
 		// Cargar la foto de perfil
-		String urlFotoPerfil = controlador.getUsuarioActual().getFotoPerfil();
+		String urlFotoPerfil = ControladorAppChat.INSTANCE.getUsuarioActual().getFotoPerfil();
 		JLabel lblFotoPerfil = new JLabel();
 		utils.cargarImagenDesdeURL(urlFotoPerfil, lblFotoPerfil, 40, 40);
 
 		// Cargar el nombre del usuario
-		JLabel lblUsuario = new JLabel(controlador.getUsuarioActual().getNombreCompleto());
+		JLabel lblUsuario = new JLabel(ControladorAppChat.INSTANCE.getUsuarioActual().getNombreCompleto());
 		lblUsuario.setFont(new Font("Arial", Font.BOLD, 14));
 
 		// Añadir la foto y el nombre al botón
@@ -122,9 +103,9 @@ public class VentanaPrincipal extends JPanel {
 				Visor seleccionado = listaContactos.getSelectedValue();
 				btnPremium.setIcon(esUsuarioPremium() ? IconsResource.PDF : IconsResource.PREMIUM);
 				if (seleccionado != null) {
-					ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombreContacto());
+					ChatIndividual chat = ControladorAppChat.INSTANCE.getChatIndividual(seleccionado.getNombreContacto());
 					if (chat != null) {
-						ExportPDF.crearPDF(controlador.getUsuarioActual(), chat);
+						ExportPDF.crearPDF(ControladorAppChat.INSTANCE.getUsuarioActual(), chat);
 					} else {
 						JOptionPane.showMessageDialog(this, "No se ha podido encontrar el chat del contacto.", "Error", JOptionPane.ERROR_MESSAGE);
 					}
@@ -166,7 +147,7 @@ public class VentanaPrincipal extends JPanel {
 
 		JButton btnLogout = new JButton(IconsResource.LOGOUT);
 		btnLogout.addActionListener(e -> {
-			controlador.cerrarSesion();
+			ControladorAppChat.INSTANCE.cerrarSesion();
 			mainFrame.showLoginPanel();
 		});
 
@@ -191,7 +172,7 @@ public class VentanaPrincipal extends JPanel {
 
 		if (esVistaChatIndividual) {
 			// Cargar contactos individuales
-			List<ChatIndividual> contactos = controlador.getChatIndividuals();
+			List<ChatIndividual> contactos = ControladorAppChat.INSTANCE.getChatIndividuals();
 			for (ChatIndividual chat : contactos) {
 				Visor contactoVisor = new ContactoVisor(chat.getNombreContacto() , chat.getFoto(), chat.getUltimoMensaje());
 				modeloLista.addElement(contactoVisor);
@@ -199,7 +180,7 @@ public class VentanaPrincipal extends JPanel {
 			listaContactos.setCellRenderer(new ContactoListRenderer());  
 		} else {
 			// Cargar grupos
-			List<Grupo> grupos = controlador.getGrupos();
+			List<Grupo> grupos = ControladorAppChat.INSTANCE.getGrupos();
 			for (Grupo grupo : grupos) {
 				Visor grupoVisor = new GrupoVisor(grupo.getNombreContacto(), grupo.getFoto(), "Lista de Difusión");
 				modeloLista.addElement(grupoVisor);
@@ -243,12 +224,12 @@ public class VentanaPrincipal extends JPanel {
 						Visor seleccionado = listaContactos.getSelectedValue();
 						if (seleccionado != null) {
 							if (seleccionado instanceof ContactoVisor) {
-								ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombreContacto());
+								ChatIndividual chat = ControladorAppChat.INSTANCE.getChatIndividual(seleccionado.getNombreContacto());
 								if (chat != null) {
 									new VentanaContactoVer(mainFrame.frame, chat).setVisible(true);
 								}
 							} else if (seleccionado instanceof GrupoVisor) {
-								Grupo grupo = controlador.getGrupoPorNombre(seleccionado.getNombreContacto());
+								Grupo grupo = ControladorAppChat.INSTANCE.getGrupoPorNombre(seleccionado.getNombreContacto());
 								if (grupo != null) {
 									new VentanaGrupoVer(mainFrame.frame, grupo).setVisible(true);  // Nueva ventana para grupo
 								}
@@ -264,15 +245,15 @@ public class VentanaPrincipal extends JPanel {
 						Visor seleccionado = listaContactos.getSelectedValue();
 						if (seleccionado != null) {
 							if (seleccionado instanceof ContactoVisor) {
-								ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombreContacto());
+								ChatIndividual chat = ControladorAppChat.INSTANCE.getChatIndividual(seleccionado.getNombreContacto());
 								if (chat != null) {
-									new VentanaContactoEdit(mainFrame.frame, chat, controlador).setVisible(true);
+									new VentanaContactoEdit(mainFrame.frame, chat).setVisible(true);
 									cargarContactos();
 								}
 							} else if (seleccionado instanceof GrupoVisor) {
-								Grupo grupo = controlador.getGrupoPorNombre(seleccionado.getNombreContacto());
+								Grupo grupo = ControladorAppChat.INSTANCE.getGrupoPorNombre(seleccionado.getNombreContacto());
 								if (grupo != null) {
-									new VentanaGrupoEdit(mainFrame.frame, grupo, controlador).setVisible(true);  // Nueva ventana para editar grupo
+									new VentanaGrupoEdit(mainFrame.frame, grupo).setVisible(true);  // Nueva ventana para editar grupo
 									cargarContactos();  // Cambiar a cargarGrupos si es necesario
 								}
 							}
@@ -383,9 +364,9 @@ public class VentanaPrincipal extends JPanel {
 				public void mouseClicked(MouseEvent e) {
 					Visor seleccionado = listaContactos.getSelectedValue();
 					if (seleccionado != null) {
-						ChatIndividual chat = controlador.getChatIndividual(seleccionado.getNombreContacto());
+						ChatIndividual chat = ControladorAppChat.INSTANCE.getChatIndividual(seleccionado.getNombreContacto());
 						if (chat != null) {
-							controlador.enviarMensaje(chat, Integer.parseInt(emojiLabel.getName()));
+							ControladorAppChat.INSTANCE.enviarMensaje(chat, Integer.parseInt(emojiLabel.getName()));
 							abrirChat(seleccionado);
 							listaContactos.setSelectedValue(seleccionado, true);
 						}
@@ -447,7 +428,7 @@ public class VentanaPrincipal extends JPanel {
 		String textoBusqueda = campoBusqueda.getText().trim().toLowerCase();
 		modeloLista.clear();
 
-		List<ChatIndividual> contactos = controlador.getChatIndividuals();
+		List<ChatIndividual> contactos = ControladorAppChat.INSTANCE.getChatIndividuals();
 
 		// Si el campo de búsqueda está vacío, restauramos la lista completa
 		if (textoBusqueda.isEmpty()) {
@@ -470,7 +451,7 @@ public class VentanaPrincipal extends JPanel {
 
 	private void abrirChat(Visor contactoVisor) {
 	    // Obtener el contacto real desde ContactoVisor (puede ser ChatIndividual o Grupo)
-	    Contacto contacto = (Contacto) controlador.getContactoPorNombre(contactoVisor.getNombreContacto());  // Obtener el contacto real
+	    Contacto contacto = (Contacto) ControladorAppChat.INSTANCE.getContactoPorNombre(contactoVisor.getNombreContacto());  // Obtener el contacto real
 
 	    // Ocultar el título inicial del panel de chat
 	    JPanel topPanel = (JPanel) panelChat.getComponent(0);
@@ -512,8 +493,8 @@ public class VentanaPrincipal extends JPanel {
 	            fechaAnterior = fechaMensaje;
 	        }
 
-	        boolean enviado = mensaje.getEmisor().equals(controlador.getUsuarioActual());
-	        Color fondoColor = enviado ? ElegantPalette.SENT_MESSAGE_BACKGROUND : ElegantPalette.RECEIVED_MESSAGE_BACKGROUND;
+	        boolean enviado = mensaje.getEmisor().equals(ControladorAppChat.INSTANCE.getUsuarioActual());
+	        Color fondoColor = enviado ? Palette.SENT_MESSAGE_BACKGROUND : Palette.RECEIVED_MESSAGE_BACKGROUND;
 
 	        String hora = mensaje.getHora().format(horaFormatter);
 	        String remitente = (enviado ? "Tú" : contacto.getNombreContacto()) + " - " + hora;
@@ -563,7 +544,7 @@ public class VentanaPrincipal extends JPanel {
 	}
 	// Método que obtiene los mensajes dependiendo si es grupo o chat individual
 	private List<Mensaje> obtenerMensajes(Visor contactoVisor) {
-	    Contacto contacto = (Contacto) controlador.getContactoPorNombre(contactoVisor.getNombreContacto());  // Obtener el contacto real
+	    Contacto contacto = (Contacto) ControladorAppChat.INSTANCE.getContactoPorNombre(contactoVisor.getNombreContacto());  // Obtener el contacto real
 	    List<Mensaje> mensajesFiltrados = new ArrayList<>();
 
 	    if (contacto instanceof Grupo) {
@@ -571,7 +552,7 @@ public class VentanaPrincipal extends JPanel {
 	        mensajesFiltrados = grupo.getMensajesEnviados();
 	    } else if (contacto instanceof ChatIndividual) {
 	        ChatIndividual chat = (ChatIndividual) contacto;
-	        mensajesFiltrados = controlador.getMensajes(chat); // Obtener mensajes del chat
+	        mensajesFiltrados = ControladorAppChat.INSTANCE.getMensajes(chat); // Obtener mensajes del chat
 	    }
 
 	    return mensajesFiltrados;
@@ -616,10 +597,10 @@ public class VentanaPrincipal extends JPanel {
 
 			if (seleccionado != null) {
 				System.out.println("Enviando mensaje a " + seleccionado.getNombreContacto());
-				Contacto contacto = controlador.getContactoPorNombre(seleccionado.getNombreContacto());
+				Contacto contacto = ControladorAppChat.INSTANCE.getContactoPorNombre(seleccionado.getNombreContacto());
 
 				if (contacto != null) {
-					controlador.enviarMensaje(contacto, mensaje);
+					ControladorAppChat.INSTANCE.enviarMensaje(contacto, mensaje);
 					cargarContactos();
 
 					// Mantener la selección y refrescar la conversación
@@ -637,14 +618,14 @@ public class VentanaPrincipal extends JPanel {
 
 	// Método para activar Premium con pantalla de descuentos y validación de la factoría
 	private void activarPremium() {
-		VentanaDescuentos ventanaDes = new VentanaDescuentos(mainFrame.frame, controlador.getUsuarioActual(), controlador);
+		VentanaDescuentos ventanaDes = new VentanaDescuentos(mainFrame.frame, ControladorAppChat.INSTANCE.getUsuarioActual());
 
 
 	}
 
 
 	private boolean esUsuarioPremium() {
-		return controlador.getUsuarioActual().isPremium(); 
+		return ControladorAppChat.INSTANCE.getUsuarioActual().isPremium(); 
 	}
 
 

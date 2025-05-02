@@ -9,6 +9,10 @@ public class FiltroNombre extends FiltroBase {
 
     @Override
     protected boolean cumpleCriterio(Mensaje mensaje) {
-        return mensaje.getReceptor().getNombreContacto().toLowerCase().contains(criterio);
+        boolean coincideReceptor = mensaje.getReceptor().getNombreContacto().toLowerCase().contains(criterio);
+        
+        boolean coincideEmisor = mensaje.getEmisor().getNombreCompleto().toLowerCase().contains(criterio);
+        
+        return coincideReceptor || coincideEmisor;
     }
 }

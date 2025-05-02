@@ -35,6 +35,8 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
     private static final String CHATS_INDIVIDUALES = "chatsIndividuales";
     private static final String PREMIUM = "Premium";
     private static final String GRUPOS = "grupos";
+    private static final String MENSAJES_ENVIADOS_ULTIMO_MES = "mensajesEnviadosUltimoMes";
+    private static final String ULTIMA_FECHA_MENSAJE = "ultimaFechaMensaje";
 
     private ServicioPersistencia servPersistencia;
     private FactoriaDAO factoria;
@@ -61,7 +63,9 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
                 new Propiedad(FECHAREGISTRO, usuario.getFechaRegistro().format(DateTimeFormatter.ISO_DATE)),
                 new Propiedad(CHATS_INDIVIDUALES, obtenerCodigosChatIndividual(usuario.getChatsIndividuales())),
                 new Propiedad(PREMIUM, String.valueOf(usuario.isPremium())),
-                new Propiedad(GRUPOS, obtenerCodigosGrupo(usuario.getGrupos()))
+                new Propiedad(GRUPOS, obtenerCodigosGrupo(usuario.getGrupos())),
+                new Propiedad(MENSAJES_ENVIADOS_ULTIMO_MES, String.valueOf(usuario.getMensajesEnviadosUltimoMes())),
+                new Propiedad(ULTIMA_FECHA_MENSAJE, usuario.getUltimaFechaMensaje() != null ? usuario.getUltimaFechaMensaje().format(DateTimeFormatter.ISO_DATE) : "")
         )));
 
         eUsuario = servPersistencia.registrarEntidad(eUsuario);
@@ -168,7 +172,12 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 				prop.setValor(String.valueOf(usuario.isPremium()));
 			} else if (prop.getNombre().equals(GRUPOS)) {
 				prop.setValor(obtenerCodigosGrupo(usuario.getGrupos()));
-			}
+			} else if (prop.getNombre().equals(MENSAJES_ENVIADOS_ULTIMO_MES)) {
+	            prop.setValor(String.valueOf(usuario.getMensajesEnviadosUltimoMes()));
+	        } else if (prop.getNombre().equals(ULTIMA_FECHA_MENSAJE)) {
+	            prop.setValor(usuario.getUltimaFechaMensaje() != null ? 
+	                usuario.getUltimaFechaMensaje().format(DateTimeFormatter.ISO_DATE) : "");
+	        }
     		servPersistencia.modificarPropiedad(prop);
     	}
     }
@@ -184,9 +193,14 @@ public class AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
         String fechaNacimientoStr = servPersistencia.recuperarPropiedadEntidad(eUsuario, FECHANACIMIENTO);
         boolean premium = Boolean.parseBoolean(servPersistencia.recuperarPropiedadEntidad(eUsuario, PREMIUM));
         LocalDate fechaRegistro = LocalDate.parse(servPersistencia.recuperarPropiedadEntidad(eUsuario, FECHAREGISTRO));
+        int mensajesEnviadosUltimoMes = Integer.parseInt(servPersistencia.recuperarPropiedadEntidad(eUsuario, MENSAJES_ENVIADOS_ULTIMO_MES));
+        String ultimaFechaMensajeStr = servPersistencia.recuperarPropiedadEntidad(eUsuario, ULTIMA_FECHA_MENSAJE);
         
+        LocalDate ultimaFechaMensaje = ultimaFechaMensajeStr.isEmpty() ? null : LocalDate.parse(ultimaFechaMensajeStr);
         Usuario usuario = new Usuario(nombreCompleto, numeroTelefono, email, contrasena, saludo, fotoPerfilURL, fechaNacimientoStr, fechaRegistro);
         usuario.setPremium(premium);
+        usuario.setMensajesEnviadosUltimoMes(mensajesEnviadosUltimoMes);
+        usuario.setUltimaFechaMensaje(ultimaFechaMensaje);
         usuario.setCodigo(eUsuario.getId());
 
         PoolDAO.INSTANCE.addObjeto(usuario.getCodigo(), usuario);

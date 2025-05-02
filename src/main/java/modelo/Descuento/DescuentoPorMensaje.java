@@ -18,6 +18,7 @@ public class DescuentoPorMensaje implements Descuento {
 
     @Override
     public boolean esAplicable(Usuario usuario) {
+    	System.out.println("Mensajes enviados en el último mes: " + usuario.getMensajesEnviadosUltimoMes()); 
         return usuario.getMensajesEnviadosUltimoMes() >= mensajesRequeridos;
     }
 }

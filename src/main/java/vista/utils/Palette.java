@@ -2,7 +2,7 @@ package vista.utils;
 
 import java.awt.Color;
 
-public class ElegantPalette {
+public class Palette {
     
     // Fondo general (Negro elegante)
     public static final Color BACKGROUND = new Color(16,16,16); // #101010
@@ -46,7 +46,7 @@ public class ElegantPalette {
     public static final Color RECEIVED_MESSAGE_BACKGROUND = new Color(40, 40, 40); // Oscuro gris para mensajes recibidos (casi negro)
 
     // Constructor privado para prevenir instanciación
-    private ElegantPalette() {
+    private Palette() {
         // Esta clase solo contiene colores estáticos, no es necesario instanciarla.
     }
 }

@@ -1,67 +1,101 @@
 package modelo;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import javax.swing.JOptionPane;
 import java.io.FileOutputStream;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class ExportPDF {
+    
+    private static final Font USER_FONT = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.NORMAL, new BaseColor(0, 51, 102));
+    private static final Font CONTACT_FONT = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.NORMAL, new BaseColor(102, 0, 51));
+    private static final BaseColor USER_BG = new BaseColor(225, 239, 255);  // Azul claro
+    private static final BaseColor CONTACT_BG = new BaseColor(255, 230, 240); // Rosa claro
 
-    /**
-     * Crea un PDF que exporta la conversación entre el usuario 'u' y el contacto
-     * representado por 'chatConContacto', excluyendo mensajes enviados a través de grupos.
-     * 
-     * @param u                Usuario actual (emisor principal)
-     * @param chatConContacto  ChatIndividual que representa la conversación con el contacto seleccionado
-     */
     public static void crearPDF(Usuario u, ChatIndividual chatConContacto) {
         try {
-            // Construir el nombre del archivo PDF
-            String fileName = u.getNombreCompleto() + "_" + chatConContacto.getNombreContacto() + "_" + LocalDate.now() + ".pdf";
+            String fileName = String.format("%s_%s_%s.pdf", 
+                u.getNombreCompleto().replace(" ", "_"),
+                chatConContacto.getNombreContacto().replace(" ", "_"),
+                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+            
             Document document = new Document();
             PdfWriter.getInstance(document, new FileOutputStream(fileName));
-            
-            // Abrir el documento para agregar contenido
             document.open();
             
-            // Agregar cabecera con datos de la conversación
-            document.add(new Paragraph("Conversación entre " + u.getNombreCompleto() + " y " + chatConContacto.getNombreContacto()));
-            document.add(new Paragraph("Fecha de exportación: " + LocalDate.now()));
-            document.add(new Paragraph("------------------------------------------------------\n"));
+            Paragraph header = new Paragraph();
+            header.add(new Chunk("Conversación entre ", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
+            header.add(new Chunk(u.getNombreCompleto(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, Font.BOLD, BaseColor.BLUE)));
+            header.add(new Chunk(" y ", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
+            header.add(new Chunk(chatConContacto.getNombreContacto(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, Font.BOLD, BaseColor.RED)));
+            header.add(new Chunk("\nFecha: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), 
+                FontFactory.getFont(FontFactory.HELVETICA, 10)));
             
-            // Obtener la lista de mensajes de la conversación.
-            // Se asume que getMensajesEnviados() devuelve todos los mensajes intercambiados
+            document.add(header);
+            document.add(Chunk.NEWLINE);
+            
             List<Mensaje> mensajes = chatConContacto.getMensajesEnviados();
             
-            // Iterar por cada mensaje y agregarlo al PDF, excluyendo mensajes que provengan de un grupo
             for (Mensaje mensaje : mensajes) {
-                // Si el receptor es un Grupo, se ignora el mensaje
-                if (mensaje.getReceptor() instanceof Grupo) {
-                    continue;
-                }
+                if (mensaje.getReceptor() instanceof Grupo) continue;
                 
-                // Determinar el emisor: "Tú" si el mensaje fue enviado por el usuario actual, o el nombre del contacto
-                String emisor = mensaje.getEmisor().equals(u) ? "Tú" : chatConContacto.getNombreContacto();
+                boolean isUserMessage = mensaje.getEmisor().equals(u);
+                String contenido = obtenerContenidoMensaje(mensaje);
                 
-                // Definir el contenido del mensaje: se usa el texto si existe; de lo contrario, se indica el emoticono (si existe)
-                String contenido = (mensaje.getTexto() != null && !mensaje.getTexto().trim().isEmpty())
-                        ? mensaje.getTexto()
-                        : (mensaje.getEmoticono() != null ? "Emoji: " + mensaje.getEmoticono() : "");
-                
-                // Solo se agrega el mensaje si tiene contenido no vacío
                 if (!contenido.isEmpty()) {
-                    document.add(new Paragraph(emisor + ": " + contenido));
+                    Paragraph messagePara = new Paragraph();
+                    messagePara.setAlignment(isUserMessage ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT);
+                    messagePara.setSpacingBefore(5f);
+                    
+                    PdfPTable table = new PdfPTable(1);
+                    table.setWidthPercentage(isUserMessage ? 70 : 70);
+                    table.setHorizontalAlignment(isUserMessage ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT);
+                    
+                    PdfPCell cell = new PdfPCell(new Phrase(contenido, isUserMessage ? USER_FONT : CONTACT_FONT));
+                    cell.setBackgroundColor(isUserMessage ? USER_BG : CONTACT_BG);
+                    cell.setBorder(Rectangle.NO_BORDER);
+                    cell.setPadding(8);
+         
+                    table.addCell(cell);
+                    messagePara.add(table);
+                    
+                    Paragraph metaPara = new Paragraph();
+                    metaPara.setAlignment(isUserMessage ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT);
+                    metaPara.add(new Chunk(isUserMessage ? "Tú" : chatConContacto.getNombreContacto(), 
+                        FontFactory.getFont(FontFactory.HELVETICA, 8, Font.ITALIC)));
+                    metaPara.add(new Chunk(" - " + mensaje.getHora().format(
+                        DateTimeFormatter.ofPattern("HH:mm")), 
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                    
+                    document.add(messagePara);
+                    document.add(metaPara);
                 }
             }
             
-            // Cerrar el documento
             document.close();
-            JOptionPane.showMessageDialog(null, "PDF exportado correctamente: " + fileName, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, 
+                "PDF exportado correctamente:\n" + fileName, 
+                "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error al exportar el PDF: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, 
+                "Error al exportar el PDF:\n" + e.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
+    }
+    
+    private static String obtenerContenidoMensaje(Mensaje mensaje) {
+        if (mensaje.getTexto() != null && !mensaje.getTexto().trim().isEmpty()) {
+            return mensaje.getTexto();
+        } else if (mensaje.getEmoticono() != null) {
+            return "[Emoji: " + mensaje.getEmoticono() + "]";
+        }
+        return "";
     }
 }

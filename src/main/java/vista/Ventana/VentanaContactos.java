@@ -16,11 +16,9 @@ public class VentanaContactos extends JPanel {
     private JButton addButton, backButton;
     private JPopupMenu popupMenu;
     private JMenuItem itemVisualizar, itemEditar;
-    private ControladorAppChat controlador;
     private VentanaInicio mainFrame;
 
-    public VentanaContactos(VentanaInicio mainFrame, ControladorAppChat controlador) {
-        this.controlador = controlador;
+    public VentanaContactos(VentanaInicio mainFrame) {
         this.mainFrame = mainFrame;
 
         setLayout(new BorderLayout());
@@ -99,9 +97,9 @@ public class VentanaContactos extends JPanel {
 
                 // Validar que los campos no estén vacíos
                 if (!nombre.isEmpty() && !telefono.isEmpty()) {
-                    if (controlador.agregarContacto(nombre, telefono)) {
+                    if (ControladorAppChat.INSTANCE.agregarContacto(nombre, telefono)) {
                         JOptionPane.showMessageDialog(this, "Contacto agregado correctamente.");
-                        cargarContactos(controlador); // Actualizar la tabla
+                        cargarContactos(ControladorAppChat.INSTANCE); // Actualizar la tabla
                     } else {
                         JOptionPane.showMessageDialog(this, "No se pudo agregar el contacto.");
                     }
@@ -118,7 +116,7 @@ public class VentanaContactos extends JPanel {
             int row = contactTable.getSelectedRow();
             if (row >= 0) {
                 String nombre = (String) tableModel.getValueAt(row, 0);
-                ChatIndividual chat = (ChatIndividual) controlador.getContactoPorNombre(nombre);
+                ChatIndividual chat = (ChatIndividual) ControladorAppChat.INSTANCE.getContactoPorNombre(nombre);
                 if (chat != null) {
                     new VentanaContactoVer(mainFrame.frame, chat).setVisible(true);
                 } else {
@@ -134,10 +132,10 @@ public class VentanaContactos extends JPanel {
             int row = contactTable.getSelectedRow();
             if (row >= 0) {
                 String nombre = (String) tableModel.getValueAt(row, 0);
-                ChatIndividual chat = (ChatIndividual) controlador.getContactoPorNombre(nombre);
+                ChatIndividual chat = (ChatIndividual) ControladorAppChat.INSTANCE.getContactoPorNombre(nombre);
                 if (chat != null) {
-                    new VentanaContactoEdit(mainFrame.frame, chat,controlador).setVisible(true);
-                    cargarContactos(controlador);
+                    new VentanaContactoEdit(mainFrame.frame, chat).setVisible(true);
+                    cargarContactos(ControladorAppChat.INSTANCE);
                 } else {
                     JOptionPane.showMessageDialog(this, "No se pudo encontrar el contacto.");
                 }
@@ -147,7 +145,7 @@ public class VentanaContactos extends JPanel {
         });
 
         // Cargar contactos iniciales
-        cargarContactos(controlador);
+        cargarContactos(ControladorAppChat.INSTANCE);
     }
 
     private void cargarContactos(ControladorAppChat controlador) {

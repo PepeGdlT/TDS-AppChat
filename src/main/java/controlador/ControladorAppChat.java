@@ -19,6 +19,12 @@ import modelo.Contacto;
 import modelo.Grupo;
 import modelo.Mensaje;
 import modelo.Usuario;
+import modelo.Descuento.Descuento;
+import modelo.Descuento.FactoriaDescuento;
+import modelo.filtro.FiltroComposite;
+import modelo.filtro.FiltroNombre;
+import modelo.filtro.FiltroNumero;
+import modelo.filtro.FiltroTexto;
 import persistencia.AdaptadorUsuarioTDS;
 import persistencia.FactoriaDAO;
 import persistencia.IAdaptadorChatIndividualDAO;
@@ -40,6 +46,9 @@ public enum ControladorAppChat {
     
     private Usuario usuarioActual;
     private ChatIndividual chatActual;
+    
+    private String estadoDescuentoFecha;
+    private String estadoDescuentoMensajes;
 
     private ControladorAppChat() {
         inicializarAdaptadores();
@@ -63,6 +72,17 @@ public enum ControladorAppChat {
     
     private void inicializarCatalogos() {
         catalogoUsuarios = CatalogoUsuarios.INSTANCE;
+        
+        LocalDate hoy = LocalDate.now();
+        List<Usuario> usuarios = adaptadorUsuario.recuperarTodosUsuarios();
+        for (Usuario usuario : usuarios) {
+            if (usuario.getUltimaFechaMensaje() != null && 
+                !hoy.getMonth().equals(usuario.getUltimaFechaMensaje().getMonth())) {
+                usuario.setMensajesEnviadosUltimoMes(0);
+                usuario.setUltimaFechaMensaje(hoy);
+                adaptadorUsuario.modificarUsuario(usuario);
+            }
+        }
     }
 
     //-----------------------------------------------------
@@ -180,6 +200,20 @@ public enum ControladorAppChat {
                 .sorted(Comparator.comparing(Mensaje::getHora))
                 .collect(Collectors.toList());
     }
+    
+   
+    public List<Mensaje> obtenerTodosLosMensajes() {
+        if (usuarioActual == null) {
+            return Collections.emptyList();
+        }
+
+        List<Mensaje> todosLosMensajes = usuarioActual.getContactos().stream()
+            .flatMap(contacto -> contacto.getMensajesEnviados().stream())  
+            .sorted(Comparator.comparing(Mensaje::getHora))  
+            .collect(Collectors.toList()); 
+
+        return todosLosMensajes;
+    }
 
     
     
@@ -192,26 +226,31 @@ public enum ControladorAppChat {
     }
     
     public void enviarMensaje(Contacto contacto, String mensajeTexto) {
-        if (mensajeTexto == null || mensajeTexto.trim().isEmpty()) return;
+        if (mensajeTexto == null || mensajeTexto.trim().isEmpty() || usuarioActual == null) return;
+
+        LocalDate hoy = LocalDate.now();
+        if (usuarioActual.getUltimaFechaMensaje() == null || 
+            !hoy.getMonth().equals(usuarioActual.getUltimaFechaMensaje().getMonth())) {
+            usuarioActual.setMensajesEnviadosUltimoMes(0);
+        }
 
         Mensaje mensaje = new Mensaje(mensajeTexto, LocalDateTime.now(), usuarioActual, contacto);
         adaptadorMensaje.registrarMensaje(mensaje);
 
-        // Enviar mensaje a todos los contactos o grupo
+        usuarioActual.setMensajesEnviadosUltimoMes(usuarioActual.getMensajesEnviadosUltimoMes() + 1);
+        usuarioActual.setUltimaFechaMensaje(hoy);
+        adaptadorUsuario.modificarUsuario(usuarioActual);
+
         if (contacto instanceof Grupo) {
             Grupo grupo = (Grupo) contacto;
-            System.out.println("Enviando mensaje al grupo: " + grupo.getNombreContacto());
             for (ChatIndividual miembro : grupo.getMiembros()) {
-                // Asegúrate de enviar el mensaje a cada miembro
-                System.out.println("Enviando mensaje a: " + miembro.getContacto().getNombreCompleto());
                 enviarMensajePrivadoAReceptor(miembro.getContacto(), mensaje);
             }
-            grupo.enviarMensaje(mensaje); // Asegúrate de que el grupo recibe el mensaje
+            grupo.enviarMensaje(mensaje);
             adaptadorGrupo.modificarGrupo(grupo);
         } else if (contacto instanceof ChatIndividual) {
             ChatIndividual chatEmisor = (ChatIndividual) contacto;
             Usuario receptor = chatEmisor.getContacto();
-            // Agregar mensaje al chat del emisor también
             chatEmisor.enviarMensaje(mensaje);
             enviarMensajePrivadoAReceptor(receptor, mensaje);
             adaptadorChatIndividual.modificarChatIndividual(chatEmisor);
@@ -223,7 +262,6 @@ public enum ControladorAppChat {
 
 
     private void enviarMensajePrivadoAReceptor(Usuario receptor, Mensaje mensaje) {
-        // Buscamos el chat individual del receptor
     	ChatIndividual chatReceptor = receptor.getChatsIndividuales().stream()
     		    .filter(c -> c.getContacto().equals(usuarioActual))
     		    .findFirst()
@@ -231,17 +269,17 @@ public enum ControladorAppChat {
 
 
         if (chatReceptor == null) {
-            // Si no existe un chat con el receptor, lo creamos
-            chatReceptor = new ChatIndividual(usuarioActual.getNombreCompleto(),
-                                              usuarioActual.getNumeroTelefono(), usuarioActual);
+
+        	chatReceptor = new ChatIndividual(usuarioActual.getNumeroTelefono(),
+                                              usuarioActual.getNumeroTelefono(),
+                                              usuarioActual);
             receptor.addContacto(chatReceptor);
             adaptadorChatIndividual.registrarChatIndividual(chatReceptor);
         }
 
-        // Enviar el mensaje al receptor
         chatReceptor.enviarMensaje(mensaje);
-        adaptadorChatIndividual.modificarChatIndividual(chatReceptor); // Persistir cambios en el receptor
-        adaptadorUsuario.modificarUsuario(receptor);  // Persistir cambios en el receptor
+        adaptadorChatIndividual.modificarChatIndividual(chatReceptor); 
+        adaptadorUsuario.modificarUsuario(receptor);  
     }
 
 
@@ -251,28 +289,22 @@ public enum ControladorAppChat {
     public void enviarMensaje(Contacto contacto, int emoji) {
         if (contacto == null) return;
 
-        // Crear el mensaje
         Mensaje mensaje = new Mensaje(emoji, LocalDateTime.now(), usuarioActual, contacto);
 
-        // Añadir el mensaje al chat del emisor
         contacto.enviarMensaje(mensaje);
 
-        // Registrar el mensaje en la base de datos
         adaptadorMensaje.registrarMensaje(mensaje);
 
         if (contacto instanceof ChatIndividual) {
             ChatIndividual chatIndividual = (ChatIndividual) contacto;
 
-            // Obtener el receptor
             Usuario receptor = chatIndividual.getContacto();
 
-            // Buscar el chat correspondiente al emisor desde el lado del receptor
             ChatIndividual chatReceptor = receptor.getChatsIndividuales().stream()
                     .filter(c -> c.getnumeroTelefono().equals(usuarioActual.getNumeroTelefono()))
                     .findFirst()
                     .orElse(null);
 
-            // Si no existe, crear un nuevo chat
             if (chatReceptor == null) {
                 chatReceptor = new ChatIndividual(usuarioActual.getNombreCompleto(),
                                                   usuarioActual.getNumeroTelefono(), usuarioActual);
@@ -280,17 +312,14 @@ public enum ControladorAppChat {
                 adaptadorChatIndividual.registrarChatIndividual(chatReceptor);
             }
 
-            // Añadir el mensaje al chat del receptor
             chatReceptor.enviarMensaje(mensaje);
 
-            // Persistir cambios del receptor
             adaptadorChatIndividual.modificarChatIndividual(chatReceptor);
             adaptadorUsuario.modificarUsuario(receptor);
         } else if (contacto instanceof Grupo) {
             adaptadorGrupo.modificarGrupo((Grupo) contacto);
         }
 
-        // Persistir cambios del emisor
         adaptadorChatIndividual.modificarChatIndividual((ChatIndividual) contacto);
     }
 
@@ -352,7 +381,6 @@ public enum ControladorAppChat {
 	public Grupo modificarGrupo(Grupo grupo, String nombre, List<ChatIndividual> miembros) {
 		grupo.setNombreAgregado(nombre);
 
-		// Creo listas para las altas y las bajas
 		List<ChatIndividual> nuevos = new LinkedList<>();
 		List<ChatIndividual> mantenidos = new LinkedList<>();
 
@@ -445,7 +473,6 @@ public enum ControladorAppChat {
 
 
 
-    // Obtener un contacto por su nombre (ejemplo para edición o visualización)
     public Contacto getContactoPorNombre(String nombre) {
         ChatIndividual chat = getChatIndividual(nombre);
         if (chat != null) {
@@ -471,9 +498,93 @@ public enum ControladorAppChat {
                 .orElse(null);
 	}
 
+	//Mensajes enviados este mes
+	
+	public int obtenerMensajesEnviadosEsteMes() {
+	    if (usuarioActual == null) return 0;
+	    return usuarioActual.getMensajesEnviadosUltimoMes();
+	}
+
+	public void resetearContadoresMensuales() {
+	    LocalDate hoy = LocalDate.now();
+	    List<Usuario> todosUsuarios = CatalogoUsuarios.INSTANCE.getUsuarios();
+	    for (Usuario usuario : todosUsuarios) {
+	        if (usuario.getUltimaFechaMensaje() == null || 
+	            !hoy.isEqual(usuario.getUltimaFechaMensaje())) {
+	            usuario.setMensajesEnviadosUltimoMes(0);
+	            usuario.setUltimaFechaMensaje(hoy);
+	            adaptadorUsuario.modificarUsuario(usuario);
+	        }
+	    }
+	}
+	
+	
+	
+	
+	// Descuentos
+	
+	
+	public double calcularDescuento(Usuario usuario) {
+        double totalDescuento = 0;
+
+        Descuento descuentoFecha = FactoriaDescuento.crearDescuento(
+            "modelo.Descuento.DescuentoPorFecha", 10.0, "2025-01-01", "2025-07-31"
+        );
+        if (descuentoFecha.esAplicable(usuario)) {
+            totalDescuento += descuentoFecha.getDescuento(usuario);
+            estadoDescuentoFecha = "Descuento por Fecha: ✔ Aplicado (10%)";
+        } else {
+            estadoDescuentoFecha = "Descuento por Fecha: ✖ No válido en esta fecha";
+        }
+
+        Descuento descuentoMensajes = FactoriaDescuento.crearDescuento(
+            "modelo.Descuento.DescuentoPorMensaje", 15.0, 20
+        );
+        if (descuentoMensajes.esAplicable(usuario)) {
+            totalDescuento += descuentoMensajes.getDescuento(usuario);
+            estadoDescuentoMensajes = "Descuento por Mensajes: ✔ Aplicado (15%)";
+        } else {
+            estadoDescuentoMensajes = "Descuento por Mensajes: ✖ No cumple con los mensajes mínimos";
+        }
+
+        double precioOriginal = 24.99;
+        return precioOriginal * (1 - totalDescuento / 100);
+    }
+
+    public String getEstadoDescuentoFecha() {
+        return estadoDescuentoFecha;
+    }
+
+    public String getEstadoDescuentoMensajes() {
+        return estadoDescuentoMensajes;
+    }
+
+    public void confirmarPago(Usuario usuario) {
+        usuario.setPremium(true);
+        adaptadorUsuario.modificarUsuario(usuario);
+     }
 
 
+    // Funciones de búsqueda de mensajes
+    
+    
+    public List<Mensaje> buscarMensajes(String texto, String telefono, String nombreContacto) {
+        List<Mensaje> mensajes = obtenerTodosLosMensajes(); 
 
+        FiltroComposite filtroCompuesto = new FiltroComposite();
+
+        if (!texto.isEmpty()) {
+            filtroCompuesto.agregarFiltro(new FiltroTexto(texto));
+        }
+        if (!telefono.isEmpty()) {
+            filtroCompuesto.agregarFiltro(new FiltroNumero(telefono));
+        }
+        if (!nombreContacto.isEmpty()) {
+            filtroCompuesto.agregarFiltro(new FiltroNombre(nombreContacto));
+        }
+
+        return filtroCompuesto.filtrar(mensajes); 
+    }
 
     
 }

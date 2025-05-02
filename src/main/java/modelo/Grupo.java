@@ -31,13 +31,11 @@ public class Grupo extends Contacto {
 
     @Override
     public List<Mensaje> getMensajesEnviados() {
-        // Todos los mensajes en el grupo son enviados por el administrador
         return super.getMensajesEnviados();
     }
 
     @Override
     public List<Mensaje> getMensajesRecibidos(Optional<Usuario> usuario) {
-        // En lista de difusión, los miembros no reciben mensajes aquí
         return new LinkedList<>();
     }
 

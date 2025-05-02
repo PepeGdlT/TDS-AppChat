@@ -2,10 +2,8 @@ package vista.Ventana;
 
 import javax.swing.*;
 import java.awt.*;
-import modelo.Usuario;
-import modelo.Descuento.Descuento;
-import modelo.Descuento.FactoriaDescuento;
 import controlador.ControladorAppChat;
+import modelo.Usuario;
 
 public class VentanaDescuentos extends JDialog {
 
@@ -18,12 +16,10 @@ public class VentanaDescuentos extends JDialog {
     private double precioOriginal = 24.99;
     private double precioFinal;
     private Usuario usuario;
-    private ControladorAppChat controlador;
 
-    public VentanaDescuentos(JFrame parent, Usuario usuario, ControladorAppChat controlador) {
+    public VentanaDescuentos(JFrame parent, Usuario usuario) {
         super(parent, "Descuentos Premium", true);
         this.usuario = usuario;
-        this.controlador = controlador;
         this.precioFinal = precioOriginal;
 
         // Panel principal
@@ -55,11 +51,7 @@ public class VentanaDescuentos extends JDialog {
 
         // Botón para confirmar pago
         btnConfirmarPago = new JButton("Confirmar y Pagar");
-        btnConfirmarPago.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "¡Pago realizado exitosamente! Ahora eres usuario Premium.", "Confirmación", JOptionPane.INFORMATION_MESSAGE);
-            controlador.hacerPremium(true);
-            this.dispose();
-        });
+        btnConfirmarPago.addActionListener(e -> confirmarPago());
         panelDescuentos.add(btnConfirmarPago);
 
         // Configuración de la ventana
@@ -68,61 +60,44 @@ public class VentanaDescuentos extends JDialog {
     }
 
     private void aplicarDescuentos() {
-        if (usuario == null) {
-            JOptionPane.showMessageDialog(this, "Error: Usuario no válido.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+        // Solicitar al controlador que calcule los descuentos y actualice la vista
+        double descuentoTotal = ControladorAppChat.INSTANCE.calcularDescuento(usuario);
+
+        // Actualizar los estados de los descuentos en la UI
+        lblPrecioActualizado.setText("Precio actualizado: $" + String.format("%.2f", descuentoTotal));
+        lblPrecioActualizado.setForeground(Color.GREEN);
+
+        // Obtener el estado de los descuentos desde el controlador
+        String estadoFecha = ControladorAppChat.INSTANCE.getEstadoDescuentoFecha();
+        String estadoMensajes = ControladorAppChat.INSTANCE.getEstadoDescuentoMensajes();
+
+        // Cambiar el color de las etiquetas según el estado del descuento
+        if (estadoFecha.contains("✔ Aplicado")) {
+            lblEstadoDescuentoFecha.setForeground(Color.GREEN);
+        } else {
+            lblEstadoDescuentoFecha.setForeground(Color.RED);
         }
 
-        try {
-            double totalDescuento = 0;
-            boolean descuentoFechaAplicado = false;
-            boolean descuentoMensajesAplicado = false;
-
-            // Verificar descuento por fecha
-            Descuento descuentoFecha = FactoriaDescuento.crearDescuento(
-                "modelo.Descuento.DescuentoPorFecha", 10.0, "2025-01-01", "2025-07-31"
-            );
-            if (descuentoFecha.esAplicable(usuario)) {
-                totalDescuento += descuentoFecha.getDescuento(usuario);
-                lblEstadoDescuentoFecha.setText("Descuento por Fecha: ✔ Aplicado (10%)");
-                lblEstadoDescuentoFecha.setForeground(Color.GREEN);
-                descuentoFechaAplicado = true;
-            } else {
-                lblEstadoDescuentoFecha.setText("Descuento por Fecha: ✖ No válido en esta fecha");
-                lblEstadoDescuentoFecha.setForeground(Color.RED);
-            }
-
-            // Verificar descuento por mensajes
-            Descuento descuentoMensajes = FactoriaDescuento.crearDescuento(
-                "modelo.Descuento.DescuentoPorMensaje", 15.0, 20
-            );
-            if (descuentoMensajes.esAplicable(usuario)) {
-                totalDescuento += descuentoMensajes.getDescuento(usuario);
-                lblEstadoDescuentoMensajes.setText("Descuento por Mensajes: ✔ Aplicado (15%)");
-                lblEstadoDescuentoMensajes.setForeground(Color.GREEN);
-                descuentoMensajesAplicado = true;
-            } else {
-                lblEstadoDescuentoMensajes.setText("Descuento por Mensajes: ✖ No cumple con los mensajes mínimos");
-                lblEstadoDescuentoMensajes.setForeground(Color.RED);
-            }
-
-            // Si hay descuentos aplicados, actualizamos el precio final
-            if (descuentoFechaAplicado || descuentoMensajesAplicado) {
-                precioFinal = precioOriginal * (1 - totalDescuento / 100);
-                lblPrecioActualizado.setText("Precio actualizado: $" + String.format("%.2f", precioFinal));
-                lblPrecioActualizado.setForeground(Color.GREEN);
-                btnAplicarDescuentos.setBackground(Color.GREEN);
-                btnAplicarDescuentos.setText("Descuentos Aplicados");
-            } else {
-                precioFinal = precioOriginal;
-                lblPrecioActualizado.setText("Precio actualizado: $" + precioOriginal);
-                lblPrecioActualizado.setForeground(Color.WHITE);
-                btnAplicarDescuentos.setBackground(Color.RED);
-                btnAplicarDescuentos.setText("No Aplicable");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al aplicar descuentos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        if (estadoMensajes.contains("✔ Aplicado")) {
+            lblEstadoDescuentoMensajes.setForeground(Color.GREEN);
+        } else {
+            lblEstadoDescuentoMensajes.setForeground(Color.RED);
         }
+
+        // Mostrar el estado de los descuentos
+        lblEstadoDescuentoFecha.setText(estadoFecha);
+        lblEstadoDescuentoMensajes.setText(estadoMensajes);
+    }
+
+    private void confirmarPago() {
+        // Solicitar al controlador que actualice el estado del usuario
+    	ControladorAppChat.INSTANCE.confirmarPago(usuario);
+
+        // Mostrar mensaje de éxito
+        JOptionPane.showMessageDialog(this, "¡Pago realizado exitosamente! Ahora eres usuario Premium.", "Confirmación", JOptionPane.INFORMATION_MESSAGE);
+
+        // Cerrar la ventana
+        this.dispose();
     }
 
     private void configurarVentanaDescuentos() {

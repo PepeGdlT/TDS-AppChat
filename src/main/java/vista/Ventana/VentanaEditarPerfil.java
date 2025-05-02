@@ -13,14 +13,12 @@ public class VentanaEditarPerfil extends JPanel {
     private JPasswordField passwordField, confirmPasswordField;
     private JButton saveButton, cancelButton, changePasswordButton;
     private JLabel profilePictureLabel;
-    private ControladorAppChat controlador;
     private Usuario usuario;
     private VentanaInicio mainFrame;
 
-    public VentanaEditarPerfil(VentanaInicio mainFrame, ControladorAppChat controlador) {
+    public VentanaEditarPerfil(VentanaInicio mainFrame) {
         this.mainFrame = mainFrame;
-        this.controlador = controlador;
-        this.usuario = controlador.getUsuarioActual();
+        this.usuario = ControladorAppChat.INSTANCE.getUsuarioActual();
         initialize();
     }
 
@@ -183,7 +181,7 @@ public class VentanaEditarPerfil extends JPanel {
             }
 
             usuario.setContrasena(confirmPass);
-            controlador.modificarUsuario(usuario);
+            ControladorAppChat.INSTANCE.modificarUsuario(usuario);
             JOptionPane.showMessageDialog(passwordDialog, "Contraseña cambiada con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             passwordDialog.dispose();
         });
@@ -199,7 +197,7 @@ public class VentanaEditarPerfil extends JPanel {
         usuario.setSaludo(greetingMessageField.getText().trim());
         usuario.setFotoPerfil(profilePictureField.getText().trim());
 
-        controlador.modificarUsuario(usuario);
+        ControladorAppChat.INSTANCE.modificarUsuario(usuario);
         JOptionPane.showMessageDialog(this, "Perfil actualizado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
         mainFrame.showMainWindow();
     }

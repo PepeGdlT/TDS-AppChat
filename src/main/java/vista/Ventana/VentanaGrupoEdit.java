@@ -2,21 +2,19 @@ package vista.Ventana;
 
 import javax.swing.*;
 import java.awt.*;
-import modelo.Grupo;
 import controlador.ControladorAppChat;
+import modelo.Grupo;
 import vista.utils.utils;
 
 public class VentanaGrupoEdit extends JDialog {
-    private final ControladorAppChat controlador;
     private final Grupo grupo;
 
     private JTextField txtNombre;
     private JLabel lblFoto;
 
-    public VentanaGrupoEdit(JFrame owner, Grupo grupo, ControladorAppChat controlador) {
+    public VentanaGrupoEdit(JFrame owner, Grupo grupo) {
         super(owner, "Editar Grupo", true); 
         this.grupo = grupo;
-        this.controlador = controlador;
 
         // Configuración de la ventana
         setLayout(new BorderLayout());
@@ -96,7 +94,8 @@ public class VentanaGrupoEdit extends JDialog {
             return;
         }
 
-        controlador.modificarGrupo(this.grupo, nuevoNombre, grupo.getMiembros());
+        // Aquí solo delegamos la acción al controlador
+        ControladorAppChat.INSTANCE.modificarGrupo(grupo, nuevoNombre, grupo.getMiembros()); 
 
         JOptionPane.showMessageDialog(this, "Cambios guardados correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
         dispose(); // Cerrar la ventana

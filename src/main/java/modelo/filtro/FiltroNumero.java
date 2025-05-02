@@ -12,14 +12,16 @@ public class FiltroNumero extends FiltroBase {
 
     @Override
     protected boolean cumpleCriterio(Mensaje mensaje) {
+        boolean coincideReceptor = false;
         Contacto receptor = mensaje.getReceptor();
+		if (receptor instanceof ChatIndividual) {
+			 coincideReceptor = ((ChatIndividual) receptor).getnumeroTelefono().contains(criterio);
+		} else if (receptor instanceof Grupo) {
+			return false; 
+		}
+       
+        boolean coincideEmisor = mensaje.getEmisor().getNumeroTelefono().contains(criterio);
         
-        if (receptor instanceof ChatIndividual) {
-            return ((ChatIndividual) receptor).getnumeroTelefono().contains(criterio);
-        } else if (receptor instanceof Grupo) {
-            return ((Grupo) receptor).getAdministrador().getNumeroTelefono().contains(criterio);
-        }
-        
-        return false;
+        return coincideReceptor || coincideEmisor;
     }
 }

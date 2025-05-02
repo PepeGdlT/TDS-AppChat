@@ -8,17 +8,16 @@ import controlador.ControladorAppChat;
 import modelo.ChatIndividual;
 
 public class VentanaContactoEdit extends JDialog {
-    private final ControladorAppChat controlador;
     private final ChatIndividual chat;
 
     private JTextField txtNombre;
     private JLabel lblFoto;
     private JLabel lblSaludo;
+    
 
-    public VentanaContactoEdit(JFrame owner, ChatIndividual chat, ControladorAppChat controlador) {
+    public VentanaContactoEdit(JFrame owner, ChatIndividual chat) {
         super(owner, "Editar Contacto", true); 
         this.chat = chat;
-        this.controlador = controlador;
 
         // Configuración de la ventana
         setLayout(new BorderLayout());
@@ -117,7 +116,7 @@ public class VentanaContactoEdit extends JDialog {
         }
 
 
-        controlador.modificarChatIndividual(this.chat, nuevoNombre);
+        ControladorAppChat.INSTANCE.modificarChatIndividual(this.chat, nuevoNombre);
 
         
         JOptionPane.showMessageDialog(this, "Cambios guardados correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);

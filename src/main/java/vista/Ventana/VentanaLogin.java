@@ -3,7 +3,7 @@ package vista.Ventana;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import controlador.ControladorAppChat;
-import vista.utils.ElegantPalette;
+import vista.utils.Palette;
 import vista.utils.IconsResource;
 
 import java.awt.*;
@@ -15,12 +15,10 @@ public class VentanaLogin extends JPanel {
     private JPasswordField passwordField;
     private JButton showPasswordButton;
     private boolean isPasswordVisible = false;
-    private ControladorAppChat controlador;
     private VentanaInicio mainFrame; 
 
-    public VentanaLogin(VentanaInicio mainFrame, ControladorAppChat controlador) {
+    public VentanaLogin(VentanaInicio mainFrame) {
     	this.mainFrame = mainFrame;
-    	this.controlador = controlador;
 
         setupLayout();
         setupComponents();
@@ -30,7 +28,7 @@ public class VentanaLogin extends JPanel {
         gridBagLayout.columnWidths = new int[]{380};
         setLayout(gridBagLayout);
         setPreferredSize(new Dimension(402, 266));
-        setBackground(ElegantPalette.PANEL_BACKGROUND);
+        setBackground(Palette.PANEL_BACKGROUND);
     }
 
     private void setupComponents() {
@@ -43,7 +41,7 @@ public class VentanaLogin extends JPanel {
 
     private void addLoginTitle() {
         JLabel loginTitle = new JLabel("Login", SwingConstants.CENTER);
-        loginTitle.setForeground(ElegantPalette.PRIMARY_TEXT);
+        loginTitle.setForeground(Palette.PRIMARY_TEXT);
         loginTitle.setFont(new Font("Arial", Font.BOLD, 20));
         GridBagConstraints gbcTitle = createGbc(0, 0, 10);
         add(loginTitle, gbcTitle);
@@ -67,7 +65,7 @@ public class VentanaLogin extends JPanel {
         showPasswordButton.addActionListener(e -> togglePasswordVisibility(IconsResource.EYE_HIDE, IconsResource.EYE_SHOW));
 
         JPanel passwordPanel = new JPanel(new BorderLayout());
-        passwordPanel.setBackground(ElegantPalette.PANEL_BACKGROUND);
+        passwordPanel.setBackground(Palette.PANEL_BACKGROUND);
         passwordPanel.add(passwordField, BorderLayout.CENTER);
         passwordPanel.add(showPasswordButton, BorderLayout.EAST);
 
@@ -79,8 +77,8 @@ public class VentanaLogin extends JPanel {
         JButton loginButton = new JButton("Login");
         loginButton.addActionListener(e -> iniciarSesion());
         loginButton.setFont(new Font("Tahoma", Font.BOLD, 11));
-        loginButton.setBackground(ElegantPalette.ACTION_BUTTON);
-        loginButton.setForeground(ElegantPalette.BUTTON_TEXT);
+        loginButton.setBackground(Palette.ACTION_BUTTON);
+        loginButton.setForeground(Palette.BUTTON_TEXT);
 
         GridBagConstraints gbcLoginButton = createGbc(0, 3, 10);
         add(loginButton, gbcLoginButton);
@@ -90,7 +88,7 @@ public class VentanaLogin extends JPanel {
     	JButton registerButton = new JButton("Register");
     	registerButton.addActionListener(e -> handleRegister());
     	registerButton.setFont(new Font("Tahoma", Font.BOLD, 11));
-    	registerButton.setForeground(ElegantPalette.LINK_TEXT);
+    	registerButton.setForeground(Palette.LINK_TEXT);
     	registerButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     	
         GridBagConstraints gbcRegisterLabel = createGbc(0, 4, 10);
@@ -108,37 +106,37 @@ public class VentanaLogin extends JPanel {
     }
 
     private void setupTextField(JTextField textField) {
-        textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT_PREV);
-        textField.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
+        textField.setForeground(Palette.TEXT_FIELD_TEXT_PREV);
+        textField.setBackground(Palette.TEXT_FIELD_BACKGROUND);
         textField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR),
+                BorderFactory.createLineBorder(Palette.BORDER_COLOR),
                 new EmptyBorder(5, 5, 5, 5)
         ));
         textField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (textField.getForeground() == ElegantPalette.TEXT_FIELD_TEXT_PREV) {
+                if (textField.getForeground() == Palette.TEXT_FIELD_TEXT_PREV) {
                     textField.setText("");
-                    textField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
+                    textField.setForeground(Palette.TEXT_FIELD_TEXT);
                 }
             }
         });
     }
 
     private void setupPasswordField(JPasswordField passwordField) {
-        passwordField.setForeground(ElegantPalette.TEXT_FIELD_TEXT_PREV);
-        passwordField.setBackground(ElegantPalette.TEXT_FIELD_BACKGROUND);
+        passwordField.setForeground(Palette.TEXT_FIELD_TEXT_PREV);
+        passwordField.setBackground(Palette.TEXT_FIELD_BACKGROUND);
         passwordField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ElegantPalette.BORDER_COLOR),
+                BorderFactory.createLineBorder(Palette.BORDER_COLOR),
                 new EmptyBorder(5, 5, 5, 5)
         ));
         passwordField.setEchoChar('•');
         passwordField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (passwordField.getForeground() == ElegantPalette.TEXT_FIELD_TEXT_PREV) {
+                if (passwordField.getForeground() == Palette.TEXT_FIELD_TEXT_PREV) {
                     passwordField.setText("");
-                    passwordField.setForeground(ElegantPalette.TEXT_FIELD_TEXT);
+                    passwordField.setForeground(Palette.TEXT_FIELD_TEXT);
                 }
             }
         });
@@ -154,10 +152,10 @@ public class VentanaLogin extends JPanel {
         }
 
         try {
-            boolean login = controlador.iniciarSesion(phone, password);
+            boolean login = ControladorAppChat.INSTANCE.iniciarSesion(phone, password);
             
             if (login && mainFrame != null) {
-                System.out.println(controlador.getUsuarioActual().toString());
+                System.out.println(ControladorAppChat.INSTANCE.getUsuarioActual().toString());
                 mainFrame.showMainWindow();
             } else {
                 JOptionPane.showMessageDialog(null, "Nombre de usuario o contraseña no válido", "Error",

@@ -1,0 +1,32 @@
+05-02 15:43:51 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Tabla "MENSAJE" no encontrada
+Table "MENSAJE" not found; SQL statement:
+SELECT 1 FROM MENSAJE [42102-160]
+05-02 15:43:51 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Tabla "ENTIDAD" no encontrada
+Table "ENTIDAD" not found; SQL statement:
+SELECT 1 FROM ENTIDAD [42102-160]
+05-02 15:43:51 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Tabla "PROPIEDAD" no encontrada
+Table "PROPIEDAD" not found; SQL statement:
+SELECT 1 FROM PROPIEDAD [42102-160]
+05-02 15:43:51 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Tabla "MENSAJE_PROPIEDAD" no encontrada
+Table "MENSAJE_PROPIEDAD" not found; SQL statement:
+SELECT 1 FROM MENSAJE_PROPIEDAD [42102-160]
+05-02 15:43:51 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Tabla "MENSAJE_ENTIDAD_RECEPTORES" no encontrada
+Table "MENSAJE_ENTIDAD_RECEPTORES" not found; SQL statement:
+SELECT 1 FROM MENSAJE_ENTIDAD_RECEPTORES [42102-160]
+05-02 15:43:51 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Tabla "MENSAJE_ENTIDAD_RECEPTORES_PORLEER" no encontrada
+Table "MENSAJE_ENTIDAD_RECEPTORES_PORLEER" not found; SQL statement:
+SELECT 1 FROM MENSAJE_ENTIDAD_RECEPTORES_PORLEER [42102-160]
+05-02 15:43:51 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Tabla "ENTIDAD_PROPIEDAD" no encontrada
+Table "ENTIDAD_PROPIEDAD" not found; SQL statement:
+SELECT 1 FROM ENTIDAD_PROPIEDAD [42102-160]
+05-02 15:43:51 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Tabla "SEQUENCE" no encontrada
+Table "SEQUENCE" not found; SQL statement:
+SELECT 1 FROM SEQUENCE [42102-160]

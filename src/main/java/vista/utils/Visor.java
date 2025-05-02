@@ -10,7 +10,7 @@ import java.net.URL;
 
 public abstract class Visor extends JPanel {
 
-    private static final Border SELECCIONADO = BorderFactory.createLineBorder(ElegantPalette.HOVER_BACKGROUND, 2);
+    private static final Border SELECCIONADO = BorderFactory.createLineBorder(Palette.HOVER_BACKGROUND, 2);
     private static final Border NO_SELECCIONADO = BorderFactory.createEmptyBorder(2, 2, 2, 2);
 
     protected JLabel lblImagen;
@@ -68,10 +68,10 @@ public abstract class Visor extends JPanel {
 
     public void setSeleccionado(boolean isSelected) {
         if (isSelected) {
-            setBackground(ElegantPalette.BACKGROUND);
+            setBackground(Palette.BACKGROUND);
             setBorder(SELECCIONADO);
         } else {
-            setBackground(ElegantPalette.HOVER_BACKGROUND);
+            setBackground(Palette.HOVER_BACKGROUND);
             setBorder(NO_SELECCIONADO);
         }
     }

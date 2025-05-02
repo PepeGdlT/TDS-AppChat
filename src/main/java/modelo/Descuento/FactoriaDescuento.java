@@ -2,7 +2,7 @@ package modelo.Descuento;
 
 import java.lang.reflect.Constructor;
 
-public class FactoriaDescuento {
+public abstract class FactoriaDescuento implements Descuento {
     
 
     public static Descuento crearDescuento(String claseNombre, Object... parametros) {

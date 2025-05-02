@@ -20,11 +20,9 @@ public class VentanaGrupos extends JPanel {
     private DefaultTableModel memberTableModel;
     private JButton addGroupButton, addUserButton, removeUserButton;
     private VentanaInicio mainFrame;
-    private ControladorAppChat controlador;
 
-    public VentanaGrupos(VentanaInicio mainFrame, ControladorAppChat controlador) {
+    public VentanaGrupos(VentanaInicio mainFrame) {
         this.mainFrame = mainFrame;
-        this.controlador = controlador;
 
         setLayout(new BorderLayout(10, 10));
         setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -111,7 +109,7 @@ public class VentanaGrupos extends JPanel {
 
     private void cargarGrupos() {
         groupListModel.clear();
-        List<Grupo> grupos = controlador.getGrupos();
+        List<Grupo> grupos = ControladorAppChat.INSTANCE.getGrupos();
         for (Grupo grupo : grupos) {
             groupListModel.addElement(grupo.getNombreContacto());
         }
@@ -122,7 +120,7 @@ public class VentanaGrupos extends JPanel {
         String selectedGroup = groupList.getSelectedValue();
         if (selectedGroup == null) return;
 
-        List<Grupo> grupos = controlador.getGrupos();
+        List<Grupo> grupos = ControladorAppChat.INSTANCE.getGrupos();
         for (Grupo grupo : grupos) {
             if (grupo.getNombreContacto().equals(selectedGroup)) {
                 for (ChatIndividual miembro : grupo.getMiembros()) {
@@ -139,7 +137,7 @@ public class VentanaGrupos extends JPanel {
         if (nombreGrupo != null && !nombreGrupo.trim().isEmpty()) {
             // Crear el grupo con un miembro (en este caso, el usuario actual)
             List<ChatIndividual> miembros = new ArrayList<>();
-            Grupo grupo = controlador.crearGrupo(nombreGrupo, miembros);
+            Grupo grupo = ControladorAppChat.INSTANCE.crearGrupo(nombreGrupo, miembros);
             if (grupo != null) {
                 JOptionPane.showMessageDialog(this, "Grupo creado.");
                 cargarGrupos();
@@ -157,7 +155,7 @@ public class VentanaGrupos extends JPanel {
             return;
         }
 
-        List<ChatIndividual> contactos = controlador.getChatIndividuals();
+        List<ChatIndividual> contactos = ControladorAppChat.INSTANCE.getChatIndividuals();
         if (contactos.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No hay contactos disponibles para agregar.");
             return;
@@ -210,7 +208,7 @@ public class VentanaGrupos extends JPanel {
 
             String selectedContactName = selectedValue.split(" - ")[0];
 
-            List<Grupo> grupos = controlador.getGrupos();
+            List<Grupo> grupos = ControladorAppChat.INSTANCE.getGrupos();
             for (Grupo grupo : grupos) {
                 if (grupo.getNombreContacto().equals(selectedGroup)) {
                     for (ChatIndividual contacto : contactos) {
@@ -220,7 +218,7 @@ public class VentanaGrupos extends JPanel {
                                 return;
                             }
                             grupo.getMiembros().add(contacto);
-                            controlador.modificarGrupo(grupo, grupo.getNombreContacto(), grupo.getMiembros());
+                            ControladorAppChat.INSTANCE.modificarGrupo(grupo, grupo.getNombreContacto(), grupo.getMiembros());
                             actualizarMiembrosGrupo();
                             JOptionPane.showMessageDialog(this, "Usuario agregado al grupo.");
                             return;
@@ -240,11 +238,11 @@ public class VentanaGrupos extends JPanel {
         }
 
         String contactName = (String) memberTableModel.getValueAt(selectedRow, 0);
-        List<Grupo> grupos = controlador.getGrupos();
+        List<Grupo> grupos = ControladorAppChat.INSTANCE.getGrupos();
         for (Grupo grupo : grupos) {
             if (grupo.getNombreContacto().equals(selectedGroup)) {
                 grupo.getMiembros().removeIf(miembro -> miembro.getContacto().getNombreCompleto().equals(contactName));
-                controlador.modificarGrupo(grupo, grupo.getNombreContacto(), grupo.getMiembros());
+                ControladorAppChat.INSTANCE.modificarGrupo(grupo, grupo.getNombreContacto(), grupo.getMiembros());
                 actualizarMiembrosGrupo();
                 JOptionPane.showMessageDialog(this, "Usuario eliminado del grupo.");
                 return;

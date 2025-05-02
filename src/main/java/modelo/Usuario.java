@@ -21,7 +21,9 @@ public class Usuario {
     private List<Contacto> contactos;
     private boolean premium;
     private LocalDate fechaRegistro;
-    private int mensajesEnviadosUltimoMes; 
+    private int mensajesEnviadosUltimoMes;
+    private LocalDate ultimaFechaMensaje; 
+
 
     public Usuario(String nombreCompleto, String numeroTelefono, String email, String contrasena, String saludo, String fotoPerfil, String fechaNacimiento, LocalDate fechaRegistro) {
         this.nombreCompleto = nombreCompleto;
@@ -35,6 +37,7 @@ public class Usuario {
         this.premium = false;
         this.fechaRegistro = fechaRegistro;
         this.mensajesEnviadosUltimoMes = 0; 
+        this.ultimaFechaMensaje = null;
     }
 
 
@@ -51,7 +54,7 @@ public class Usuario {
     public boolean isPremium() { return premium; }
     public LocalDate getFechaRegistro() { return fechaRegistro; }
     public int getMensajesEnviadosUltimoMes() { return mensajesEnviadosUltimoMes; }
-
+    public LocalDate getUltimaFechaMensaje() { return ultimaFechaMensaje; }
     // Setters
     public void setCodigo(int id) { this.codigo = id; }
     public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
@@ -64,6 +67,7 @@ public class Usuario {
     public void setContactos(List<Contacto> contactos) { this.contactos = contactos; }
     public void setPremium(boolean premium) { this.premium = premium; }
     public void setMensajesEnviadosUltimoMes(int cantidad) { this.mensajesEnviadosUltimoMes = cantidad; } 
+    public void setUltimaFechaMensaje(LocalDate fecha) { this.ultimaFechaMensaje = fecha; }
 
     // Métodos para gestión de contactos
     public void addContacto(Contacto contacto) { this.contactos.add(contacto); }

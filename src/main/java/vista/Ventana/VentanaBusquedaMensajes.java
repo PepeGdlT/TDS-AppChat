@@ -3,8 +3,15 @@ package vista.Ventana;
 import javax.swing.*;
 import controlador.ControladorAppChat;
 import modelo.filtro.*;
+import tds.BubbleText;
+import modelo.ChatIndividual;
+import modelo.Contacto;
+import modelo.Grupo;
 import modelo.Mensaje;
+import modelo.Usuario;
+
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,84 +19,125 @@ public class VentanaBusquedaMensajes extends JPanel {
     private JTextField campoTexto, campoTelefono, campoContacto;
     private JList<String> listaResultados;
     private DefaultListModel<String> modeloLista;
-    private ControladorAppChat controlador;
 
-    public VentanaBusquedaMensajes(VentanaInicio ventanaInicio, ControladorAppChat controlador) {
-        this.controlador = controlador;
-        
-        setLayout(new BorderLayout());
-        
-        // Campos de búsqueda
-        campoTexto = new JTextField(15);
-        campoTelefono = new JTextField(10);
-        campoContacto = new JTextField(15);
-        JButton btnBuscarMensajes = new JButton("Buscar");
+    public VentanaBusquedaMensajes(VentanaInicio ventanaInicio) {
+
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Panel de búsqueda
+        JPanel panelBusqueda = new JPanel(new GridLayout(3, 2, 5, 5));
+        panelBusqueda.add(new JLabel("Texto del mensaje:"));
+        panelBusqueda.add(campoTexto = new JTextField());
+        panelBusqueda.add(new JLabel("Teléfono del contacto:"));
+        panelBusqueda.add(campoTelefono = new JTextField());
+        panelBusqueda.add(new JLabel("Nombre del contacto:"));
+        panelBusqueda.add(campoContacto = new JTextField());
+
+        // Botones
+        JButton btnBuscar = new JButton("Buscar");
         JButton btnLimpiar = new JButton("Limpiar");
-        
-        // Panel de entrada
-        JPanel panelSuperior = new JPanel(new GridLayout(2, 3, 5, 5));
-        panelSuperior.add(new JLabel("Texto:"));
-        panelSuperior.add(new JLabel("Teléfono:"));
-        panelSuperior.add(new JLabel("Contacto:"));
-        
-        panelSuperior.add(campoTexto);
-        panelSuperior.add(campoTelefono);
-        panelSuperior.add(campoContacto);
-        
-        // Panel de botones
-        JPanel panelBotones = new JPanel();
-        panelBotones.add(btnBuscarMensajes);
+        JButton btnVolver = new JButton("Volver");
+
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        panelBotones.add(btnBuscar);
         panelBotones.add(btnLimpiar);
-        
+        panelBotones.add(btnVolver);
+
         // Lista de resultados
         modeloLista = new DefaultListModel<>();
         listaResultados = new JList<>(modeloLista);
         JScrollPane scrollPane = new JScrollPane(listaResultados);
-        
-        // Botón para volver
-        JButton btnVolver = new JButton("Volver");
-        btnVolver.addActionListener(e -> ventanaInicio.showMainWindow());
-        JPanel panelInferior = new JPanel();
-        panelInferior.add(btnVolver);
-        
+        scrollPane.setPreferredSize(new Dimension(600, 300));
+
+        // Organización de componentes
+        add(panelBusqueda, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+        add(panelBotones, BorderLayout.SOUTH);
+
         // Eventos
-        btnBuscarMensajes.addActionListener(e -> buscarMensajes());
+        btnBuscar.addActionListener(e -> buscarMensajes());
         btnLimpiar.addActionListener(e -> limpiarBusqueda());
-        
-        // Añadir componentes al panel
-        add(panelSuperior, BorderLayout.NORTH);
-        add(panelBotones, BorderLayout.CENTER);
-        add(scrollPane, BorderLayout.SOUTH);
-        add(panelInferior, BorderLayout.SOUTH);
+        btnVolver.addActionListener(e -> ventanaInicio.showMainWindow());
     }
-    
+
     private void buscarMensajes() {
         String textoBusqueda = campoTexto.getText().trim().toLowerCase();
         String telefonoBusqueda = campoTelefono.getText().trim();
         String contactoBusqueda = campoContacto.getText().trim().toLowerCase();
+
         modeloLista.clear();
 
         if (textoBusqueda.isEmpty() && telefonoBusqueda.isEmpty() && contactoBusqueda.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Introduce al menos un criterio de búsqueda", 
+                    "Búsqueda vacía", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        List<Mensaje> mensajes = obtenerMensajesDesdeControlador();
-        FiltroComposite filtroCompuesto = new FiltroComposite();
+        // Delegar la búsqueda de mensajes al controlador
+        List<Mensaje> mensajesFiltrados = ControladorAppChat.INSTANCE.buscarMensajes(textoBusqueda, telefonoBusqueda, contactoBusqueda);
 
-        if (!textoBusqueda.isEmpty()) {
-            filtroCompuesto.agregarFiltro(new FiltroTexto(textoBusqueda));
-        }
-        if (!telefonoBusqueda.isEmpty()) {
-            filtroCompuesto.agregarFiltro(new FiltroNumero(telefonoBusqueda));
-        }
-        if (!contactoBusqueda.isEmpty()) {
-            filtroCompuesto.agregarFiltro(new FiltroNombre(contactoBusqueda));
-        }
+        if (mensajesFiltrados.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No se encontraron mensajes con los criterios especificados", 
+                                        "Búsqueda sin resultados", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            mensajesFiltrados.forEach(m -> {
+                // Determinar si es emoticono
+                boolean esEmoticono = m.getEmoticono() != null && m.getEmoticono() != -1;
 
-        List<Mensaje> mensajesFiltrados = filtroCompuesto.filtrar(mensajes);
-        for (Mensaje mensaje : mensajesFiltrados) {
-            modeloLista.addElement(mensaje.getReceptor().getNombreContacto() + ": " + mensaje.getTexto());
+                // Determinar el nombre del emisor (siempre es Usuario)
+                String nombreEmisor;
+                if (m.getEmisor().equals(ControladorAppChat.INSTANCE.getUsuarioActual())) {
+                    nombreEmisor = "Tú";
+                } else {
+                    nombreEmisor = obtenerNombreContacto(m.getEmisor());
+                }
+
+                // Determinar el nombre del receptor (siempre es Contacto)
+                String nombreReceptor;
+                if (esReceptorElUsuarioActual(m.getReceptor())) {
+                    nombreReceptor = "Tú";
+                } else {
+                    nombreReceptor = m.getReceptor().getNombreContacto();
+                }
+
+                // Mostrar contenido del mensaje
+                String contenido = esEmoticono ? 
+                    "[Emoticono #" + m.getEmoticono() + "]" : 
+                    m.getTexto();
+
+                String resultado = String.format("%s → %s (%s): %s",
+                    nombreEmisor,
+                    nombreReceptor,
+                    m.getHora().format(formatter),
+                    contenido);
+
+                modeloLista.addElement(resultado);
+            });
         }
+    }
+
+    private boolean esReceptorElUsuarioActual(Contacto receptor) {
+        if (receptor instanceof ChatIndividual) {
+            return ((ChatIndividual)receptor).getContacto().equals(ControladorAppChat.INSTANCE.getUsuarioActual());
+        } else if (receptor instanceof Grupo) {
+            return ((Grupo)receptor).getMiembros().stream()
+                .anyMatch(chat -> chat.getContacto().equals(ControladorAppChat.INSTANCE.getUsuarioActual()));
+        }
+        return false;
+    }
+
+    private String obtenerNombreContacto(Usuario usuario) {
+        for (Contacto contacto : ControladorAppChat.INSTANCE.getUsuarioActual().getContactos()) {
+            if (contacto instanceof ChatIndividual) {
+                ChatIndividual chat = (ChatIndividual) contacto;
+                if (chat.getContacto().equals(usuario)) {
+                    return chat.getNombreContacto();
+                }
+            }
+        }
+        return usuario.getNombreCompleto();
     }
 
     private void limpiarBusqueda() {
@@ -97,14 +145,5 @@ public class VentanaBusquedaMensajes extends JPanel {
         campoTelefono.setText("");
         campoContacto.setText("");
         modeloLista.clear();
-    }
-
-    private List<Mensaje> obtenerMensajesDesdeControlador() {
-        if (controlador.getUsuarioActual() == null) {
-            return List.of();
-        }
-        return controlador.getUsuarioActual().getContactos().stream()
-                .flatMap(contacto -> controlador.getMensajes(contacto).stream())
-                .collect(Collectors.toList());
     }
 }

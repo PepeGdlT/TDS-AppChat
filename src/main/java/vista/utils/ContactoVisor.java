@@ -27,40 +27,37 @@ public class ContactoVisor extends Visor {
 		super(nombre, fotoUrl, ultimoMensaje);
 
 		if (esSoloDigitos(nombre)) {
-			lblNombre.setText(nombre);  // Mostrar el número de teléfono
-			mostrarCirculoAzul();  // Mostrar el círculo azul
+			lblNombre.setText(nombre);  
+			mostrarCirculoAzul();  
 		} else {
-			// Si no es solo dígitos, mostrar el nombre del contacto
-			lblNombre.setText(nombre);  // Mostrar el nombre
+			lblNombre.setText(nombre); 
 		}
 
 		// Establecer el último mensaje
 		lblUltimoMensaje.setText(ultimoMensaje);
 	}
 
-	// Implementación del método abstracto
 	@Override
 	protected void setNombreYUltimoMensaje(String ultimoMensaje) {
-		lblUltimoMensaje.setText(ultimoMensaje);  // Establecer el último mensaje
+		lblUltimoMensaje.setText(ultimoMensaje);  
 	}
 
 	// Método para verificar si el nombre es solo dígitos (número de teléfono)
 	private boolean esSoloDigitos(String nombre) {
-		return nombre.matches("\\d+");  // Verificar si el nombre contiene solo números (es un número de teléfono)
+		return nombre.matches("\\d+");  
 	}
 
 	// Método para mostrar el círculo azul
 	private void mostrarCirculoAzul() {
-		lblCirculo.setBounds(5, 5, 15, 15); // Posición en la esquina superior izquierda
+		lblCirculo.setBounds(5, 5, 15, 15); 
 		try {
-			// Usamos la clase utils para cargar la imagen
 			ImageIcon icono = IconsResource.BLUE_CIRCLE;
 			Image imgEscalada = icono.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
 			lblCirculo.setIcon(new ImageIcon(imgEscalada));
 		} catch (Exception e) {
 			lblCirculo.setText("X"); // Mostrar algo en caso de error
 		}
-		add(lblCirculo);  // Agregar el círculo solo si el nombre es numérico
+		add(lblCirculo);  
 	}
 	
 
