@@ -361,10 +361,8 @@ public enum ControladorAppChat {
 		Grupo nuevoGrupo = new Grupo(nombre, new LinkedList<Mensaje>(), miembros, usuarioActual);
 
 		usuarioActual.addContacto(nuevoGrupo);
-		miembros.stream().forEach(p -> p.addGrupo(nuevoGrupo));
 
 		adaptadorGrupo.registrarGrupo(nuevoGrupo);
-
 		adaptadorUsuario.modificarUsuario(usuarioActual);
 
 		miembros.stream().forEach(p -> {
@@ -378,39 +376,18 @@ public enum ControladorAppChat {
     // Funciones de modificación de objetos
     //-----------------------------------------------------
     
-	public Grupo modificarGrupo(Grupo grupo, String nombre, List<ChatIndividual> miembros) {
-		grupo.setNombreAgregado(nombre);
+    public Grupo modificarGrupo(Grupo grupo, String nombre, List<ChatIndividual> miembros) {
+        grupo.setNombreAgregado(nombre);
+        grupo.setMiembros(miembros);
 
-		List<ChatIndividual> nuevos = new LinkedList<>();
-		List<ChatIndividual> mantenidos = new LinkedList<>();
+        adaptadorGrupo.modificarGrupo(grupo);
 
-		for (ChatIndividual contacto : miembros) {
-			if (grupo.existeContacto(contacto.getContacto())) {
-				mantenidos.add(contacto);
-			} else {
-				nuevos.add(contacto);
-			}
-		}
+        for (ChatIndividual chat : miembros) {
+            adaptadorUsuario.modificarUsuario(chat.getContacto()); // si es necesario
+        }
 
-		List<ChatIndividual> eliminados = new LinkedList<>(grupo.getMiembros());
-		eliminados.removeAll(miembros);
-
-		mantenidos.stream().forEach(p -> p.modificarGrupo(grupo));
-		nuevos.stream().forEach(p -> p.addGrupo(grupo));
-
-		eliminados.stream().forEach(p -> {
-			p.eliminarGrupo(grupo);
-			adaptadorUsuario.modificarUsuario(p.getContacto());
-		});
-
-		grupo.setMiembros(miembros);
-
-		adaptadorGrupo.modificarGrupo(grupo);
-
-		nuevos.stream().map(ChatIndividual::getContacto).forEach(u -> adaptadorUsuario.modificarUsuario(u));
-
-		return grupo;
-	}
+        return grupo;
+    }
     
 	public ChatIndividual modificarChatIndividual(ChatIndividual chat, String nombre) {
 		chat.setNombreAgregado(nombre);
@@ -429,20 +406,17 @@ public enum ControladorAppChat {
     // Funciones de eliminación de objetos
     //-----------------------------------------------------
     
-    public void eliminarContacto(Contacto c) {
-		usuarioActual.removeContacto(c);
-		if (c instanceof ChatIndividual) {
-			adaptadorChatIndividual.borrarChatIndividual((ChatIndividual) c);
-		} else {
-			Grupo grupo = (Grupo) c;
-			grupo.getMiembros().stream().forEach(p -> {
-				p.eliminarGrupo(grupo);
-				adaptadorUsuario.modificarUsuario(p.getContacto());
-			});
-			adaptadorGrupo.borrarGrupo((Grupo) c);
-		}
+	public void eliminarContacto(Contacto c) {
+	    usuarioActual.removeContacto(c);
 
-		adaptadorUsuario.modificarUsuario(usuarioActual);
+	    if (c instanceof ChatIndividual) {
+	        adaptadorChatIndividual.borrarChatIndividual((ChatIndividual) c);
+	    } else if (c instanceof Grupo) {
+	        Grupo grupo = (Grupo) c;
+	        adaptadorGrupo.borrarGrupo(grupo);
+	    }
+
+	    adaptadorUsuario.modificarUsuario(usuarioActual);
 	}
 
 

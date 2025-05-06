@@ -59,24 +59,7 @@ public class ChatIndividual extends Contacto {
          return contacto.getFotoPerfil();
 	}
 	
-	public void addGrupo(Grupo g) {
-		this.contacto.addContacto(g);
-	}
 
-	public void removeGrupo(Grupo g) {
-		this.contacto.removeContacto(g);
-	}
-	
-	public void modificarGrupo(Grupo g) {
-		List<Grupo> grupos = contacto.getGrupos();
-		grupos.remove(g);
-		grupos.add(g);
-	}
-	
-	public void eliminarGrupo(Grupo g) {
-		this.contacto.removeContacto(g);
-	}
-	
 	public String getSaludo() {
 	    return contacto.getSaludo() != "Write a greeting message (optional)" ? contacto.getSaludo() : "Hey there! I'm using AppChat!";
 	}
